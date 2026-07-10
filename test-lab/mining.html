@@ -1,0 +1,28 @@
+<!DOCTYPE html>
+<html lang="es">
+<head><meta charset="UTF-8"><title>Prueba: patrón de cryptojacking</title></head>
+<body style="font: 15px/1.5 system-ui, sans-serif; max-width: 700px; margin: 40px auto;">
+  <h1>⛏️ Prueba: patrón de minado</h1>
+  <p><b>Esperado:</b> WebAssembly + 4 workers (+40) → sin banner (40 &lt; 50), pero
+     la señal debe aparecer en el <b>panel lateral / popup</b> y el badge ponerse
+     de aviso... no: con 40 puntos el badge sigue verde. Comprueba el listado
+     de señales en el panel.</p>
+  <p>Los workers están vacíos y se terminan a los 3 segundos: tu CPU no mina nada.</p>
+  <hr>
+
+  <script>
+    // Módulo WASM mínimo válido (solo cabecera): 8 bytes, no ejecuta nada.
+    const wasmBytes = new Uint8Array([0x00, 0x61, 0x73, 0x6d, 0x01, 0x00, 0x00, 0x00]);
+    WebAssembly.instantiate(wasmBytes).catch(() => {});
+
+    // 4 workers inertes (patrón: minadores reparten el trabajo en workers).
+    const blob = new Blob(["self.onmessage = () => {};"], { type: "text/javascript" });
+    const url = URL.createObjectURL(blob);
+    const workers = [];
+    for (let i = 0; i < 4; i++) workers.push(new Worker(url));
+    setTimeout(() => workers.forEach((w) => w.terminate()), 3000);
+  </script>
+
+  <p><a href="/index.html">← Volver al índice</a></p>
+</body>
+</html>

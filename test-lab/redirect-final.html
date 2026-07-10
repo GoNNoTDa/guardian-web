@@ -1,0 +1,15 @@
+<!DOCTYPE html>
+<html lang="es">
+<head><meta charset="UTF-8"><title>Prueba: fin de la cadena de redirecciones</title></head>
+<body style="font: 15px/1.5 system-ui, sans-serif; max-width: 700px; margin: 40px auto;">
+  <h1>🔀 Has llegado tras 5 redirecciones</h1>
+  <p>Ruta recorrida: <code>/go → /go2 → /go3 → /go4 → /go5 → esta página</code>.</p>
+  <p><b>Esperado:</b> abre el <b>panel lateral o el popup</b> en ESTA página y deberías
+     ver la señal <b>"Cadena de redirecciones sospechosa" (+20)</b>.</p>
+  <p>Con 20 puntos no hay banner (umbral: 50) — esta señal está pensada para sumar
+     con otras, no para avisar por sí sola.</p>
+  <p>Si recargas esta página directamente (F5), la señal desaparece: es normal,
+     la recarga no pasa por la cadena.</p>
+  <p><a href="/index.html">← Volver al índice</a> · <a href="/go">🔁 Repetir la cadena</a></p>
+</body>
+</html>

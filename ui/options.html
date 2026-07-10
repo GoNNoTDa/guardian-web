@@ -1,0 +1,89 @@
+<!DOCTYPE html>
+<html lang="es">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Guardián Web — Opciones</title>
+    <link rel="stylesheet" href="options.css" />
+  </head>
+  <body>
+    <div class="wrap">
+      <header>
+        <span class="shield">🛡️</span>
+        <div>
+          <h1>Guardián Web</h1>
+          <p class="sub">Ajustes de detección y privacidad</p>
+        </div>
+      </header>
+
+      <section>
+        <h2>Privacidad</h2>
+        <label class="row switch">
+          <span>
+            <b>Modo local</b>
+            <small>No consultar servicios externos (Safe Browsing / URLhaus). Las URLs
+              que visitas no salen de tu equipo. Se pierde la detección de amenazas confirmadas.</small>
+          </span>
+          <input type="checkbox" id="localMode" />
+        </label>
+        <label class="row switch">
+          <span>
+            <b>Notificaciones del sistema</b>
+            <small>Avisar con un mensaje de Windows aunque no estés mirando la pestaña.</small>
+          </span>
+          <input type="checkbox" id="notifications" />
+        </label>
+      </section>
+
+      <section id="apiSection">
+        <h2>Claves de API <small class="muted">(opcional, para reputación en tiempo real)</small></h2>
+        <label class="row field">
+          <span>
+            <b>Google Safe Browsing</b>
+            <small>Clave gratuita desde Google Cloud Console.</small>
+          </span>
+          <input type="password" id="gsbKey" placeholder="Pega tu API key" autocomplete="off" />
+        </label>
+        <label class="row field">
+          <span>
+            <b>URLhaus (abuse.ch)</b>
+            <small>Auth-Key gratuito desde auth.abuse.ch.</small>
+          </span>
+          <input type="password" id="urlhausKey" placeholder="Pega tu Auth-Key" autocomplete="off" />
+        </label>
+        <p class="note" id="localNote" hidden>El modo local está activo: las claves no se usan.</p>
+      </section>
+
+      <section>
+        <h2>Umbrales de aviso</h2>
+        <label class="row field">
+          <span><b>Aviso naranja</b><small>Puntuación mínima para el banner de sospecha.</small></span>
+          <input type="number" id="thWarning" min="10" max="500" step="5" />
+        </label>
+        <label class="row field">
+          <span><b>Aviso rojo</b><small>Puntuación mínima para el banner de peligro.</small></span>
+          <input type="number" id="thDanger" min="10" max="500" step="5" />
+        </label>
+      </section>
+
+      <section>
+        <h2>Detectores activos</h2>
+        <div id="detectors"></div>
+      </section>
+
+      <section>
+        <h2>Sitios de confianza <small class="muted">(tu whitelist)</small></h2>
+        <ul id="whitelist"></ul>
+        <p id="whitelistEmpty" class="muted">No has marcado ningún sitio como de confianza.</p>
+      </section>
+
+      <div class="actions">
+        <button id="save" class="primary">Guardar cambios</button>
+        <button id="reset">Restablecer valores por defecto</button>
+        <span id="saved" class="saved" hidden>✓ Guardado</span>
+      </div>
+    </div>
+
+    <script type="module" src="options.js"></script>
+  </body>
+</html>

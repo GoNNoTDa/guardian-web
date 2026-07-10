@@ -1,0 +1,25 @@
+<!DOCTYPE html>
+<html lang="es">
+<head><meta charset="UTF-8"><title>Prueba: texto de estafa + iframes ocultos</title></head>
+<body style="font: 15px/1.5 system-ui, sans-serif; max-width: 700px; margin: 40px auto;">
+  <h1>🎭 Prueba: scam + clickjacking</h1>
+  <p><b>Esperado:</b> texto de estafa (+45) + iframes ocultos (+25) = 70 →
+     banner naranja y notificación.</p>
+  <hr>
+
+  <!-- Texto que imita una estafa de soporte técnico (inofensivo) -->
+  <div style="border: 2px solid #c00; padding: 16px; border-radius: 8px;">
+    <h2>⚠️ ALERTA DE SEGURIDAD ⚠️</h2>
+    <p>Su ordenador está infectado con 5 virus. Se ha detectado actividad
+       peligrosa en su sistema.</p>
+    <p>Llame ahora al 900-000-000 para hablar con el soporte técnico de
+       Microsoft y resolver el problema inmediatamente.</p>
+  </div>
+
+  <!-- Dos iframes invisibles (patrón de clickjacking, apuntan a página local) -->
+  <iframe src="/clean.html" style="opacity: 0; width: 300px; height: 100px;"></iframe>
+  <iframe src="/clean.html" style="visibility: hidden; width: 300px; height: 100px;"></iframe>
+
+  <p><a href="/index.html">← Volver al índice</a></p>
+</body>
+</html>

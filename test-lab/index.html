@@ -1,0 +1,93 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <title>Guardián Web — Laboratorio de pruebas</title>
+  <style>
+    body { font: 15px/1.5 system-ui, sans-serif; max-width: 860px; margin: 30px auto; padding: 0 16px; color: #222; }
+    h1 { font-size: 22px; } h1 span { color: #1e7e45; }
+    table { border-collapse: collapse; width: 100%; font-size: 14px; }
+    th, td { border: 1px solid #ddd; padding: 8px 10px; text-align: left; vertical-align: top; }
+    th { background: #f5f5f5; }
+    .w { color: #a85a13; font-weight: 600; } .d { color: #b0281a; font-weight: 600; } .s { color: #666; }
+    code { background: #f2f2f2; padding: 1px 5px; border-radius: 4px; font-size: 13px; }
+    .note { background: #fdf6e3; border: 1px solid #f0e0b0; border-radius: 8px; padding: 10px 14px; margin: 18px 0; font-size: 14px; }
+  </style>
+</head>
+<body>
+  <h1>🛡️ <span>Guardián Web</span> — Laboratorio de pruebas</h1>
+  <p>Cada página dispara detectores concretos. Comprueba el <b>badge</b> del icono,
+     el <b>banner</b> superior, la <b>notificación</b> del sistema y el <b>panel lateral</b>.
+     Umbrales: <span class="w">≥50 aviso naranja</span> · <span class="d">≥100 aviso rojo</span>.
+     Las señales por debajo de 50 se ven solo en el panel/popup.</p>
+
+  <table>
+    <tr><th>Prueba</th><th>Señales esperadas</th><th>Resultado esperado</th></tr>
+    <tr>
+      <td><a href="/clean.html">clean.html</a></td>
+      <td>Ninguna</td>
+      <td class="s">Control: badge verde, sin avisos</td>
+    </tr>
+    <tr>
+      <td><a href="/scam.html">scam.html</a></td>
+      <td>Texto de estafa (+45) · iframes ocultos (+25)</td>
+      <td class="w">70 → banner naranja + notificación</td>
+    </tr>
+    <tr>
+      <td><a href="/phishing-form.html">phishing-form.html</a></td>
+      <td>Contraseña por HTTP (+50) · login a otro dominio (+35)</td>
+      <td class="w">85 → banner naranja + notificación</td>
+    </tr>
+    <tr>
+      <td><a href="/fingerprint.html">fingerprint.html</a></td>
+      <td>Canvas ×3 (+20) · geolocalización al entrar (+20) · notificaciones al entrar (+15)</td>
+      <td class="w">55 → banner naranja</td>
+    </tr>
+    <tr>
+      <td><a href="/mining.html">mining.html</a></td>
+      <td>WebAssembly + 4 workers (+40)</td>
+      <td class="s">40 → solo visible en el panel (sin banner)</td>
+    </tr>
+    <tr>
+      <td><a href="/third-parties.html">third-parties.html</a></td>
+      <td>Más de 20 dominios de terceros (+15)</td>
+      <td class="s">15 → solo visible en el panel</td>
+    </tr>
+    <tr>
+      <td><a href="/go">/go (redirecciones)</a></td>
+      <td>Cadena de 4+ redirecciones (+20)</td>
+      <td class="s">20 → rebota 5 veces y acaba en una página final; la señal se ve en el panel ALLÍ</td>
+    </tr>
+    <tr>
+      <td><a href="/exfil.html">exfil.html</a></td>
+      <td>Exfiltración de datos del formulario a un tercero (+70)</td>
+      <td class="w">70 → banner naranja (pulsa el botón de la página)</td>
+    </tr>
+    <tr>
+      <td><a href="/downloads.html">downloads.html</a></td>
+      <td>Descarga con doble extensión (+90) / ejecutable (+45)</td>
+      <td class="d">Notificación del sistema (doble ext. = peligro)</td>
+    </tr>
+    <tr>
+      <td><a href="/danger-combo.html">danger-combo.html</a></td>
+      <td>Estafa + iframes + formulario + canvas</td>
+      <td class="d">175 → banner ROJO + notificación de peligro</td>
+    </tr>
+    <tr>
+      <td><a href="/homograph.html">homograph.html</a></td>
+      <td>Dominio homógrafo (+80) — requiere editar <code>hosts</code></td>
+      <td class="w">Ver instrucciones dentro</td>
+    </tr>
+  </table>
+
+  <div class="note">
+    💡 <b>Probar la notificación con pestaña en segundo plano:</b> abre
+    <a href="/scam.html">scam.html</a> con clic central (pestaña nueva sin foco) y
+    espera el toast de Windows. Al pulsarlo, Chrome debe llevarte a esa pestaña.
+  </div>
+  <div class="note">
+    ⚠️ Estas páginas son <b>inofensivas</b>: simulan patrones (texto, llamadas a APIs,
+    peticiones a dominios inexistentes <code>.test</code>) sin ejecutar nada malicioso.
+  </div>
+</body>
+</html>

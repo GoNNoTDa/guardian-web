@@ -1,0 +1,38 @@
+<!DOCTYPE html>
+<html lang="es">
+<head><meta charset="UTF-8"><title>Prueba: descargas peligrosas</title></head>
+<body style="font: 15px/1.5 system-ui, sans-serif; max-width: 700px; margin: 40px auto;">
+  <h1>⬇️ Prueba: descargas peligrosas (A3)</h1>
+  <p>Cada botón descarga un archivo de texto <b>diminuto e inofensivo</b> (unos bytes),
+     pero con un <b>nombre</b> que dispara al detector. La detección es por nombre y origen,
+     no por contenido. Espera la <b>notificación</b> del sistema.</p>
+  <hr>
+
+  <p>
+    <button data-name="factura.pdf.exe">factura.pdf.exe (doble extensión, +90 🛑)</button><br><br>
+    <button data-name="instalador.exe">instalador.exe (ejecutable, +45 ⚠️)</button><br><br>
+    <button data-name="documento.pdf">documento.pdf (control, sin aviso)</button>
+  </p>
+  <p id="msg" style="color:#666;"></p>
+
+  <script>
+    document.querySelectorAll("button[data-name]").forEach((btn) => {
+      btn.addEventListener("click", () => {
+        const name = btn.dataset.name;
+        const blob = new Blob(["Archivo de prueba inofensivo de Guardian Web."], { type: "text/plain" });
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement("a");
+        a.href = url;
+        a.download = name;
+        document.body.appendChild(a);
+        a.click();
+        a.remove();
+        setTimeout(() => URL.revokeObjectURL(url), 2000);
+        document.getElementById("msg").textContent = `Descargado "${name}". Comprueba la notificación.`;
+      });
+    });
+  </script>
+
+  <p><a href="/index.html">← Volver al índice</a></p>
+</body>
+</html>

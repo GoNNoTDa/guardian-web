@@ -1,0 +1,29 @@
+<!DOCTYPE html>
+<html lang="es">
+<head><meta charset="UTF-8"><title>Prueba: dominio homógrafo</title></head>
+<body style="font: 15px/1.5 system-ui, sans-serif; max-width: 700px; margin: 40px auto;">
+  <h1>👁️ Prueba: homógrafos y typosquatting</h1>
+  <p>Este detector compara el <b>dominio</b>, así que hay que visitar la página a
+     través de un dominio falso que apunte a tu propia máquina. Solo tú verás ese
+     dominio: se resuelve localmente en tu fichero <code>hosts</code>.</p>
+
+  <h3>Pasos (una sola vez)</h3>
+  <ol>
+    <li>Abre el Bloc de notas <b>como administrador</b>.</li>
+    <li>Abre <code>C:\Windows\System32\drivers\etc\hosts</code></li>
+    <li>Añade estas líneas y guarda:
+      <pre style="background:#f2f2f2; padding:10px; border-radius:6px;">127.0.0.1  g00gle.com
+127.0.0.1  paypall.com</pre></li>
+    <li>Visita <code>http://g00gle.com:8000/homograph.html</code>
+        → <b>homógrafo</b> (leet 0→o coincide con google.com): +80, banner naranja.</li>
+    <li>Visita <code>http://paypall.com:8000/homograph.html</code>
+        → <b>typosquatting</b> (distancia 1 de paypal.com): +60, banner naranja.</li>
+  </ol>
+
+  <p>Si estás viendo esta página en <code>127.0.0.1</code>, no debe saltar nada:
+     la gracia está en el dominio.</p>
+  <p>🧹 Al terminar, borra esas líneas del fichero <code>hosts</code>.</p>
+
+  <p><a href="/index.html">← Volver al índice</a></p>
+</body>
+</html>

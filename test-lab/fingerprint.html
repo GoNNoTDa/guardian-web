@@ -1,0 +1,36 @@
+<!DOCTYPE html>
+<html lang="es">
+<head><meta charset="UTF-8"><title>Prueba: fingerprinting + permisos intrusivos</title></head>
+<body style="font: 15px/1.5 system-ui, sans-serif; max-width: 700px; margin: 40px auto;">
+  <h1>🕵️ Prueba: fingerprinting y permisos al entrar</h1>
+  <p><b>Esperado:</b> canvas ×3 (+20) + geolocalización al entrar (+20) +
+     notificaciones al entrar (+15) = 55 → banner naranja.</p>
+  <p>Nota: 127.0.0.1 cuenta como contexto seguro, así que Chrome permite estas
+     APIs; los propios diálogos de permiso de Chrome pueden aparecer — deniégalos
+     tranquilamente, la señal se registra igual al hacerse la llamada.</p>
+  <hr>
+  <canvas id="c" width="200" height="50" style="border: 1px solid #ddd;"></canvas>
+
+  <script>
+    // Lectura repetida de canvas (patrón de fingerprinting).
+    const c = document.getElementById("c");
+    const ctx = c.getContext("2d", { willReadFrequently: true });
+    ctx.fillStyle = "#1e7e45";
+    ctx.fillText("Guardián Web test 🛡️", 10, 25);
+    for (let i = 0; i < 3; i++) {
+      c.toDataURL();
+      ctx.getImageData(0, 0, 10, 10);
+    }
+
+    // Permisos pedidos nada más entrar (sin gesto del usuario).
+    if (navigator.geolocation) {
+      navigator.geolocation.getCurrentPosition(() => {}, () => {});
+    }
+    if (window.Notification && Notification.requestPermission) {
+      Notification.requestPermission().catch(() => {});
+    }
+  </script>
+
+  <p><a href="/index.html">← Volver al índice</a></p>
+</body>
+</html>

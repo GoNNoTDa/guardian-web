@@ -1,0 +1,26 @@
+<!DOCTYPE html>
+<html lang="es">
+<head><meta charset="UTF-8"><title>Prueba: exceso de dominios de terceros</title></head>
+<body style="font: 15px/1.5 system-ui, sans-serif; max-width: 700px; margin: 40px auto;">
+  <h1>📡 Prueba: tracking intensivo</h1>
+  <p><b>Esperado:</b> peticiones a más de 20 dominios externos (+15) → sin banner,
+     señal visible en el panel.</p>
+  <p>Las peticiones van a dominios <code>.test</code> (TLD reservado, RFC 2606):
+     <b>nunca resuelven</b>, no sale ni un byte hacia Internet. A Guardián Web le
+     basta con observar el intento.</p>
+  <hr>
+  <div id="pixels" style="display: none;"></div>
+
+  <script>
+    // 22 "píxeles de tracking" hacia 22 dominios distintos e inexistentes.
+    const box = document.getElementById("pixels");
+    for (let i = 1; i <= 22; i++) {
+      const img = new Image(1, 1);
+      img.src = `http://tracker${i}.test/pixel.gif`;
+      box.appendChild(img);
+    }
+  </script>
+
+  <p><a href="/index.html">← Volver al índice</a></p>
+</body>
+</html>

