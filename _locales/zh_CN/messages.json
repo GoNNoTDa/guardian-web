@@ -151,5 +151,17 @@
   "oSearchGuard": { "message": "搜索结果守卫" },
   "oSearchGuardDesc": { "message": "在 Google/Bing 上标记可疑域名的链接（本地分析）。" },
   "bLearn": { "message": "了解详情" },
-  "uLearn": { "message": "了解详情" }
+  "uLearn": { "message": "了解详情" },
+  "fCommunityTitle": { "message": "由社区举报" },
+  "fCommunityDetail": { "message": "该网站已被 $1 位 Guardián Web 用户举报为有问题。" },
+  "det_community": { "message": "社区信誉" },
+  "uReport": { "message": "举报此网站" },
+  "uReportOk": { "message": "✓ 谢谢！举报已发送" },
+  "uReportDup": { "message": "您已举报过" },
+  "uReportErr": { "message": "发送失败" },
+  "uReportNoServer": { "message": "请在选项中配置服务器" },
+  "oCommunity": { "message": "社区信誉" },
+  "oCommunityUrl": { "message": "社区服务器" },
+  "oCommunityDesc": { "message": "协作后端的 URL。留空 = 停用。" },
+  "oCommunityPlaceholder": { "message": "https://你的服务器/guardian" }
 }

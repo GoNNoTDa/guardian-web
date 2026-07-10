@@ -31,6 +31,22 @@ Si configuras claves de API y NO activas el modo local:
 toda comunicación con servicios externos. La extensión sigue funcionando con
 sus heurísticas locales.
 
+## Reputación de la comunidad (opcional)
+
+Si configuras un servidor de comunidad en las opciones:
+
+- **Reportar es siempre manual.** Solo se envía un sitio cuando pulsas
+  "Reportar este sitio". Nada se envía de forma automática al navegar.
+- **La consulta usa k-anonimato.** Para saber si un dominio ha sido validado
+  por la comunidad, la extensión envía únicamente un prefijo del hash del
+  dominio (no el dominio). El servidor devuelve todos los del "cubo" y la
+  comparación final se hace en tu equipo: el servidor no sabe qué dominio
+  exacto visitas.
+- **Identidad anónima.** Se usa un identificador aleatorio de instalación
+  (UUID) solo para evitar reportes duplicados y limitar abusos. Se guarda
+  hasheado en el servidor; no se recoge email, cuenta ni IP.
+- Si no configuras servidor, esta función queda desactivada.
+
 ## Lo que Guardián Web NO hace
 
 - No recopila ni vende datos de navegación.

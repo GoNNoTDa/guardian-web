@@ -151,5 +151,17 @@
   "oSearchGuard": { "message": "Guardià de resultats de cerca" },
   "oSearchGuardDesc": { "message": "Marca a Google/Bing els enllaços amb dominis sospitosos (anàlisi local)." },
   "bLearn": { "message": "Aprèn sobre això" },
-  "uLearn": { "message": "Aprèn sobre això" }
+  "uLearn": { "message": "Aprèn sobre això" },
+  "fCommunityTitle": { "message": "Reportat per la comunitat" },
+  "fCommunityDetail": { "message": "Aquest lloc ha estat reportat com a problemàtic per $1 usuaris de Guardián Web." },
+  "det_community": { "message": "Reputació de la comunitat" },
+  "uReport": { "message": "Reportar aquest lloc" },
+  "uReportOk": { "message": "✓ Gràcies! Informe enviat" },
+  "uReportDup": { "message": "Ja l'havies reportat" },
+  "uReportErr": { "message": "No s'ha pogut enviar" },
+  "uReportNoServer": { "message": "Configura el servidor a Opcions" },
+  "oCommunity": { "message": "Reputació de la comunitat" },
+  "oCommunityUrl": { "message": "Servidor de la comunitat" },
+  "oCommunityDesc": { "message": "URL del backend col·laboratiu. Buit = desactivat." },
+  "oCommunityPlaceholder": { "message": "https://el-teu-servidor/guardian" }
 }

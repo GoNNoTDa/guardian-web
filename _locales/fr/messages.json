@@ -151,5 +151,17 @@
   "oSearchGuard": { "message": "Gardien des résultats de recherche" },
   "oSearchGuardDesc": { "message": "Signale sur Google/Bing les liens aux domaines suspects (analyse locale)." },
   "bLearn": { "message": "En savoir plus" },
-  "uLearn": { "message": "En savoir plus" }
+  "uLearn": { "message": "En savoir plus" },
+  "fCommunityTitle": { "message": "Signalé par la communauté" },
+  "fCommunityDetail": { "message": "Ce site a été signalé comme problématique par $1 utilisateurs de Guardián Web." },
+  "det_community": { "message": "Réputation de la communauté" },
+  "uReport": { "message": "Signaler ce site" },
+  "uReportOk": { "message": "✓ Merci ! Signalement envoyé" },
+  "uReportDup": { "message": "Vous l'aviez déjà signalé" },
+  "uReportErr": { "message": "Envoi impossible" },
+  "uReportNoServer": { "message": "Configurez le serveur dans les Options" },
+  "oCommunity": { "message": "Réputation de la communauté" },
+  "oCommunityUrl": { "message": "Serveur de la communauté" },
+  "oCommunityDesc": { "message": "URL du backend collaboratif. Vide = désactivé." },
+  "oCommunityPlaceholder": { "message": "https://votre-serveur/guardian" }
 }

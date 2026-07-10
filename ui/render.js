@@ -1,12 +1,16 @@
 // Lógica de renderizado compartida entre el popup y el panel lateral.
 
 import { t } from "./i18n.js";
+import { detectorOf } from "../src/settings.js";
 
 const LEVEL_KEY = {
   safe: "uStatusSafe",
   warning: "uStatusWarning",
   danger: "uStatusDanger",
 };
+
+let lastScore = 0;
+let lastFindings = [];
 
 let currentHost = "";
 let isWhitelisted = false;
@@ -41,13 +45,24 @@ export function renderState(tab) {
     }
     hostEl.textContent = currentHost;
     isWhitelisted = !!st.whitelisted;
+    lastScore = st.score || 0;
+    lastFindings = st.findings || [];
 
     // Botón de confianza (solo en páginas http/https con host).
-    if (currentHost && /^https?:/.test(tab.url || "")) {
+    const onWeb = currentHost && /^https?:/.test(tab.url || "");
+    if (onWeb) {
       trustBtn.hidden = false;
       trustBtn.textContent = t(isWhitelisted ? "uUntrustBtn" : "uTrustBtn");
     } else {
       trustBtn.hidden = true;
+    }
+
+    // Botón de reporte: en web, no en sitios de confianza del usuario.
+    const reportBtn = document.getElementById("reportBtn");
+    if (reportBtn) {
+      reportBtn.hidden = !onWeb || isWhitelisted;
+      reportBtn.disabled = false;
+      reportBtn.textContent = t("uReport");
     }
 
     reasonsEl.textContent = "";
@@ -150,4 +165,23 @@ export function wireActions() {
 
   const opts = document.getElementById("openOptions");
   if (opts) opts.addEventListener("click", () => chrome.runtime.openOptionsPage());
+
+  const reportBtn = document.getElementById("reportBtn");
+  if (reportBtn) {
+    reportBtn.addEventListener("click", async () => {
+      if (!currentHost) return;
+      reportBtn.disabled = true;
+      const detectors = [...new Set(lastFindings.map((f) => detectorOf(f.id)))];
+      const r = await chrome.runtime.sendMessage({
+        type: "report-site",
+        host: currentHost,
+        score: lastScore,
+        detectors,
+      });
+      let key = "uReportErr";
+      if (r && r.ok) key = r.duplicate ? "uReportDup" : "uReportOk";
+      else if (r && r.error === "no_server") key = "uReportNoServer";
+      reportBtn.textContent = t(key);
+    });
+  }
 }

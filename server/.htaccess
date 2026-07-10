@@ -1,0 +1,7 @@
+# Denegar acceso público a la configuración y a las librerías internas.
+<FilesMatch "^config(\.example)?\.php$">
+  Require all denied
+</FilesMatch>
+
+RedirectMatch 403 ^/.*/lib/.*$
+RedirectMatch 403 ^/.*/schema\.sql$

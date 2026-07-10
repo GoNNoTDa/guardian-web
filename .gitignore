@@ -3,3 +3,6 @@ dist/
 node_modules/
 Thumbs.db
 .DS_Store
+
+# Backend: la config real con credenciales nunca se sube.
+server/config.php

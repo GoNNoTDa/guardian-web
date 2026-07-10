@@ -14,6 +14,7 @@ async function load() {
   $("localMode").checked = s.localMode;
   $("notifications").checked = s.notifications;
   $("searchGuard").checked = s.searchGuard;
+  $("communityUrl").value = s.communityUrl || "";
   $("gsbKey").value = s.apiKeys.googleSafeBrowsing || "";
   $("urlhausKey").value = s.apiKeys.urlhaus || "";
   $("thWarning").value = s.thresholds.warning;
@@ -56,6 +57,7 @@ function collect() {
     localMode: $("localMode").checked,
     notifications: $("notifications").checked,
     searchGuard: $("searchGuard").checked,
+    communityUrl: $("communityUrl").value.trim().replace(/\/+$/, ""),
     apiKeys: {
       googleSafeBrowsing: $("gsbKey").value.trim(),
       urlhaus: $("urlhausKey").value.trim(),

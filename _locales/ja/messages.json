@@ -151,5 +151,17 @@
   "oSearchGuard": { "message": "検索結果ガード" },
   "oSearchGuardDesc": { "message": "Google/Bing で疑わしいドメインのリンクに印を付けます（ローカル分析）。" },
   "bLearn": { "message": "これについて学ぶ" },
-  "uLearn": { "message": "これについて学ぶ" }
+  "uLearn": { "message": "これについて学ぶ" },
+  "fCommunityTitle": { "message": "コミュニティによる報告" },
+  "fCommunityDetail": { "message": "このサイトは $1 人の Guardián Web ユーザーによって問題ありと報告されています。" },
+  "det_community": { "message": "コミュニティの評価" },
+  "uReport": { "message": "このサイトを報告" },
+  "uReportOk": { "message": "✓ ありがとう！報告を送信しました" },
+  "uReportDup": { "message": "すでに報告済みです" },
+  "uReportErr": { "message": "送信できませんでした" },
+  "uReportNoServer": { "message": "オプションでサーバーを設定してください" },
+  "oCommunity": { "message": "コミュニティの評価" },
+  "oCommunityUrl": { "message": "コミュニティサーバー" },
+  "oCommunityDesc": { "message": "共同バックエンドの URL。空 = 無効。" },
+  "oCommunityPlaceholder": { "message": "https://あなたのサーバー/guardian" }
 }

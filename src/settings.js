@@ -5,6 +5,7 @@
 // Las etiquetas visibles viven en _locales (claves det_<key> y grp_<group>).
 export const DETECTORS = [
   { key: "reputation", group: "net" },
+  { key: "community", group: "net" },
   { key: "redirects", group: "net" },
   { key: "tld", group: "net" },
   { key: "rawip", group: "net" },
@@ -30,6 +31,7 @@ export const DEFAULTS = {
   localMode: false, // true = sin llamadas a APIs externas (C5)
   notifications: true,
   searchGuard: true, // iconos de riesgo en resultados de búsqueda (local)
+  communityUrl: "", // URL del backend colaborativo (vacío = desactivado)
   thresholds: { warning: 50, danger: 100 },
   apiKeys: { googleSafeBrowsing: "", urlhaus: "" },
   detectors: Object.fromEntries(DETECTORS.map((d) => [d.key, true])),
@@ -61,6 +63,7 @@ const ID_TO_DETECTOR = {
   gsb: "reputation",
   urlhaus: "reputation",
   feed: "reputation",
+  community: "community",
   "redirect-chain": "redirects",
   "bad-tld": "tld",
   rawip: "rawip",

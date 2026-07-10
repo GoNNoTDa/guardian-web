@@ -151,5 +151,17 @@
   "oSearchGuard": { "message": "Search results guard" },
   "oSearchGuardDesc": { "message": "Flags links with suspicious domains on Google/Bing (local analysis)." },
   "bLearn": { "message": "Learn about this" },
-  "uLearn": { "message": "Learn about this" }
+  "uLearn": { "message": "Learn about this" },
+  "fCommunityTitle": { "message": "Reported by the community" },
+  "fCommunityDetail": { "message": "This site has been reported as problematic by $1 Guardián Web users." },
+  "det_community": { "message": "Community reputation" },
+  "uReport": { "message": "Report this site" },
+  "uReportOk": { "message": "✓ Thanks! Report sent" },
+  "uReportDup": { "message": "You already reported this" },
+  "uReportErr": { "message": "Could not send" },
+  "uReportNoServer": { "message": "Set the server in Options" },
+  "oCommunity": { "message": "Community reputation" },
+  "oCommunityUrl": { "message": "Community server" },
+  "oCommunityDesc": { "message": "URL of the collaborative backend. Empty = disabled." },
+  "oCommunityPlaceholder": { "message": "https://your-server/guardian" }
 }

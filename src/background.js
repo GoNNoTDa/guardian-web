@@ -16,6 +16,7 @@ import { MINING_HOSTS, isSuspiciousTld } from "./lib/blocklists.js";
 import { isTrusted, hostMatches } from "./lib/trusted.js";
 import { getSettings, detectorOf } from "./settings.js";
 import { learnUrl } from "./lib/learn.js";
+import { lookupHost, reportSite } from "./lib/community.js";
 import { ensureFeedAlarm, updateFeed, getFeedSet, invalidateFeedCache, FEED_ALARM } from "./lib/blockfeed.js";
 import { isRawIp, weirdPort, domainAgeDays, isLocalOrPrivate } from "./lib/domain.js";
 import { noteThirdParty, isKnownTracker } from "./lib/trackers.js";
@@ -362,6 +363,28 @@ chrome.webNavigation.onCommitted.addListener(async (d) => {
     const repFindings = await checkReputation(d.url, cfg);
     await addFindings(d.tabId, repFindings);
   }
+
+  // Reputación colaborativa (k-anónima): dominios validados por la comunidad.
+  // Externa: respeta modo local, requiere servidor configurado, no en confianza.
+  if (!cfg.localMode && cfg.detectors.community !== false && cfg.communityUrl && !st.trusted) {
+    try {
+      const m = await lookupHost(cfg.communityUrl, host);
+      if (m) {
+        addFindings(d.tabId, [
+          {
+            id: "community",
+            weight: 85,
+            confirmed: true,
+            category: "reputation",
+            title: t("fCommunityTitle"),
+            detail: t("fCommunityDetail", [String(m.n)]),
+          },
+        ]);
+      }
+    } catch {
+      /* servidor caído: sin señal */
+    }
+  }
 });
 
 // --- Tráfico de red: minado, terceros -----------------------------------------
@@ -657,6 +680,24 @@ chrome.runtime.onMessage.addListener((msg, sender, sendResponse) => {
 
   if (msg?.type === "clear-history") {
     chrome.storage.local.set({ history: [] }).then(() => sendResponse({ ok: true }));
+    return true;
+  }
+
+  // Reporte manual de un sitio a la comunidad (acción explícita del usuario).
+  if (msg?.type === "report-site" && msg.host) {
+    (async () => {
+      const cfg = await ensureSettings();
+      if (!cfg.communityUrl) {
+        sendResponse({ ok: false, error: "no_server" });
+        return;
+      }
+      try {
+        const r = await reportSite(cfg.communityUrl, msg.host, msg.score || 0, msg.detectors || []);
+        sendResponse(r);
+      } catch {
+        sendResponse({ ok: false, error: "network" });
+      }
+    })();
     return true;
   }
 });
