@@ -45,11 +45,16 @@ Ya no hay que editar ningún archivo a mano.
 ## Novedades por versión
 
 **v1.0 (en curso)**
+- **7 idiomas** (es, en, ca, fr, it, zh-CN, ja) vía `_locales`; Chrome elige
+  automáticamente según el navegador.
 - **Blocklist auto-actualizable**: el feed de malware de URLhaus se descarga
   cada 12 h a una copia local; la comprobación funciona offline y no envía
   tus URLs a ningún sitio.
+- **Tests end-to-end** (`tests/`, Puppeteer) que recorren el test-lab y
+  verifican cada detector; CI en GitHub Actions.
 - Licencia MIT, política de privacidad (`PRIVACY.md`), guía de contribución
-  (`CONTRIBUTING.md`) y script de empaquetado (`scripts/build.ps1`).
+  (`CONTRIBUTING.md`), script de empaquetado (`scripts/build.ps1`) y
+  documentación de publicación (`store/`).
 
 **v0.3**
 - **Página de opciones** completa (activar/desactivar cada detector, umbrales,

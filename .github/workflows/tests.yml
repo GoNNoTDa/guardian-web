@@ -1,0 +1,45 @@
+name: tests
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+jobs:
+  e2e:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+
+      - name: Comprobar sintaxis de todos los JS
+        run: |
+          for f in $(find src ui -name '*.js'); do node --check "$f"; done
+          node -e "JSON.parse(require('fs').readFileSync('manifest.json','utf8'))"
+
+      - name: Verificar paridad de las traducciones
+        run: |
+          node -e '
+          const fs=require("fs");
+          const base=Object.keys(JSON.parse(fs.readFileSync("_locales/es/messages.json","utf8"))).sort();
+          let bad=0;
+          for(const loc of ["en","ca","fr","it","zh_CN","ja"]){
+            const k=Object.keys(JSON.parse(fs.readFileSync(`_locales/${loc}/messages.json`,"utf8")));
+            const missing=base.filter(x=>!k.includes(x));
+            const extra=k.filter(x=>!base.includes(x));
+            if(missing.length||extra.length){bad++;console.error(loc,"faltan",missing,"sobran",extra);}
+          }
+          if(bad)process.exit(1);
+          console.log("Traducciones: paridad OK");
+          '
+
+      - name: Instalar dependencias de test
+        working-directory: tests
+        run: npm install
+
+      - name: Tests end-to-end (Xvfb para headful)
+        working-directory: tests
+        run: xvfb-run --auto-servernum node run.js
