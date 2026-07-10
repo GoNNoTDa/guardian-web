@@ -28,6 +28,8 @@ const CASES = [
   { name: "third-parties", url: "/third-parties.html", expect: ["many-third-parties"] },
   { name: "redirects", url: "/go", expect: ["redirect-chain"], host: "127.0.0.1" },
   { name: "exfil", url: "/exfil.html", expect: ["exfil"], click: "#go" },
+  { name: "skimmer", url: "/skimmer.html", expect: ["skimmer"], click: "#go" },
+  { name: "locker", url: "/locker.html", expect: ["locker"] },
 ];
 
 function waitForServer(url, timeoutMs = 5000) {

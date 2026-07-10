@@ -64,6 +64,16 @@
       <td class="w">70 → banner naranja (pulsa el botón de la página)</td>
     </tr>
     <tr>
+      <td><a href="/skimmer.html">skimmer.html</a></td>
+      <td>Número de tarjeta enviado a un tercero (+90)</td>
+      <td class="d">90 → banner ROJO (pulsa el botón de la página)</td>
+    </tr>
+    <tr>
+      <td><a href="/locker.html">locker.html</a></td>
+      <td>Inundación del historial / secuestro (+45)</td>
+      <td class="w">45 → aviso; ojo, llena el botón Atrás adrede</td>
+    </tr>
+    <tr>
       <td><a href="/downloads.html">downloads.html</a></td>
       <td>Descarga con doble extensión (+90) / ejecutable (+45)</td>
       <td class="d">Notificación del sistema (doble ext. = peligro)</td>
@@ -88,6 +98,11 @@
   <div class="note">
     ⚠️ Estas páginas son <b>inofensivas</b>: simulan patrones (texto, llamadas a APIs,
     peticiones a dominios inexistentes <code>.test</code>) sin ejecutar nada malicioso.
+  </div>
+  <div class="note">
+    🌐 <b>No probables en local:</b> IP pelada, puerto no estándar, edad de dominio
+    (RDAP) y rastreadores aprendidos se excluyen en <code>localhost</code> a propósito
+    (no serían sospechosos en desarrollo). Se validan navegando por sitios reales.
   </div>
 </body>
 </html>

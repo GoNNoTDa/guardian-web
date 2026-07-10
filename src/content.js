@@ -141,24 +141,51 @@
 
   // --- Exfiltración: recoger valores sensibles tecleados (A2) ---------------
   const SENSITIVE_NAME = /(pass|contrase|dni|nif|nie|iban|cuenta|tarjeta|card|cvv|cvc|telefono|phone|movil|email|correo|seguridad social|nuss)/i;
+  const CARD_NAME = /(tarjeta|card|cc-number|cardnumber|numero.?tarjeta|pan)/i;
   function isSensitive(el) {
     const type = (el.type || "").toLowerCase();
     if (["password", "email", "tel"].includes(type)) return true;
     const meta = `${el.name || ""} ${el.id || ""} ${el.autocomplete || ""} ${el.placeholder || ""}`;
     return SENSITIVE_NAME.test(meta);
   }
+  // Comprobación de Luhn: valida números de tarjeta reales (13-19 dígitos).
+  function looksLikeCard(el, value) {
+    const digits = (value || "").replace(/[\s-]/g, "");
+    if (!/^\d{13,19}$/.test(digits)) return false;
+    const meta = `${el.name || ""} ${el.id || ""} ${el.autocomplete || ""} ${el.placeholder || ""}`;
+    if (!CARD_NAME.test(meta) && (el.autocomplete || "") !== "cc-number") {
+      // Sin pista de que sea tarjeta: solo cuenta si pasa Luhn (evita DNIs, etc.).
+    }
+    let sum = 0;
+    let alt = false;
+    for (let i = digits.length - 1; i >= 0; i--) {
+      let n = parseInt(digits[i], 10);
+      if (alt) {
+        n *= 2;
+        if (n > 9) n -= 9;
+      }
+      sum += n;
+      alt = !alt;
+    }
+    return sum % 10 === 0;
+  }
   function watchSensitiveInputs() {
     const values = new Map(); // elemento -> último valor
+    const cards = new Map(); // elemento -> valor si parece tarjeta
     const push = () => {
       const list = [...values.values()].filter((v) => v && v.length >= 5);
-      window.postMessage({ __guardian_watch: true, values: list }, "*");
+      const cardList = [...cards.values()].filter((v) => v && v.length >= 5);
+      window.postMessage({ __guardian_watch: true, values: list, cards: cardList }, "*");
     };
     document.addEventListener(
       "input",
       (e) => {
         const el = e.target;
-        if (!el || !("value" in el) || !isSensitive(el)) return;
+        if (!el || !("value" in el)) return;
+        const card = looksLikeCard(el, el.value);
+        if (!isSensitive(el) && !card) return;
         values.set(el, el.value);
+        if (card) cards.set(el, el.value.replace(/[\s-]/g, ""));
         push();
       },
       true

@@ -28,6 +28,19 @@
       "run_at": "document_start",
       "world": "MAIN",
       "all_frames": false
+    },
+    {
+      "matches": [
+        "*://www.google.com/search*",
+        "*://www.google.es/search*",
+        "*://www.bing.com/search*",
+        "*://duckduckgo.com/*",
+        "*://search.brave.com/search*",
+        "*://search.yahoo.com/search*"
+      ],
+      "js": ["src/search-guard.js"],
+      "run_at": "document_idle",
+      "all_frames": false
     }
   ],
   "action": {

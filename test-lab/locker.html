@@ -1,0 +1,25 @@
+<!DOCTYPE html>
+<html lang="es">
+<head><meta charset="UTF-8"><title>Prueba: browser locker</title></head>
+<body style="font: 15px/1.5 system-ui, sans-serif; max-width: 700px; margin: 40px auto;">
+  <h1>🔒 Prueba: secuestro del navegador</h1>
+  <p><b>Esperado:</b> inundación del historial (+45) → banner naranja. La página
+     llama a <code>history.pushState</code> en bucle nada más cargar, la táctica
+     que usan los "tu PC está infectado" para romper el botón Atrás.</p>
+  <p>⚠️ Tras esta prueba, el botón Atrás tendrá muchas entradas basura: usa el
+     enlace de abajo o cierra la pestaña. Es justo el comportamiento que detectamos.</p>
+  <hr>
+  <p id="msg"></p>
+
+  <script>
+    // 12 pushState seguidos = patrón de history flooding.
+    for (let i = 0; i < 12; i++) {
+      try { history.pushState({ i }, "", "#trap" + i); } catch {}
+    }
+    document.getElementById("msg").textContent =
+      "Historial inundado con 12 entradas. Comprueba el aviso en el panel/banner.";
+  </script>
+
+  <p><a href="/index.html">← Volver al índice</a></p>
+</body>
+</html>

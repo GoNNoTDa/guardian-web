@@ -13,6 +13,7 @@ async function load() {
 
   $("localMode").checked = s.localMode;
   $("notifications").checked = s.notifications;
+  $("searchGuard").checked = s.searchGuard;
   $("gsbKey").value = s.apiKeys.googleSafeBrowsing || "";
   $("urlhausKey").value = s.apiKeys.urlhaus || "";
   $("thWarning").value = s.thresholds.warning;
@@ -54,6 +55,7 @@ function collect() {
   return {
     localMode: $("localMode").checked,
     notifications: $("notifications").checked,
+    searchGuard: $("searchGuard").checked,
     apiKeys: {
       googleSafeBrowsing: $("gsbKey").value.trim(),
       urlhaus: $("urlhausKey").value.trim(),

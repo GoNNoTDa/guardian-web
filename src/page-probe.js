@@ -34,10 +34,13 @@
   // la propia página (p. ej. violaciones de su CSP por píxeles de tracking)
   // no se atribuyen a la extensión en chrome://extensions.
   const watched = new Set();
+  const watchedCards = new Set(); // subconjunto: números de tarjeta (skimmer)
   window.addEventListener("message", (e) => {
     if (e.source !== window || !e.data || e.data.__guardian_watch !== true) return;
     watched.clear();
+    watchedCards.clear();
     for (const v of e.data.values || []) if (typeof v === "string" && v.length >= 5) watched.add(v);
+    for (const v of e.data.cards || []) if (typeof v === "string" && v.length >= 5) watchedCards.add(v);
     if (watched.size) armExfil();
   });
 
@@ -76,14 +79,28 @@
         } catch {
           /* deja la url */
         }
-        post({
-          id: `exfil:${host}`,
-          weight: 70,
-          category: "privacy",
-          titleKey: "fExfilTitle",
-          detailKey: "fExfilDetail",
-          params: [host],
-        });
+        // Si el dato filtrado es un número de tarjeta, es un skimmer (Magecart):
+        // más grave que una exfiltración genérica.
+        const isCard = watchedCards.has(v);
+        post(
+          isCard
+            ? {
+                id: `skimmer:${host}`,
+                weight: 90,
+                category: "malware",
+                titleKey: "fSkimmerTitle",
+                detailKey: "fSkimmerDetail",
+                params: [host],
+              }
+            : {
+                id: `exfil:${host}`,
+                weight: 70,
+                category: "privacy",
+                titleKey: "fExfilTitle",
+                detailKey: "fExfilDetail",
+                params: [host],
+              }
+        );
         disarmExfil(); // señal disparada: fuera de la pila de llamadas
         return;
       }
@@ -247,6 +264,47 @@
       }
       return orig(...a);
     };
+  }
+
+  // --- Browser locker / tácticas de secuestro -----------------------------
+  // Inundación del historial (history flooding): las páginas de "tu PC está
+  // infectado" llaman a pushState en bucle para romper el botón Atrás y
+  // atrapar al usuario. Espía de un solo uso.
+  let pushCount = 0;
+  let lockerFlagged = false;
+  let restoreLocker = [];
+  const restoreHistory = wrap(history, "pushState", () => {
+    if (lockerFlagged) return;
+    pushCount++;
+    if (pushCount >= 10 && performance.now() - start < 5000) {
+      lockerFlagged = true;
+      post({
+        id: "locker:history",
+        weight: 45,
+        category: "scam",
+        titleKey: "fLockerHistoryTitle",
+        detailKey: "fLockerHistoryDetail",
+      });
+      restoreLocker.forEach((r) => r());
+    }
+  });
+  restoreLocker.push(restoreHistory);
+
+  // Pantalla completa forzada nada más entrar (sin gesto real del usuario):
+  // típico de los lockers para ocultar la barra de direcciones.
+  if (window.Element && Element.prototype.requestFullscreen) {
+    const restoreFs = wrap(Element.prototype, "requestFullscreen", () => {
+      if (early()) {
+        post({
+          id: "locker:fullscreen",
+          weight: 25,
+          category: "scam",
+          titleKey: "fLockerFsTitle",
+          detailKey: "fLockerFsDetail",
+        });
+      }
+    });
+    restoreLocker.push(restoreFs);
   }
 
   // Envuelve un método conservando su comportamiento; onCall es un espía.

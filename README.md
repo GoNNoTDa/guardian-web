@@ -12,6 +12,13 @@ modifica el tráfico.
 | Reputación | Google Safe Browsing (amenaza confirmada) | 100 |
 | Reputación | URLhaus (dominio con malware) | 70–100 |
 | Reputación | Dominio en el feed local de malware de URLhaus (auto-actualizado cada 12 h, funciona offline) | 90 |
+| Reputación | Dominio recién registrado (RDAP, <30 días) | 40 |
+| Reputación | Sitio servido desde IP pelada (excluye localhost/privadas) | 35 |
+| Reputación | Puerto no estándar | 15 |
+| Privacidad | Rastreadores aprendidos heurísticamente (aparecen en 3+ sitios) | 15 |
+| Phishing | Robo de tarjeta / skimmer (nº de tarjeta a un tercero, con Luhn) | 90 |
+| Scam | Secuestro del navegador (inundación del historial) | 45 |
+| Scam | Pantalla completa forzada al entrar | 25 |
 | Reputación | Cadena de redirecciones sospechosa | 20 |
 | Reputación | TLD con abuso frecuente | 5 |
 | Red | Cryptojacking (dominio de minado conocido) | 80 |

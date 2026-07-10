@@ -16,6 +16,8 @@ import { MINING_HOSTS, isSuspiciousTld } from "./lib/blocklists.js";
 import { isTrusted, hostMatches } from "./lib/trusted.js";
 import { getSettings, detectorOf } from "./settings.js";
 import { ensureFeedAlarm, updateFeed, getFeedSet, invalidateFeedCache, FEED_ALARM } from "./lib/blockfeed.js";
+import { isRawIp, weirdPort, domainAgeDays, isLocalOrPrivate } from "./lib/domain.js";
+import { noteThirdParty, isKnownTracker } from "./lib/trackers.js";
 
 // i18n: los textos de señales y notificaciones se resuelven aquí, en el
 // idioma del navegador del usuario (B5).
@@ -56,6 +58,7 @@ function freshState(url) {
     host,
     findings: new Map(),
     thirdParties: new Set(),
+    learnedTrackers: new Set(),
     redirects: 0,
     shown: false,
     level: "safe",
@@ -70,13 +73,19 @@ function freshState(url) {
 
 // --- Persistencia del estado (C1) -------------------------------------------
 function serialize(st) {
-  return { ...st, findings: [...st.findings.values()], thirdParties: [...st.thirdParties] };
+  return {
+    ...st,
+    findings: [...st.findings.values()],
+    thirdParties: [...st.thirdParties],
+    learnedTrackers: [...st.learnedTrackers],
+  };
 }
 function deserialize(o) {
   return {
     ...o,
     findings: new Map(o.findings.map((f) => [f.id, f])),
     thirdParties: new Set(o.thirdParties),
+    learnedTrackers: new Set(o.learnedTrackers || []),
   };
 }
 async function getState(tabId) {
@@ -207,6 +216,22 @@ async function logHistory(st, verdict) {
   }
 }
 
+// Edad de dominio con caché en storage.local (TTL 7 días) para no repetir la
+// consulta RDAP en cada visita.
+async function getDomainAgeCached(host) {
+  const { domainAgeCache = {} } = await chrome.storage.local.get("domainAgeCache");
+  const hit = domainAgeCache[host];
+  const now = Date.now();
+  if (hit && now - hit.ts < 7 * 86400000) return hit.days;
+  const days = await domainAgeDays(host);
+  domainAgeCache[host] = { days, ts: now };
+  // Poda simple si crece demasiado.
+  const keys = Object.keys(domainAgeCache);
+  if (keys.length > 1000) delete domainAgeCache[keys[0]];
+  chrome.storage.local.set({ domainAgeCache }).catch(() => {});
+  return days;
+}
+
 // Registra en el historial un evento sin pestaña asociada (p. ej. descargas).
 async function logStandalone(entry) {
   try {
@@ -267,6 +292,51 @@ chrome.webNavigation.onCommitted.addListener(async (d) => {
         detail: t("fTldDetail"),
       },
     ]);
+  }
+
+  // Señales estructurales locales (estilo Netcraft), sin red. Se excluyen
+  // localhost y las IPs privadas (desarrollo, intranet): no son sospechosas.
+  const local = isLocalOrPrivate(host);
+  const rawIp = isRawIp(host);
+  if (rawIp && !local) {
+    addFindings(d.tabId, [
+      {
+        id: "rawip",
+        weight: 35,
+        category: "reputation",
+        title: t("fRawIpTitle"),
+        detail: t("fRawIpDetail", [host]),
+      },
+    ]);
+  }
+  const port = weirdPort(d.url);
+  if (port && !local) {
+    addFindings(d.tabId, [
+      {
+        id: "weirdport",
+        weight: 15,
+        category: "reputation",
+        title: t("fWeirdPortTitle"),
+        detail: t("fWeirdPortDetail", [port]),
+      },
+    ]);
+  }
+
+  // Edad del dominio (RDAP): dominios muy recientes son típicos de phishing.
+  // Es una consulta de red: se salta en modo local y en dominios de confianza.
+  if (!cfg.localMode && cfg.detectors.domainage !== false && host && !rawIp && !local && !st.trusted) {
+    const days = await getDomainAgeCached(host);
+    if (days !== null && days <= 30) {
+      addFindings(d.tabId, [
+        {
+          id: "domainage",
+          weight: 40,
+          category: "reputation",
+          title: t("fDomainAgeTitle"),
+          detail: t("fDomainAgeDetail", [String(days)]),
+        },
+      ]);
+    }
   }
 
   // Feed local de malware (A7): consulta contra la copia descargada, sin red.
@@ -335,8 +405,26 @@ async function handleRequest(details) {
         detail: t("fThirdDetail"),
       });
     }
-    if (st.thirdParties.size !== before && st.thirdParties.size <= 21) {
-      persist(details.tabId, st);
+
+    // Solo la PRIMERA vez que vemos este tercero en esta pestaña: alimentar el
+    // aprendizaje de rastreadores y contar los que ya conocíamos.
+    if (st.thirdParties.size !== before) {
+      noteThirdParty(st.host, reqHost).catch(() => {});
+      if (await isKnownTracker(reqHost)) {
+        st.learnedTrackers.add(reqHost);
+        if (st.learnedTrackers.size === 8) {
+          findings.push({
+            id: "trackerlearn",
+            weight: 15,
+            category: "privacy",
+            title: t("fTrackerLearnTitle"),
+            detail: t("fTrackerLearnDetail", [String(st.learnedTrackers.size)]),
+          });
+        }
+      }
+      if (st.thirdParties.size <= 21 || st.learnedTrackers.size <= 8) {
+        persist(details.tabId, st);
+      }
     }
   }
 
@@ -470,11 +558,41 @@ if (chrome.downloads) {
   });
 }
 
+// Evalúa un host con señales LOCALES (sin red) para el guardián de resultados
+// de búsqueda. Devuelve "danger" | "warn" | "safe" | "trusted".
+async function rateHost(host) {
+  if (!host) return "safe";
+  const h = host.toLowerCase().replace(/^www\./, "");
+  if (isTrusted(h)) return "trusted";
+  const feed = await getFeedSet();
+  if (feed.has(h)) return "danger";
+  if (MINING_HOSTS.some((m) => h === m || h.endsWith("." + m))) return "danger";
+  if (isRawIp(h)) return "warn";
+  if (isSuspiciousTld(h)) return "warn";
+  if (await isKnownTracker(h)) return "warn";
+  return "safe";
+}
+
 // --- Mensajería -----------------------------------------------------------------
 chrome.runtime.onMessage.addListener((msg, sender, sendResponse) => {
   if (msg?.type === "findings" && sender.tab) {
     addFindings(sender.tab.id, msg.findings);
     return;
+  }
+
+  // Guardián de resultados de búsqueda: evaluar una lista de hosts en local.
+  if (msg?.type === "rate-hosts" && Array.isArray(msg.hosts)) {
+    (async () => {
+      const cfg = await ensureSettings();
+      if (cfg.searchGuard === false) {
+        sendResponse({ ratings: {} });
+        return;
+      }
+      const ratings = {};
+      for (const h of msg.hosts.slice(0, 50)) ratings[h] = await rateHost(h);
+      sendResponse({ ratings });
+    })();
+    return true;
   }
 
   if (msg?.type === "getState") {
