@@ -84,6 +84,15 @@ export function renderState(tab) {
         const small = document.createElement("small");
         small.textContent = f.detail;
         li.append(b, small);
+        if (f.learn) {
+          const a = document.createElement("a");
+          a.href = f.learn;
+          a.target = "_blank";
+          a.rel = "noopener noreferrer";
+          a.className = "learn";
+          a.textContent = t("uLearn");
+          li.appendChild(a);
+        }
         reasonsEl.appendChild(li);
       });
   });

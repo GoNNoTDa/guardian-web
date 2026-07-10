@@ -149,5 +149,7 @@
   "det_skimmer": { "message": "Robo de tarjeta (skimmer)" },
   "det_locker": { "message": "Secuestro del navegador" },
   "oSearchGuard": { "message": "Guardián de resultados de búsqueda" },
-  "oSearchGuardDesc": { "message": "Marca en Google/Bing los enlaces con dominios sospechosos (análisis local)." }
+  "oSearchGuardDesc": { "message": "Marca en Google/Bing los enlaces con dominios sospechosos (análisis local)." },
+  "bLearn": { "message": "Aprende sobre esto" },
+  "uLearn": { "message": "Aprende sobre esto" }
 }

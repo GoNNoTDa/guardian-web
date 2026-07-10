@@ -149,5 +149,7 @@
   "det_skimmer": { "message": "银行卡盗取（skimmer）" },
   "det_locker": { "message": "浏览器劫持" },
   "oSearchGuard": { "message": "搜索结果守卫" },
-  "oSearchGuardDesc": { "message": "在 Google/Bing 上标记可疑域名的链接（本地分析）。" }
+  "oSearchGuardDesc": { "message": "在 Google/Bing 上标记可疑域名的链接（本地分析）。" },
+  "bLearn": { "message": "了解详情" },
+  "uLearn": { "message": "了解详情" }
 }

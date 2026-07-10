@@ -15,6 +15,7 @@ import { computeVerdict } from "./lib/scoring.js";
 import { MINING_HOSTS, isSuspiciousTld } from "./lib/blocklists.js";
 import { isTrusted, hostMatches } from "./lib/trusted.js";
 import { getSettings, detectorOf } from "./settings.js";
+import { learnUrl } from "./lib/learn.js";
 import { ensureFeedAlarm, updateFeed, getFeedSet, invalidateFeedCache, FEED_ALARM } from "./lib/blockfeed.js";
 import { isRawIp, weirdPort, domainAgeDays, isLocalOrPrivate } from "./lib/domain.js";
 import { noteThirdParty, isKnownTracker } from "./lib/trackers.js";
@@ -119,6 +120,8 @@ async function addFindings(tabId, findings) {
     if (cfg.detectors[detectorOf(f.id)] === false) continue;
     // En dominios de confianza solo cuentan las amenazas CONFIRMADAS.
     if (st.trusted && !f.confirmed) continue;
+    // Enlace educativo por vector (objetivo divulgativo): cada aviso enseña.
+    f.learn = learnUrl(detectorOf(f.id));
     st.findings.set(f.id, f);
     changed = true;
   }

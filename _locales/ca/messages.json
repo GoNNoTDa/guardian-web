@@ -149,5 +149,7 @@
   "det_skimmer": { "message": "Robatori de targeta (skimmer)" },
   "det_locker": { "message": "Segrest del navegador" },
   "oSearchGuard": { "message": "Guardià de resultats de cerca" },
-  "oSearchGuardDesc": { "message": "Marca a Google/Bing els enllaços amb dominis sospitosos (anàlisi local)." }
+  "oSearchGuardDesc": { "message": "Marca a Google/Bing els enllaços amb dominis sospitosos (anàlisi local)." },
+  "bLearn": { "message": "Aprèn sobre això" },
+  "uLearn": { "message": "Aprèn sobre això" }
 }

@@ -429,6 +429,7 @@
         button:hover { background: rgba(255,255,255,.35); }
         ul { margin: 8px 0 0; padding-left: 18px; display: none; }
         .bar.open ul { display: block; }
+        li a { color: #fff; font-weight: 600; white-space: nowrap; }
         .head { display: flex; align-items: center; gap: 12px; }
         .body { width: 100%; }
       </style>
@@ -445,7 +446,14 @@
             <button class="close">${escapeHtml(t("bClose"))}</button>
           </div>
           <ul>${verdict.reasons
-            .map((r) => `<li><b>${escapeHtml(r.title)}</b> — ${escapeHtml(r.detail)}</li>`)
+            .map(
+              (r) =>
+                `<li><b>${escapeHtml(r.title)}</b> — ${escapeHtml(r.detail)}${
+                  r.learn
+                    ? ` <a href="${escapeHtml(r.learn)}" target="_blank" rel="noopener noreferrer">${escapeHtml(t("bLearn"))}</a>`
+                    : ""
+                }</li>`
+            )
             .join("")}</ul>
         </div>
       </div>`;
