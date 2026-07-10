@@ -28,11 +28,17 @@
   //
   // Privacidad: los valores solo viven en memoria de esta página y se usan
   // para una comparación local; nunca se almacenan ni se envían a ningún sitio.
+  // Los envoltorios de red se ARMAN solo cuando hay algo que vigilar (el
+  // usuario ha tecleado datos sensibles) y se DESARMAN al disparar la señal.
+  // Así no estamos en la pila de llamadas del tráfico normal y los errores de
+  // la propia página (p. ej. violaciones de su CSP por píxeles de tracking)
+  // no se atribuyen a la extensión en chrome://extensions.
   const watched = new Set();
   window.addEventListener("message", (e) => {
     if (e.source !== window || !e.data || e.data.__guardian_watch !== true) return;
     watched.clear();
     for (const v of e.data.values || []) if (typeof v === "string" && v.length >= 5) watched.add(v);
+    if (watched.size) armExfil();
   });
 
   const pageHost = location.hostname.replace(/^www\./, "");
@@ -78,50 +84,72 @@
           detailKey: "fExfilDetail",
           params: [host],
         });
+        disarmExfil(); // señal disparada: fuera de la pila de llamadas
         return;
       }
     }
   }
 
-  if (window.fetch) {
-    const orig = window.fetch;
-    window.fetch = function (input, init) {
-      try {
-        const url = typeof input === "string" ? input : input && input.url;
-        checkExfil(url || "", init && init.body);
-      } catch {
-        /* no romper */
-      }
-      return orig.apply(this, arguments);
-    };
+  let exfilArmed = false;
+  let restoreExfil = [];
+  function disarmExfil() {
+    restoreExfil.forEach((r) => r());
+    restoreExfil = [];
   }
-  if (window.XMLHttpRequest) {
-    const proto = XMLHttpRequest.prototype;
-    const open = proto.open;
-    const send = proto.send;
-    proto.open = function (method, url) {
-      this.__guardianUrl = url;
-      return open.apply(this, arguments);
-    };
-    proto.send = function (body) {
-      try {
-        checkExfil(this.__guardianUrl || "", body);
-      } catch {
-        /* no romper */
-      }
-      return send.apply(this, arguments);
-    };
-  }
-  if (navigator.sendBeacon) {
-    const orig = navigator.sendBeacon.bind(navigator);
-    navigator.sendBeacon = function (url, data) {
-      try {
-        checkExfil(url || "", data);
-      } catch {
-        /* no romper */
-      }
-      return orig(url, data);
-    };
+  function armExfil() {
+    if (exfilArmed) return;
+    exfilArmed = true;
+
+    if (window.fetch) {
+      const orig = window.fetch;
+      window.fetch = function (input, init) {
+        try {
+          const url = typeof input === "string" ? input : input && input.url;
+          checkExfil(url || "", init && init.body);
+        } catch {
+          /* no romper */
+        }
+        return orig.apply(this, arguments);
+      };
+      restoreExfil.push(() => {
+        window.fetch = orig;
+      });
+    }
+    if (window.XMLHttpRequest) {
+      const proto = XMLHttpRequest.prototype;
+      const open = proto.open;
+      const send = proto.send;
+      proto.open = function (method, url) {
+        this.__guardianUrl = url;
+        return open.apply(this, arguments);
+      };
+      proto.send = function (body) {
+        try {
+          checkExfil(this.__guardianUrl || "", body);
+        } catch {
+          /* no romper */
+        }
+        return send.apply(this, arguments);
+      };
+      restoreExfil.push(() => {
+        proto.open = open;
+        proto.send = send;
+      });
+    }
+    if (navigator.sendBeacon) {
+      const orig = navigator.sendBeacon.bind(navigator);
+      navigator.sendBeacon = function (url, data) {
+        try {
+          checkExfil(url || "", data);
+        } catch {
+          /* no romper */
+        }
+        return orig(url, data);
+      };
+      restoreExfil.push(() => {
+        navigator.sendBeacon = orig;
+      });
+    }
   }
 
   // --- Fingerprinting de canvas -------------------------------------------
