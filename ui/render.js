@@ -1,9 +1,11 @@
 // Lógica de renderizado compartida entre el popup y el panel lateral.
 
-const LEVEL_LABEL = {
-  safe: "Sin riesgos detectados",
-  warning: "Actividad sospechosa",
-  danger: "Sitio potencialmente peligroso",
+import { t } from "./i18n.js";
+
+const LEVEL_KEY = {
+  safe: "uStatusSafe",
+  warning: "uStatusWarning",
+  danger: "uStatusDanger",
 };
 
 let currentHost = "";
@@ -28,7 +30,7 @@ export function renderState(tab) {
   chrome.runtime.sendMessage({ type: "getState", tabId: tab.id }, (st) => {
     if (chrome.runtime.lastError || !st) {
       statusEl.className = "safe";
-      statusEl.textContent = "No hay datos para esta pestaña.";
+      statusEl.textContent = t("uNoData");
       return;
     }
 
@@ -43,7 +45,7 @@ export function renderState(tab) {
     // Botón de confianza (solo en páginas http/https con host).
     if (currentHost && /^https?:/.test(tab.url || "")) {
       trustBtn.hidden = false;
-      trustBtn.textContent = isWhitelisted ? "Dejar de confiar" : "Confiar en este sitio";
+      trustBtn.textContent = t(isWhitelisted ? "uUntrustBtn" : "uTrustBtn");
     } else {
       trustBtn.hidden = true;
     }
@@ -52,15 +54,15 @@ export function renderState(tab) {
 
     if (isWhitelisted) {
       statusEl.className = "trusted";
-      statusEl.textContent = "Sitio en tu lista de confianza · sin vigilancia";
+      statusEl.textContent = t("uWhitelisted");
       emptyEl.style.display = "none";
       return;
     }
 
     statusEl.className = st.level;
-    statusEl.textContent = `${LEVEL_LABEL[st.level]} · riesgo ${st.score}`;
+    statusEl.textContent = `${t(LEVEL_KEY[st.level])} · ${t("uRisk", [String(st.score)])}`;
     if (st.trusted && st.level === "safe") {
-      statusEl.textContent += " · dominio de confianza";
+      statusEl.textContent += ` · ${t("uTrustedSuffix")}`;
     }
 
     if (!st.findings.length) {
@@ -110,7 +112,7 @@ export async function renderHistory() {
 
     const date = document.createElement("span");
     date.className = "h-date";
-    date.textContent = new Date(h.ts).toLocaleString("es-ES", {
+    date.textContent = new Date(h.ts).toLocaleString(undefined, {
       day: "2-digit",
       month: "2-digit",
       hour: "2-digit",

@@ -2,8 +2,11 @@
 // vía el módulo settings.js. También gestiona la whitelist del usuario.
 
 import { getSettings, saveSettings, DEFAULTS, DETECTORS } from "../src/settings.js";
+import { t, localizePage } from "./i18n.js";
 
 const $ = (id) => document.getElementById(id);
+
+localizePage();
 
 async function load() {
   const s = await getSettings();
@@ -31,10 +34,10 @@ function renderDetectors(state) {
     cb.dataset.key = d.key;
     cb.checked = state[d.key] !== false;
     const txt = document.createElement("span");
-    txt.textContent = d.label;
+    txt.textContent = t(`det_${d.key}`);
     const g = document.createElement("span");
     g.className = "g";
-    g.textContent = d.group;
+    g.textContent = t(`grp_${d.group}`);
     label.append(cb, txt, g);
     box.appendChild(label);
   }
@@ -77,7 +80,7 @@ async function renderWhitelist() {
     const span = document.createElement("span");
     span.textContent = host;
     const btn = document.createElement("button");
-    btn.textContent = "Quitar";
+    btn.textContent = t("oRemove");
     btn.addEventListener("click", async () => {
       const cur = (await chrome.storage.local.get("whitelist")).whitelist || [];
       await chrome.storage.local.set({ whitelist: cur.filter((h) => h !== host) });

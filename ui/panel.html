@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="es">
+<html>
   <head>
     <meta charset="UTF-8" />
     <link rel="stylesheet" href="popup.css" />
@@ -11,21 +11,21 @@
         <h1>Guardián Web</h1>
         <span id="host"></span>
       </div>
-      <button id="openOptions" title="Opciones">⚙️</button>
+      <button id="openOptions" data-i18n-title="uOptionsTip">⚙️</button>
       <button id="trustBtn" hidden></button>
     </header>
 
-    <div id="status" class="safe">Analizando…</div>
+    <div id="status" class="safe" data-i18n="uAnalyzing">Analizando…</div>
     <ul id="reasons"></ul>
-    <footer id="empty">No se han detectado señales de riesgo en esta pestaña.</footer>
+    <footer id="empty" data-i18n="uEmpty">No se han detectado señales de riesgo en esta pestaña.</footer>
 
     <section id="historySection">
       <div class="section-head">
-        <h2>Historial de avisos</h2>
-        <button id="clearHistory">Borrar</button>
+        <h2 data-i18n="uHistoryTitle">Historial de avisos</h2>
+        <button id="clearHistory" data-i18n="uClear">Borrar</button>
       </div>
       <ul id="history"></ul>
-      <p id="historyEmpty">Todavía no hay sitios marcados.</p>
+      <p id="historyEmpty" data-i18n="uHistoryEmpty">Todavía no hay sitios marcados.</p>
     </section>
 
     <script type="module" src="panel.js"></script>

@@ -2,21 +2,22 @@
 // bajo la clave "settings". La página de opciones los escribe; el background
 // los lee y los cachea, refrescándose ante cambios.
 
+// Las etiquetas visibles viven en _locales (claves det_<key> y grp_<group>).
 export const DETECTORS = [
-  { key: "reputation", label: "Reputación (Safe Browsing / URLhaus)", group: "red" },
-  { key: "redirects", label: "Cadenas de redirección", group: "red" },
-  { key: "tld", label: "TLD de riesgo", group: "red" },
-  { key: "mining", label: "Cryptojacking / minado", group: "red" },
-  { key: "thirdparties", label: "Exceso de dominios de terceros", group: "red" },
-  { key: "typosquat", label: "Typosquatting y homógrafos", group: "phishing" },
-  { key: "insecureform", label: "Contraseña sin cifrar (HTTP)", group: "phishing" },
-  { key: "crossform", label: "Login enviado a otro dominio", group: "phishing" },
-  { key: "exfil", label: "Exfiltración de datos de formularios", group: "phishing" },
-  { key: "scam", label: "Texto de estafa / soporte falso", group: "scam" },
-  { key: "iframes", label: "Iframes ocultos (clickjacking)", group: "scam" },
-  { key: "permissions", label: "Permisos pedidos al entrar", group: "scam" },
-  { key: "fingerprint", label: "Fingerprinting de canvas", group: "privacidad" },
-  { key: "downloads", label: "Descargas peligrosas", group: "descargas" },
+  { key: "reputation", group: "net" },
+  { key: "redirects", group: "net" },
+  { key: "tld", group: "net" },
+  { key: "mining", group: "net" },
+  { key: "thirdparties", group: "net" },
+  { key: "typosquat", group: "phishing" },
+  { key: "insecureform", group: "phishing" },
+  { key: "crossform", group: "phishing" },
+  { key: "exfil", group: "phishing" },
+  { key: "scam", group: "scam" },
+  { key: "iframes", group: "scam" },
+  { key: "permissions", group: "scam" },
+  { key: "fingerprint", group: "privacy" },
+  { key: "downloads", group: "downloads" },
 ];
 
 export const DEFAULTS = {

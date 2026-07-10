@@ -1,7 +1,9 @@
 // Popup: vista rápida de la pestaña activa + acceso al panel lateral.
 
 import { getActiveTab, renderState, renderHistory, wireActions } from "./render.js";
+import { localizePage } from "./i18n.js";
 
+localizePage();
 const tab = await getActiveTab();
 renderState(tab);
 renderHistory();

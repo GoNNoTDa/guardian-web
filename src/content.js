@@ -47,10 +47,23 @@
     "0": "o", "1": "l", "3": "e", "5": "s",
   };
 
+  const t = (key, subs) => chrome.i18n.getMessage(key, subs) || key;
+
   const seen = new Set();
   function add(f) {
     if (!f || seen.has(f.id)) return;
     seen.add(f.id);
+    // Las señales del page-probe (mundo MAIN, sin chrome.i18n) llegan como
+    // claves de mensaje; se traducen aquí antes de reenviarlas.
+    if (f.titleKey) {
+      f = {
+        id: f.id,
+        weight: f.weight,
+        category: f.category,
+        title: t(f.titleKey, f.params || []),
+        detail: t(f.detailKey, f.params || []),
+      };
+    }
     chrome.runtime.sendMessage({ type: "findings", findings: [f] }).catch(() => {});
   }
 
@@ -224,8 +237,8 @@
             id: `homograph:${b}`,
             weight: 80,
             category: "phishing",
-            title: "Dominio homógrafo (caracteres que engañan a la vista)",
-            detail: `"${rawHost}" usa caracteres visualmente idénticos para imitar a "${b}".`,
+            title: t("fHomoTitle"),
+            detail: t("fHomoDetail", [rawHost, b]),
           });
           return;
         }
@@ -242,8 +255,8 @@
           id: `other-tld:${b}`,
           weight: 30,
           category: "phishing",
-          title: "Nombre de marca con otra terminación",
-          detail: `"${rawHost}" usa el nombre de "${b}" con distinto dominio de nivel superior.`,
+          title: t("fOtherTldTitle"),
+          detail: t("fOtherTldDetail", [rawHost, b]),
         });
         return;
       }
@@ -254,8 +267,8 @@
           id: `typo:${b}`,
           weight: 60,
           category: "phishing",
-          title: "Posible suplantación de marca (typosquatting)",
-          detail: `"${rawHost}" se parece muchísimo a "${b}". Podría ser un clon fraudulento.`,
+          title: t("fTypoTitle"),
+          detail: t("fTypoDetail", [rawHost, b]),
         });
         return;
       }
@@ -278,8 +291,8 @@
           id: "pwd-http",
           weight: 50,
           category: "phishing",
-          title: "Contraseña que viaja sin cifrar (HTTP)",
-          detail: "Un formulario de acceso no usa HTTPS: tus credenciales viajarían en claro.",
+          title: t("fPwdHttpTitle"),
+          detail: t("fPwdHttpDetail"),
         });
       }
       const actionHost = actionUrl.hostname.replace(/^www\./, "");
@@ -288,8 +301,8 @@
           id: `pwd-cross:${actionHost}`,
           weight: 35,
           category: "phishing",
-          title: "El login se envía a otro dominio",
-          detail: `El formulario manda tus credenciales a ${actionHost}, distinto del sitio actual.`,
+          title: t("fPwdCrossTitle"),
+          detail: t("fPwdCrossDetail", [actionHost]),
         });
       }
     });
@@ -312,8 +325,8 @@
         id: "scam-text",
         weight: 45,
         category: "scam",
-        title: "Mensaje típico de estafa / soporte falso",
-        detail: "La página muestra texto alarmista característico de fraudes de soporte técnico.",
+        title: t("fScamTitle"),
+        detail: t("fScamDetail"),
       });
     }
   }
@@ -331,8 +344,8 @@
         id: "hidden-iframes",
         weight: 25,
         category: "scam",
-        title: "Iframes ocultos (posible clickjacking)",
-        detail: `${hidden} iframes invisibles superpuestos: podrían capturar tus clics.`,
+        title: t("fIframesTitle"),
+        detail: t("fIframesDetail", [String(hidden)]),
       });
     }
   }
@@ -377,12 +390,12 @@
           <div class="head">
             <span class="ico">${danger ? "🛑" : "⚠️"}</span>
             <span class="txt">
-              <b>Guardián Web: ${danger ? "sitio potencialmente peligroso" : "actividad sospechosa"}</b><br>
-              <small>${top ? escapeHtml(top.title) : "Se han detectado señales de riesgo."} (riesgo ${verdict.score})</small>
+              <b>${escapeHtml(danger ? t("bDangerTitle") : t("bWarnTitle"))}</b><br>
+              <small>${top ? escapeHtml(top.title) : escapeHtml(t("fDefaultReason"))} ${escapeHtml(t("bRisk", [String(verdict.score)]))}</small>
             </span>
-            <button class="details">Ver detalles</button>
-            <button class="trust" title="No volver a avisar en este sitio">Confiar en este sitio</button>
-            <button class="close">Cerrar</button>
+            <button class="details">${escapeHtml(t("bDetails"))}</button>
+            <button class="trust" title="${escapeHtml(t("bTrustTip"))}">${escapeHtml(t("bTrust"))}</button>
+            <button class="close">${escapeHtml(t("bClose"))}</button>
           </div>
           <ul>${verdict.reasons
             .map((r) => `<li><b>${escapeHtml(r.title)}</b> — ${escapeHtml(r.detail)}</li>`)

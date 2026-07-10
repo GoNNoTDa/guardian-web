@@ -17,6 +17,10 @@ import { isTrusted, hostMatches } from "./lib/trusted.js";
 import { getSettings, detectorOf } from "./settings.js";
 import { ensureFeedAlarm, updateFeed, getFeedSet, invalidateFeedCache, FEED_ALARM } from "./lib/blockfeed.js";
 
+// i18n: los textos de señales y notificaciones se resuelven aquí, en el
+// idioma del navegador del usuario (B5).
+const t = (key, subs) => chrome.i18n.getMessage(key, subs) || key;
+
 // Ajustes cacheados en el worker; se refrescan ante cambios en storage.
 let settings = null;
 async function ensureSettings() {
@@ -146,9 +150,9 @@ function notify(tabId, st, verdict) {
     chrome.notifications.create(`guardian:${tabId}:${verdict.level}`, {
       type: "basic",
       iconUrl: chrome.runtime.getURL("icons/icon128.png"),
-      title: danger ? "🛑 Sitio potencialmente peligroso" : "⚠️ Actividad sospechosa",
-      message: `${st.host}: ${verdict.reasons[0]?.title || "señales de riesgo detectadas"}`,
-      contextMessage: "Guardián Web — pulsa para ir a la pestaña",
+      title: danger ? t("nDangerTitle") : t("nWarnTitle"),
+      message: `${st.host}: ${verdict.reasons[0]?.title || t("fDefaultReason")}`,
+      contextMessage: t("nContext"),
       priority: danger ? 2 : 1,
     });
   } catch {
@@ -247,8 +251,8 @@ chrome.webNavigation.onCommitted.addListener(async (d) => {
         id: "redirect-chain",
         weight: 20,
         category: "reputation",
-        title: "Cadena de redirecciones sospechosa",
-        detail: `El documento principal ha rebotado por ${redirects} URLs antes de cargar.`,
+        title: t("fRedirTitle"),
+        detail: t("fRedirDetail", [String(redirects)]),
       },
     ]);
   }
@@ -259,8 +263,8 @@ chrome.webNavigation.onCommitted.addListener(async (d) => {
         id: "bad-tld",
         weight: 5,
         category: "reputation",
-        title: "Dominio de nivel superior con abuso frecuente",
-        detail: "El TLD de este dominio se asocia a menudo con abuso. Señal leve.",
+        title: t("fTldTitle"),
+        detail: t("fTldDetail"),
       },
     ]);
   }
@@ -274,8 +278,8 @@ chrome.webNavigation.onCommitted.addListener(async (d) => {
         weight: 90,
         confirmed: true,
         category: "reputation",
-        title: "Dominio en la lista negra de malware (URLhaus)",
-        detail: `${host} figura en el feed de distribución de malware de abuse.ch.`,
+        title: t("fFeedTitle"),
+        detail: t("fFeedDetail", [host]),
       },
     ]);
   }
@@ -314,8 +318,8 @@ async function handleRequest(details) {
       id: `mining:${reqHost}`,
       weight: 80,
       category: "malware",
-      title: "Posible cryptojacking",
-      detail: `La página conecta con un dominio de minado conocido: ${reqHost}.`,
+      title: t("fMiningTitle"),
+      detail: t("fMiningDetail", [reqHost]),
     });
   }
 
@@ -327,8 +331,8 @@ async function handleRequest(details) {
         id: "many-third-parties",
         weight: 15,
         category: "privacy",
-        title: "Muchísimos dominios de terceros",
-        detail: "La página contacta con más de 20 dominios externos (tracking intensivo).",
+        title: t("fThirdTitle"),
+        detail: t("fThirdDetail"),
       });
     }
     if (st.thirdParties.size !== before && st.thirdParties.size <= 21) {
@@ -371,15 +375,15 @@ function analyzeDownload(name) {
   if (DOC_EXT.has(prev) && RISKY_EXT.has(ext)) {
     return {
       weight: 90,
-      title: "Descarga con doble extensión engañosa",
-      detail: `"${clean}" aparenta ser un ${prev.toUpperCase()} pero es un ejecutable .${ext}.`,
+      title: t("fDlDoubleTitle"),
+      detail: t("fDlDoubleDetail", [clean, prev.toUpperCase(), ext]),
     };
   }
   if (RISKY_EXT.has(ext)) {
     return {
       weight: 45,
-      title: "Descarga de archivo ejecutable",
-      detail: `"${clean}" es un archivo ejecutable (.${ext}). Ábrelo solo si confías en el origen.`,
+      title: t("fDlExeTitle"),
+      detail: t("fDlExeDetail", [clean, ext]),
     };
   }
   return null;
@@ -414,9 +418,9 @@ async function reportDownload(id, filename, url) {
       chrome.notifications.create(`download:${id}`, {
         type: "basic",
         iconUrl: chrome.runtime.getURL("icons/icon128.png"),
-        title: danger ? "🛑 Descarga peligrosa" : "⚠️ Descarga de riesgo",
+        title: danger ? t("nDlDanger") : t("nDlWarn"),
         message: risk.detail,
-        contextMessage: host ? `Origen: ${host}` : "Guardián Web",
+        contextMessage: host ? t("nDlOrigin", [host]) : t("extName"),
         priority: danger ? 2 : 1,
       });
     } catch {
@@ -426,7 +430,7 @@ async function reportDownload(id, filename, url) {
 
   logStandalone({
     key: `dl:${id}`,
-    host: host || "descarga",
+    host: host || t("nDownloadWord"),
     url: url || "",
     level: danger ? "danger" : "warning",
     score: risk.weight,

@@ -9,6 +9,8 @@
 const GSB_ENDPOINT = "https://safebrowsing.googleapis.com/v4/threatMatches:find";
 const URLHAUS_ENDPOINT = "https://urlhaus-api.abuse.ch/v1/host/";
 
+const t = (key, subs) => chrome.i18n.getMessage(key, subs) || key;
+
 export async function checkReputation(url, settings) {
   let host = "";
   try {
@@ -59,8 +61,8 @@ async function checkGoogleSafeBrowsing(url, apiKey) {
         weight: 100,
         confirmed: true, // amenaza verificada: cuenta incluso en dominios de confianza
         category: "reputation",
-        title: "Google Safe Browsing: amenaza confirmada",
-        detail: `Google clasifica esta URL como peligrosa. Tipos: ${types}.`,
+        title: t("fGsbTitle"),
+        detail: t("fGsbDetail", [types]),
       };
     }
   } catch {
@@ -89,8 +91,8 @@ async function checkURLhaus(host, authKey) {
         weight: online ? 100 : 70,
         confirmed: true, // amenaza verificada: cuenta incluso en dominios de confianza
         category: "reputation",
-        title: "URLhaus: dominio asociado a malware",
-        detail: `${urls.length} URL(s) maliciosas registradas en este dominio (${online} activas).`,
+        title: t("fUrlhausTitle"),
+        detail: t("fUrlhausDetail", [String(urls.length), String(online)]),
       };
     }
   } catch {

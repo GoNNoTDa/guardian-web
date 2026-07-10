@@ -74,8 +74,9 @@
           id: `exfil:${host}`,
           weight: 70,
           category: "privacy",
-          title: "Posible exfiltración de datos del formulario",
-          detail: `Datos que has escrito viajan hacia un dominio externo: ${host}.`,
+          titleKey: "fExfilTitle",
+          detailKey: "fExfilDetail",
+          params: [host],
         });
         return;
       }
@@ -134,12 +135,14 @@
   const flagCanvas = () => {
     if (!canvasFlagged && ++canvasReads >= 3) {
       canvasFlagged = true;
+      // Sin chrome.i18n en el mundo MAIN: se envían claves y el content
+      // script las traduce al idioma del navegador.
       post({
         id: "fp-canvas",
         weight: 20,
         category: "privacy",
-        title: "Fingerprinting de navegador",
-        detail: "La web lee repetidamente el canvas para identificarte de forma encubierta.",
+        titleKey: "fCanvasTitle",
+        detailKey: "fCanvasDetail",
       });
       restoreCanvas.forEach((r) => r());
       restoreCanvas = [];
@@ -162,8 +165,8 @@
         id: "fp-mining",
         weight: 40,
         category: "malware",
-        title: "Posible minado de criptomonedas",
-        detail: "Uso intensivo de WebAssembly y múltiples workers (patrón de cryptojacking).",
+        titleKey: "fWasmTitle",
+        detailKey: "fWasmDetail",
       });
       restoreMining.forEach((r) => r());
       restoreMining = [];
@@ -195,8 +198,8 @@
           id: "perm-notif",
           weight: 15,
           category: "scam",
-          title: "Pide notificaciones nada más entrar",
-          detail: "Solicita permiso de notificaciones al instante: táctica habitual de spam/scam.",
+          titleKey: "fPermNotifTitle",
+          detailKey: "fPermNotifDetail",
         });
       }
       return orig(...a);
@@ -210,8 +213,8 @@
           id: "perm-geo",
           weight: 20,
           category: "privacy",
-          title: "Pide tu ubicación al entrar",
-          detail: "Solicita geolocalización sin ninguna interacción previa del usuario.",
+          titleKey: "fPermGeoTitle",
+          detailKey: "fPermGeoDetail",
         });
       }
       return orig(...a);

@@ -3,6 +3,9 @@
 // registra nuevas señales (via chrome.storage.onChanged).
 
 import { getActiveTab, renderState, renderHistory, wireActions } from "./render.js";
+import { localizePage } from "./i18n.js";
+
+localizePage();
 
 let pending = null;
 function refresh() {
