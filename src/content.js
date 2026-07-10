@@ -47,11 +47,22 @@
     "0": "o", "1": "l", "3": "e", "5": "s",
   };
 
-  const t = (key, subs) => chrome.i18n.getMessage(key, subs) || key;
+  // Si la extensión se recarga/actualiza, este script queda "huérfano": las
+  // APIs chrome.* desaparecen bajo sus pies. alive() lo detecta para apagarse
+  // con elegancia en vez de lanzar TypeErrors en páginas SPA que mutan mucho.
+  const alive = () => !!(typeof chrome !== "undefined" && chrome.runtime && chrome.runtime.id);
+
+  const t = (key, subs) => {
+    try {
+      return chrome.i18n.getMessage(key, subs) || key;
+    } catch {
+      return key; // contexto invalidado: se degrada a la clave, sin romper
+    }
+  };
 
   const seen = new Set();
   function add(f) {
-    if (!f || seen.has(f.id)) return;
+    if (!f || seen.has(f.id) || !alive()) return;
     seen.add(f.id);
     // Las señales del page-probe (mundo MAIN, sin chrome.i18n) llegan como
     // claves de mensaje; se traducen aquí antes de reenviarlas.
@@ -64,7 +75,11 @@
         detail: t(f.detailKey, f.params || []),
       };
     }
-    chrome.runtime.sendMessage({ type: "findings", findings: [f] }).catch(() => {});
+    try {
+      chrome.runtime.sendMessage({ type: "findings", findings: [f] }).catch(() => {});
+    } catch {
+      /* contexto invalidado entre el check y el envío: ignorar */
+    }
   }
 
   // --- Arranque: preguntar al background si confiamos en este sitio ---------
@@ -95,10 +110,15 @@
     // Reescaneo ante contenido dinámico (una pasada con retardo).
     let scheduled = false;
     const mo = new MutationObserver(() => {
+      // Script huérfano (extensión recargada): desconectar y no hacer nada más.
+      if (!alive()) {
+        mo.disconnect();
+        return;
+      }
       if (scheduled) return;
       scheduled = true;
       setTimeout(() => {
-        runScans();
+        if (alive()) runScans();
         scheduled = false;
       }, 1500);
     });
