@@ -32,7 +32,7 @@ Estado y pendientes del proyecto. La versión actual es **v0.6.0**.
 ### Plataforma
 - i18n en 7 idiomas (es, en, ca, fr, it, zh_CN, ja), 157 claves con paridad.
 - Enlaces educativos por vector (OSI/INCIBE, OWASP/EFF/MDN).
-- Tests E2E con Puppeteer (`tests/`) + laboratorio local (`test-lab/`).
+- Laboratorio local de pruebas manuales (`test-lab/`).
 - Licencia MIT, política de privacidad, guía de contribución, script de build.
 
 ## 🔜 Pendiente — acciones del usuario (no de código)
@@ -63,7 +63,6 @@ Estado y pendientes del proyecto. La versión actual es **v0.6.0**.
 - **Compatibilidad Firefox** con `webextension-polyfill`.
 - **Resaltar el elemento** concreto en la página (el iframe/formulario/script),
   no solo describirlo en el banner.
-- **CI en GitHub Actions**: lint + tests + empaquetado en cada release.
 
 ## Divulgación (objetivo del proyecto)
 

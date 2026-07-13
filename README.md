@@ -89,8 +89,7 @@ lookups use k-anonymity (only a hash prefix is sent). See `PRIVACY.md`.
 ### Test it
 
 `test-lab/` is a harmless local lab: run `node server.js` and open
-<http://127.0.0.1:8000>. Each page triggers a specific detector. There are also
-end-to-end tests in `tests/` (Puppeteer).
+<http://127.0.0.1:8000>. Each page triggers a specific detector.
 
 ### Support the project 💛
 
@@ -191,8 +190,7 @@ memoria dentro de la propia página. Las consultas de comunidad usan k-anonimato
 ### Probarla
 
 En `test-lab/` hay un laboratorio local e inofensivo: `node server.js` y abre
-<http://127.0.0.1:8000>. Cada página dispara un detector concreto. También hay
-tests end-to-end en `tests/` (Puppeteer).
+<http://127.0.0.1:8000>. Cada página dispara un detector concreto.
 
 ### Apoyar el proyecto 💛
 
@@ -226,7 +224,6 @@ ui/
 _locales/           7 idiomas (es, en, ca, fr, it, zh_CN, ja)
 icons/              16 / 48 / 128 px
 test-lab/           Laboratorio de pruebas local (Node)
-tests/              Tests E2E (Puppeteer)
 server/             Backend PHP + MySQL de reputación colaborativa
 store/              Ficha para la Chrome Web Store
 scripts/build.ps1   Empaquetado para la Web Store
