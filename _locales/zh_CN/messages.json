@@ -163,5 +163,6 @@
   "oCommunity": { "message": "社区信誉" },
   "oCommunityUrl": { "message": "社区服务器" },
   "oCommunityDesc": { "message": "协作后端的 URL。留空 = 停用。" },
-  "oCommunityPlaceholder": { "message": "https://你的服务器/guardian" }
+  "oCommunityPlaceholder": { "message": "https://你的服务器/guardian" },
+  "oSupport": { "message": "💛 支持这个项目" }
 }

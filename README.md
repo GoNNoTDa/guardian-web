@@ -143,6 +143,17 @@ pwsh scripts/build.ps1
 Genera `dist/guardian-web-vX.Y.Z.zip` solo con lo necesario (sin test-lab ni
 docs).
 
+## 💛 Apoyar el proyecto
+
+Guardián Web es gratis, de código abierto y sin ánimo de lucro. Si te resulta
+útil y quieres que siga creciendo (más detectores, mantenimiento, divulgación),
+puedes patrocinarlo:
+
+👉 **[Patrocinar en GitHub Sponsors](https://github.com/sponsors/GoNNoTDa)**
+
+Cada aportación va a mantener el proyecto vivo y actualizado frente a nuevas
+amenazas. ¡Gracias!
+
 ## Licencia
 
 MIT — ver `LICENSE`. Política de privacidad en `PRIVACY.md`. ¿Quieres

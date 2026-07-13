@@ -163,5 +163,6 @@
   "oCommunity": { "message": "Reputazione della comunità" },
   "oCommunityUrl": { "message": "Server della comunità" },
   "oCommunityDesc": { "message": "URL del backend collaborativo. Vuoto = disattivato." },
-  "oCommunityPlaceholder": { "message": "https://il-tuo-server/guardian" }
+  "oCommunityPlaceholder": { "message": "https://il-tuo-server/guardian" },
+  "oSupport": { "message": "💛 Sostieni il progetto" }
 }

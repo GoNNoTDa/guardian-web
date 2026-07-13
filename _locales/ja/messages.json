@@ -163,5 +163,6 @@
   "oCommunity": { "message": "コミュニティの評価" },
   "oCommunityUrl": { "message": "コミュニティサーバー" },
   "oCommunityDesc": { "message": "共同バックエンドの URL。空 = 無効。" },
-  "oCommunityPlaceholder": { "message": "https://あなたのサーバー/guardian" }
+  "oCommunityPlaceholder": { "message": "https://あなたのサーバー/guardian" },
+  "oSupport": { "message": "💛 プロジェクトを支援する" }
 }

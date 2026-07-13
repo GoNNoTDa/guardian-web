@@ -163,5 +163,6 @@
   "oCommunity": { "message": "Reputació de la comunitat" },
   "oCommunityUrl": { "message": "Servidor de la comunitat" },
   "oCommunityDesc": { "message": "URL del backend col·laboratiu. Buit = desactivat." },
-  "oCommunityPlaceholder": { "message": "https://el-teu-servidor/guardian" }
+  "oCommunityPlaceholder": { "message": "https://el-teu-servidor/guardian" },
+  "oSupport": { "message": "💛 Dóna suport al projecte" }
 }

@@ -107,3 +107,6 @@ button:hover { background: #f0f0f0; }
 button.primary { background: #1e7e45; color: #fff; border-color: #1e7e45; }
 button.primary:hover { background: #196a3a; }
 .saved { color: #1e7e45; font-weight: 600; }
+.support { text-align: center; margin: 18px 0 0; }
+.support a { color: #1e7e45; text-decoration: none; font-weight: 600; }
+.support a:hover { text-decoration: underline; }
