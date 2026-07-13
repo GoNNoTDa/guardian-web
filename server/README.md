@@ -17,18 +17,46 @@ dominio, así el servidor nunca sabe qué sitio exacto visitas.
 
 ## Instalación
 
+Servidor oficial de este proyecto: **https://sec.fourmartech.es**
+(configurado por defecto en la extensión, en `src/settings.js` → `communityUrl`).
+
 1. Crea una base de datos MySQL y carga el esquema:
    ```
    mysql -u USUARIO -p BASE < schema.sql
    ```
 2. Copia `config.example.php` a `config.php` y rellena credenciales, `pepper`
-   (cadena larga aleatoria) y `admin_token`.
-3. Sube la carpeta a un hosting con PHP 7.4+ (idealmente 8.x). Comprueba que
-   `.htaccess` está activo (mod_headers / AllowOverride).
-4. Endpoints resultantes:
-   - `POST /api/report.php`
-   - `GET  /api/lookup.php?prefix=abcd`
-   - `GET  /admin/?token=...` (moderación)
+   (cadena larga aleatoria) y `admin_token`. **`config.php` no se sube al repo.**
+3. Sube el contenido de esta carpeta a la **raíz web** del dominio, con PHP 7.4+
+   (idealmente 8.x). Comprueba que `.htaccess` está activo (AllowOverride).
+
+### Distribución de archivos en el servidor
+
+```
+sec.fourmartech.es/
+├── config.php            ← lo creas tú (con tus tokens); NO público
+├── .htaccess             ← deniega config.php, lib/ y schema.sql
+├── schema.sql            ← solo para cargar en MySQL; no se sirve
+├── lib/  (db.php, helpers.php)
+├── api/
+│   ├── report.php        → POST  https://sec.fourmartech.es/api/report.php
+│   └── lookup.php        → GET   https://sec.fourmartech.es/api/lookup.php?prefix=abcd
+└── admin/
+    └── index.php         → GET   https://sec.fourmartech.es/admin/?token=TU_ADMIN_TOKEN
+```
+
+### Comprobaciones tras subir
+
+- `GET https://sec.fourmartech.es/api/lookup.php?prefix=0000` debe responder
+  `{"prefix":"0000","matches":[]}` (JSON, aunque esté vacío).
+- `GET https://sec.fourmartech.es/config.php` debe dar **403** (protegido).
+- El panel `/admin/?token=...` debe cargar solo con el token correcto.
+
+### CORS
+
+En `config.php`, `allow_origin`:
+- Durante las pruebas: `'*'`.
+- En producción, cuando tengas el ID de la extensión publicada:
+  `'chrome-extension://TU_ID_DE_EXTENSION'` (solo tu extensión podrá usar la API).
 
 ## Contrato de la API
 
