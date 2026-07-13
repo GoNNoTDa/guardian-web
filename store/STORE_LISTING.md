@@ -143,7 +143,7 @@ Sé explícito aquí: es lo que más mira el revisor.
   - Reporte a la comunidad → **solo cuando el usuario lo pulsa**; identificador
     anónimo, sin datos personales.
 - **¿Se venden o transfieren datos a terceros?** No.
-- **Enlace a la política de privacidad:** URL del `PRIVACY.md` publicado.
+- **Enlace a la política de privacidad:** https://sec.fourmartech.es/privacidad.html
 - **Certificaciones:** no vende datos; no los usa para fines ajenos al propósito
   único; no los usa para evaluar solvencia.
 
@@ -169,7 +169,7 @@ forma inofensiva y controlada.
 ## Antes de enviar (checklist)
 
 - [ ] Rodaje hecho: falsos positivos bajo control y panel de errores limpio.
-- [ ] `PRIVACY.md` publicado en una URL accesible.
+- [ ] Política de privacidad accesible en https://sec.fourmartech.es/privacidad.html
 - [ ] Capturas subidas.
 - [ ] Justificación de cada permiso rellenada en el dashboard.
 - [ ] Declaraciones de privacidad marcadas.
