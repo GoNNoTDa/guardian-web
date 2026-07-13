@@ -31,7 +31,7 @@ export const DEFAULTS = {
   localMode: false, // true = sin llamadas a APIs externas (C5)
   notifications: true,
   searchGuard: true, // iconos de riesgo en resultados de búsqueda (local)
-  communityUrl: "", // URL del backend colaborativo (vacío = desactivado)
+  communityUrl: "https://sec.fourmartech.es", // backend colaborativo (vacío = desactivado)
   thresholds: { warning: 50, danger: 100 },
   apiKeys: { googleSafeBrowsing: "", urlhaus: "" },
   detectors: Object.fromEntries(DETECTORS.map((d) => [d.key, true])),

@@ -18,7 +18,7 @@ return [
 
     // Nº de instalaciones distintas que deben reportar un dominio para que
     // pase de 'pending' a 'validated' (y la extensión lo marque como conocido).
-    'validation_threshold' => 3,
+    'validation_threshold' => 5,
 
     // Máximo de reportes por instalación cada 24 h (anti-abuso).
     'rate_limit_per_day' => 20,

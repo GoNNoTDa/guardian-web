@@ -45,7 +45,9 @@ Si configuras un servidor de comunidad en las opciones:
 - **Identidad anónima.** Se usa un identificador aleatorio de instalación
   (UUID) solo para evitar reportes duplicados y limitar abusos. Se guarda
   hasheado en el servidor; no se recoge email, cuenta ni IP.
-- Si no configuras servidor, esta función queda desactivada.
+- El servidor oficial de la comunidad es `https://sec.fourmartech.es`. Puedes
+  cambiarlo o vaciarlo en las opciones; vacío = función desactivada. En modo
+  local tampoco se realiza ninguna consulta.
 
 ## Lo que Guardián Web NO hace
 
