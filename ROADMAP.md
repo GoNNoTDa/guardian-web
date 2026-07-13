@@ -71,3 +71,25 @@ Estado y pendientes del proyecto. La versión actual es **v0.6.0**.
   demos en vivo, talleres o vídeo.
 - Narrativa: seguridad que respeta la privacidad, de código abierto, que
   además enseña, con foco en las estafas que se sufren en España.
+
+## Financiación
+
+Objetivo: no monetizar espiando; sostener el proyecto con patrocinio y ayudas
+a software libre. El orden importa — casi todas valoran tracción, así que
+**primero publicar + divulgar + conseguir uso real**, luego aplicar.
+
+- **GitHub Sponsors** (activo): https://github.com/sponsors/GoNNoTDa — vía de
+  ingresos pequeños a corto plazo.
+- **NLnet — NGI Zero Commons Fund** ⭐ (mejor encaje): financia software libre
+  de privacidad/seguridad. Hasta 50 k€ (1ª propuesta), solicitud de 1-2 páginas,
+  no exige ser empresa, requiere licencia libre (ya cumplimos con MIT).
+  Convocatoria general **cerrada hasta después del verano de 2026** — poner
+  alerta y aplicar al reabrir. https://nlnet.nl/propose/
+- **INCIBE Emprende** (España, +15 M€ en ayudas): orientado a
+  emprendedores/startups, no a open source puro. Vía si algún día se
+  profesionaliza/monetiza. https://www.incibe.es/emprendimiento
+- **Otras internacionales** para valorar: Sovereign Tech Fund, Open Technology
+  Fund (OTF), GitHub Secure Open Source Fund, Mozilla MOSS.
+
+*Nota: verificar plazos y requisitos en las webs oficiales antes de aplicar;
+las convocatorias cambian.*
