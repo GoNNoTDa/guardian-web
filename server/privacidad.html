@@ -1,0 +1,80 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Política de privacidad — Guardián Web</title>
+  <meta name="description" content="Política de privacidad de la extensión Guardián Web: sin telemetría, sin cuenta, con modo local y k-anonimato.">
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Ctext y='.9em' font-size='90'%3E🛡️%3C/text%3E%3C/svg%3E">
+  <style>
+    :root { --green:#1e7e45; --ink:#17201b; --muted:#5b6b60; --bg:#f6f8f6; --card:#fff; --line:#e4eae5; }
+    @media (prefers-color-scheme: dark){ :root{ --ink:#e8efe9; --muted:#9fb0a4; --bg:#0f1512; --card:#16201a; --line:#23302880; } }
+    * { box-sizing:border-box; }
+    body { margin:0; font:17px/1.65 system-ui,-apple-system,sans-serif; color:var(--ink); background:var(--bg); }
+    .wrap { max-width:760px; margin:0 auto; padding:48px 20px 80px; }
+    a { color:var(--green); }
+    h1 { font-size:32px; letter-spacing:-.02em; margin:6px 0 4px; }
+    h2 { font-size:21px; margin:34px 0 10px; }
+    .date { color:var(--muted); font-size:14px; }
+    .lead { color:var(--muted); }
+    table { border-collapse:collapse; width:100%; font-size:15px; margin:10px 0; }
+    th,td { border:1px solid var(--line); padding:8px 10px; text-align:left; vertical-align:top; }
+    th { background:var(--card); }
+    ul { padding-left:20px; }
+    li { margin:6px 0; }
+    .yes { color:var(--green); font-weight:600; }
+    .no { color:#c0392b; font-weight:600; }
+    .back { display:inline-block; margin-bottom:24px; text-decoration:none; }
+    footer { color:var(--muted); font-size:14px; margin-top:40px; border-top:1px solid var(--line); padding-top:20px; }
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <a class="back" href="/">← 🛡️ Guardián Web</a>
+    <h1>Política de privacidad</h1>
+    <p class="date">Última actualización: julio de 2026</p>
+
+    <p class="lead">Guardián Web es una extensión <strong>defensiva</strong> diseñada bajo el principio de mínima recogida de datos. Esto es, en concreto, qué hace con la información.</p>
+
+    <h2>Qué datos maneja y dónde</h2>
+    <table>
+      <tr><th>Dato</th><th>Dónde vive</th><th>¿Sale de tu equipo?</th></tr>
+      <tr><td>Señales de riesgo por pestaña</td><td>Memoria de sesión (se borra al cerrar)</td><td class="no">No</td></tr>
+      <tr><td>Historial de avisos, lista de confianza, ajustes</td><td>Almacenamiento local del navegador</td><td class="no">No</td></tr>
+      <tr><td>Copia local del feed de malware</td><td>Almacenamiento local</td><td class="no">No (solo se descarga)</td></tr>
+      <tr><td>Datos que tecleas en formularios</td><td>Solo memoria de la propia página</td><td class="no">Nunca se almacenan ni se envían</td></tr>
+    </table>
+
+    <h2>Consultas a servicios externos (opcionales)</h2>
+    <p class="lead">Salvo en <strong>modo local</strong>, la extensión puede hacer estas consultas, todas orientadas a tu seguridad:</p>
+    <ul>
+      <li><strong>Reputación de la comunidad</strong> (<code>sec.fourmartech.es</code>): al navegar se envía únicamente un <strong>prefijo del hash</strong> del dominio (k-anonimato). El servidor nunca sabe qué web concreta visitas.</li>
+      <li><strong>Google Safe Browsing / URLhaus</strong>: solo si el usuario configura sus propias claves de API.</li>
+      <li><strong>Feed de malware de URLhaus</strong>: descarga periódica de una lista pública; no incluye ningún dato tuyo.</li>
+    </ul>
+    <p class="lead">El <strong>modo local</strong>, activable en las opciones, desactiva todas estas consultas: nada sale de tu equipo.</p>
+
+    <h2>Reportes a la comunidad</h2>
+    <ul>
+      <li>Solo se envían <strong>cuando pulsas manualmente</strong> «Reportar este sitio». Nada automático.</li>
+      <li>Se usa un identificador de instalación <strong>anónimo y aleatorio</strong>, guardado hasheado en el servidor.</li>
+      <li>No se recoge email, cuenta ni dirección IP.</li>
+    </ul>
+
+    <h2>Lo que Guardián Web NO hace</h2>
+    <ul>
+      <li class="no">No recopila ni vende datos de navegación.</li>
+      <li class="no">No usa analíticas ni telemetría.</li>
+      <li class="no">No inyecta publicidad ni altera el contenido (salvo el banner de aviso).</li>
+    </ul>
+
+    <h2>Código abierto</h2>
+    <p class="lead">Todo el código es público y auditable bajo licencia MIT. Puedes comprobar por ti mismo exactamente qué hace la extensión.</p>
+
+    <footer>
+      🛡️ Guardián Web — herramienta defensiva de código abierto. No sustituye a un antivirus.<br>
+      Contacto: <a href="mailto:contacto@fourmartech.es">contacto@fourmartech.es</a>
+    </footer>
+  </div>
+</body>
+</html>

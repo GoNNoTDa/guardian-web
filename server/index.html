@@ -1,0 +1,144 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Guardián Web — Seguridad que no te espía</title>
+  <meta name="description" content="Extensión de navegador de código abierto que detecta webs peligrosas por su comportamiento, sin telemetría y con modo 100% local. Protección para banca y trámites de España. Y además, te enseña.">
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Ctext y='.9em' font-size='90'%3E🛡️%3C/text%3E%3C/svg%3E">
+  <style>
+    :root {
+      --green: #1e7e45; --green-d: #1665361a; --ink: #17201b; --muted: #5b6b60;
+      --bg: #f6f8f6; --card: #ffffff; --line: #e4eae5;
+      --warn: #e67e22; --danger: #c0392b;
+    }
+    @media (prefers-color-scheme: dark) {
+      :root { --ink: #e8efe9; --muted: #9fb0a4; --bg: #0f1512; --card: #16201a; --line: #23302880; }
+    }
+    * { box-sizing: border-box; }
+    body { margin: 0; font: 17px/1.6 system-ui, -apple-system, sans-serif; color: var(--ink); background: var(--bg); }
+    a { color: var(--green); }
+    .wrap { max-width: 960px; margin: 0 auto; padding: 0 20px; }
+
+    header.hero { text-align: center; padding: 72px 20px 48px; background: radial-gradient(1200px 400px at 50% -80px, var(--green-d), transparent); }
+    .shield { font-size: 64px; }
+    h1 { font-size: clamp(30px, 6vw, 48px); margin: 8px 0 6px; letter-spacing: -0.02em; }
+    .tag { font-size: clamp(17px, 3vw, 21px); color: var(--muted); max-width: 620px; margin: 0 auto 28px; }
+    .cta { display: inline-flex; gap: 12px; flex-wrap: wrap; justify-content: center; }
+    .btn { display: inline-block; padding: 13px 22px; border-radius: 10px; font-weight: 600; text-decoration: none; }
+    .btn.primary { background: var(--green); color: #fff; }
+    .btn.ghost { border: 1px solid var(--green); color: var(--green); }
+    .btn:hover { opacity: .9; }
+
+    section { padding: 40px 0; }
+    h2 { font-size: 26px; margin: 0 0 20px; letter-spacing: -0.01em; }
+    .lead { color: var(--muted); max-width: 700px; }
+
+    .grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 16px; }
+    .card { background: var(--card); border: 1px solid var(--line); border-radius: 14px; padding: 18px 20px; }
+    .card .ic { font-size: 26px; }
+    .card h3 { margin: 8px 0 4px; font-size: 17px; }
+    .card p { margin: 0; color: var(--muted); font-size: 15px; }
+
+    .pill { display: inline-block; background: var(--green-d); color: var(--green); font-size: 13px; font-weight: 600; padding: 3px 10px; border-radius: 999px; }
+    @media (prefers-color-scheme: dark){ .pill{ color:#7fd6a0; } }
+
+    .es-flag { font-size: 22px; }
+    ul.brands { columns: 2; gap: 24px; padding-left: 20px; color: var(--muted); }
+    ul.brands li { margin-bottom: 4px; }
+
+    .privacy { background: var(--card); border: 1px solid var(--line); border-radius: 16px; padding: 8px 24px; }
+    .privacy li { margin: 12px 0; }
+
+    footer { text-align: center; color: var(--muted); font-size: 14px; padding: 40px 20px 60px; border-top: 1px solid var(--line); margin-top: 20px; }
+    footer a { margin: 0 8px; }
+    .disclaimer { max-width: 640px; margin: 16px auto 0; font-size: 13px; }
+  </style>
+</head>
+<body>
+  <header class="hero">
+    <div class="shield">🛡️</div>
+    <h1>Guardián Web</h1>
+    <p class="tag">La extensión de navegador que te avisa de webs peligrosas <strong>sin espiarte</strong> — y que, con cada aviso, te enseña a reconocer el peligro.</p>
+    <div class="cta">
+      <!-- TODO: sustituye por el enlace real de la Chrome Web Store cuando publiques -->
+      <a class="btn primary" href="#instalar">Instalar en Chrome</a>
+      <!-- TODO: sustituye por la URL de tu repositorio en GitHub -->
+      <a class="btn ghost" href="#codigo">Ver el código</a>
+    </div>
+  </header>
+
+  <main class="wrap">
+
+    <section>
+      <span class="pill">Sin telemetría · Código abierto · Modo local</span>
+      <h2>Seguridad que respeta tu privacidad</h2>
+      <p class="lead">La mayoría de extensiones de seguridad "gratuitas" te protegen a cambio de tu historial de navegación. Guardián Web hace lo contrario: funciona en tu propio equipo, no envía tu navegación a ningún servidor y su código es abierto y auditable. Puedes activar el <strong>modo 100 % local</strong> y no saldrá ni un dato.</p>
+    </section>
+
+    <section>
+      <h2>Qué detecta</h2>
+      <div class="grid">
+        <div class="card"><div class="ic">🎣</div><h3>Phishing y suplantación</h3><p>Dominios que imitan marcas y trucos como “g00gle” o letras que engañan a la vista (homógrafos).</p></div>
+        <div class="card"><div class="ic">💳</div><h3>Robo de tarjeta</h3><p>Formularios que se llevan tu número de tarjeta o tus datos a otro dominio (skimmers).</p></div>
+        <div class="card"><div class="ic">⛏️</div><h3>Cryptojacking</h3><p>Páginas que minan criptomonedas usando tu procesador sin permiso.</p></div>
+        <div class="card"><div class="ic">🔒</div><h3>Estafas y secuestros</h3><p>El clásico “tu equipo está infectado, llama ya” y páginas que bloquean el navegador.</p></div>
+        <div class="card"><div class="ic">🕵️</div><h3>Rastreo y fingerprinting</h3><p>Identificación encubierta y dominios que te siguen por toda la red.</p></div>
+        <div class="card"><div class="ic">⬇️</div><h3>Descargas peligrosas</h3><p>Ejecutables disfrazados de PDF y archivos con doble extensión.</p></div>
+      </div>
+      <p class="lead" style="margin-top:18px">A diferencia de otras herramientas, no se limita a comparar la URL con una lista: analiza el <strong>comportamiento</strong>, así detecta amenazas nuevas que aún no están fichadas.</p>
+    </section>
+
+    <section>
+      <h2><span class="es-flag">🇪🇸</span> Pensada también para España</h2>
+      <p class="lead">Reconoce específicamente los intentos de suplantación de las marcas y organismos que más se falsifican en las campañas de SMS y correo:</p>
+      <ul class="brands">
+        <li>BBVA, CaixaBank, Santander</li>
+        <li>Bizum</li>
+        <li>Agencia Tributaria (AEAT)</li>
+        <li>Correos</li>
+        <li>DGT</li>
+        <li>Seguridad Social · SEPE</li>
+        <li>Cl@ve</li>
+        <li>Telecos y energéticas</li>
+      </ul>
+    </section>
+
+    <section>
+      <h2>📚 Y además, enseña</h2>
+      <p class="lead">Cada aviso incluye un enlace para aprender sobre esa amenaza (OSI, INCIBE, OWASP). El objetivo no es solo protegerte, sino ayudarte a reconocer el peligro por ti mismo. Porque la mejor defensa eres tú sabiendo mirar.</p>
+    </section>
+
+    <section>
+      <h2>Privacidad, en concreto</h2>
+      <ul class="privacy">
+        <li>🚫 <strong>Sin telemetría ni analíticas.</strong> No se recopila tu actividad.</li>
+        <li>🙈 <strong>Sin cuenta ni registro.</strong> No pedimos email ni datos personales.</li>
+        <li>🏠 <strong>Modo local opcional.</strong> Desactiva toda consulta externa.</li>
+        <li>🔐 <strong>Lo que escribes se queda contigo.</strong> Se compara en tu equipo; nunca se almacena ni se envía.</li>
+        <li>🤝 <strong>Reputación de la comunidad con k-anonimato.</strong> Al consultar, el servidor nunca sabe qué web concreta visitas.</li>
+        <li>🔎 <strong>Código abierto.</strong> Cualquiera puede revisar exactamente qué hace.</li>
+      </ul>
+    </section>
+
+    <section id="instalar">
+      <h2>Instalar</h2>
+      <p class="lead">Próximamente en la Chrome Web Store. Mientras tanto, puedes cargarla en modo desarrollador desde el repositorio, o esperar a la publicación.</p>
+      <div class="cta" style="justify-content:flex-start; margin-top:16px">
+        <a class="btn primary" href="#" id="codigo">Chrome Web Store (próximamente)</a>
+        <a class="btn ghost" href="#">Código en GitHub</a>
+      </div>
+    </section>
+
+  </main>
+
+  <footer>
+    <div>
+      <a href="/privacidad.html">Privacidad</a> ·
+      <a href="#">GitHub</a> ·
+      <a href="#">Licencia MIT</a>
+    </div>
+    <p class="disclaimer">Guardián Web es una herramienta <strong>defensiva</strong>: avisa y explica, tú decides. No sustituye a un antivirus. Proyecto de código abierto con fines de divulgación de la cultura de ciberseguridad.</p>
+  </footer>
+</body>
+</html>

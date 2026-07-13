@@ -1,3 +1,6 @@
+# Página de inicio.
+DirectoryIndex index.html
+
 # Denegar acceso público a la configuración y a las librerías internas.
 <FilesMatch "^config(\.example)?\.php$">
   Require all denied
@@ -5,3 +8,12 @@
 
 RedirectMatch 403 ^/.*/lib/.*$
 RedirectMatch 403 ^/.*/schema\.sql$
+
+# Páginas de error HTTP con la estética de Guardián Web.
+ErrorDocument 400 /error.php
+ErrorDocument 403 /error.php
+ErrorDocument 404 /error.php
+ErrorDocument 405 /error.php
+ErrorDocument 429 /error.php
+ErrorDocument 500 /error.php
+ErrorDocument 503 /error.php
