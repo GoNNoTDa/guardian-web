@@ -1,0 +1,84 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Privacy Policy — Guardián Web</title>
+  <meta name="description" content="Privacy policy for the Guardián Web extension: no telemetry, no account, with local mode and k-anonymity.">
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Ctext y='.9em' font-size='90'%3E🛡️%3C/text%3E%3C/svg%3E">
+  <style>
+    :root { --green:#1e7e45; --ink:#17201b; --muted:#5b6b60; --bg:#f6f8f6; --card:#fff; --line:#e4eae5; }
+    @media (prefers-color-scheme: dark){ :root{ --ink:#e8efe9; --muted:#9fb0a4; --bg:#0f1512; --card:#16201a; --line:#23302880; } }
+    * { box-sizing:border-box; }
+    body { margin:0; font:17px/1.65 system-ui,-apple-system,sans-serif; color:var(--ink); background:var(--bg); }
+    .wrap { max-width:760px; margin:0 auto; padding:48px 20px 80px; }
+    a { color:var(--green); }
+    h1 { font-size:32px; letter-spacing:-.02em; margin:6px 0 4px; }
+    h2 { font-size:21px; margin:34px 0 10px; }
+    .date { color:var(--muted); font-size:14px; }
+    .lead { color:var(--muted); }
+    table { border-collapse:collapse; width:100%; font-size:15px; margin:10px 0; }
+    th,td { border:1px solid var(--line); padding:8px 10px; text-align:left; vertical-align:top; }
+    th { background:var(--card); }
+    ul { padding-left:20px; }
+    li { margin:6px 0; }
+    .yes { color:var(--green); font-weight:600; }
+    .no { color:#c0392b; font-weight:600; }
+    .top { display:flex; justify-content:space-between; align-items:center; margin-bottom:24px; }
+    .top a { text-decoration:none; font-weight:600; }
+    footer { color:var(--muted); font-size:14px; margin-top:40px; border-top:1px solid var(--line); padding-top:20px; }
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <div class="top">
+      <a href="/index.en.html">← 🛡️ Guardián Web</a>
+      <a href="/privacidad.html">Español</a>
+    </div>
+    <h1>Privacy Policy</h1>
+    <p class="date">Last updated: July 2026</p>
+
+    <p class="lead">Guardián Web is a <strong>defensive</strong> extension designed around the principle of minimal data collection. Here's exactly what it does with your information.</p>
+
+    <h2>What data it handles and where</h2>
+    <table>
+      <tr><th>Data</th><th>Where it lives</th><th>Does it leave your device?</th></tr>
+      <tr><td>Per-tab risk signals</td><td>Session memory (cleared on close)</td><td class="no">No</td></tr>
+      <tr><td>Warning history, trust list, settings</td><td>Browser local storage</td><td class="no">No</td></tr>
+      <tr><td>Local copy of the malware feed</td><td>Local storage</td><td class="no">No (download only)</td></tr>
+      <tr><td>Data you type into forms</td><td>Only in the page's own memory</td><td class="no">Never stored or sent</td></tr>
+    </table>
+
+    <h2>Queries to external services (optional)</h2>
+    <p class="lead">Except in <strong>local mode</strong>, the extension may make these queries, all for your security:</p>
+    <ul>
+      <li><strong>Community reputation</strong> (<code>sec.fourmartech.es</code>): while browsing, only a <strong>hash prefix</strong> of the domain is sent (k-anonymity). The server never knows which specific site you're visiting.</li>
+      <li><strong>Google Safe Browsing / URLhaus</strong>: only if you configure your own API keys.</li>
+      <li><strong>URLhaus malware feed</strong>: periodic download of a public list; it includes no data about you.</li>
+    </ul>
+    <p class="lead"><strong>Local mode</strong>, which you can enable in the options, disables all these queries: nothing leaves your device.</p>
+
+    <h2>Community reports</h2>
+    <ul>
+      <li>Sent only <strong>when you manually click</strong> "Report this site." Nothing automatic.</li>
+      <li>An <strong>anonymous, random</strong> installation identifier is used, stored hashed on the server.</li>
+      <li>No email, account or IP address is collected.</li>
+    </ul>
+
+    <h2>What Guardián Web does NOT do</h2>
+    <ul>
+      <li class="no">Does not collect or sell browsing data.</li>
+      <li class="no">Does not use analytics or telemetry.</li>
+      <li class="no">Does not inject ads or alter content (except the warning banner).</li>
+    </ul>
+
+    <h2>Open source</h2>
+    <p class="lead">All the code is public and auditable under the MIT license. You can verify for yourself exactly what the extension does.</p>
+
+    <footer>
+      🛡️ Guardián Web — open-source defensive tool. Not a replacement for an antivirus.<br>
+      Contact: <a href="mailto:contacto@fourmartech.es">contacto@fourmartech.es</a>
+    </footer>
+  </div>
+</body>
+</html>

@@ -1,0 +1,155 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Guardián Web — Security that doesn't spy on you</title>
+  <meta name="description" content="Open-source browser extension that detects dangerous sites by their behavior, with no telemetry and a 100% local mode. Protection for Spanish banks and public services. And it teaches you, too.">
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Ctext y='.9em' font-size='90'%3E🛡️%3C/text%3E%3C/svg%3E">
+  <style>
+    :root {
+      --green: #1e7e45; --green-d: #1665361a; --ink: #17201b; --muted: #5b6b60;
+      --bg: #f6f8f6; --card: #ffffff; --line: #e4eae5;
+      --warn: #e67e22; --danger: #c0392b;
+    }
+    @media (prefers-color-scheme: dark) {
+      :root { --ink: #e8efe9; --muted: #9fb0a4; --bg: #0f1512; --card: #16201a; --line: #23302880; }
+    }
+    * { box-sizing: border-box; }
+    body { margin: 0; font: 17px/1.6 system-ui, -apple-system, sans-serif; color: var(--ink); background: var(--bg); }
+    a { color: var(--green); }
+    .wrap { max-width: 960px; margin: 0 auto; padding: 0 20px; }
+
+    header.hero { text-align: center; padding: 72px 20px 48px; background: radial-gradient(1200px 400px at 50% -80px, var(--green-d), transparent); position: relative; }
+    .lang { position: absolute; top: 16px; right: 20px; font-size: 14px; }
+    .lang a { text-decoration: none; font-weight: 600; }
+    .shield { font-size: 64px; }
+    h1 { font-size: clamp(30px, 6vw, 48px); margin: 8px 0 6px; letter-spacing: -0.02em; }
+    .tag { font-size: clamp(17px, 3vw, 21px); color: var(--muted); max-width: 620px; margin: 0 auto 28px; }
+    .cta { display: inline-flex; gap: 12px; flex-wrap: wrap; justify-content: center; }
+    .btn { display: inline-block; padding: 13px 22px; border-radius: 10px; font-weight: 600; text-decoration: none; }
+    .btn.primary { background: var(--green); color: #fff; }
+    .btn.ghost { border: 1px solid var(--green); color: var(--green); }
+    .btn:hover { opacity: .9; }
+
+    section { padding: 40px 0; }
+    h2 { font-size: 26px; margin: 0 0 20px; letter-spacing: -0.01em; }
+    .lead { color: var(--muted); max-width: 700px; }
+
+    .grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 16px; }
+    .card { background: var(--card); border: 1px solid var(--line); border-radius: 14px; padding: 18px 20px; }
+    .card .ic { font-size: 26px; }
+    .card h3 { margin: 8px 0 4px; font-size: 17px; }
+    .card p { margin: 0; color: var(--muted); font-size: 15px; }
+
+    .pill { display: inline-block; background: var(--green-d); color: var(--green); font-size: 13px; font-weight: 600; padding: 3px 10px; border-radius: 999px; }
+    @media (prefers-color-scheme: dark){ .pill{ color:#7fd6a0; } }
+
+    .es-flag { font-size: 22px; }
+    ul.brands { columns: 2; gap: 24px; padding-left: 20px; color: var(--muted); }
+    ul.brands li { margin-bottom: 4px; }
+
+    .privacy { background: var(--card); border: 1px solid var(--line); border-radius: 16px; padding: 8px 24px; }
+    .privacy li { margin: 12px 0; }
+
+    footer { text-align: center; color: var(--muted); font-size: 14px; padding: 40px 20px 60px; border-top: 1px solid var(--line); margin-top: 20px; }
+    footer a { margin: 0 8px; }
+    .disclaimer { max-width: 640px; margin: 16px auto 0; font-size: 13px; }
+  </style>
+</head>
+<body>
+  <header class="hero">
+    <div class="lang"><a href="/">Español</a></div>
+    <div class="shield">🛡️</div>
+    <h1>Guardián Web</h1>
+    <p class="tag">The browser extension that warns you about dangerous sites <strong>without spying on you</strong> — and, with every warning, teaches you to recognize the danger.</p>
+    <div class="cta">
+      <!-- TODO: point this to the Web Store URL once published -->
+      <a class="btn primary" href="#install">Install on Chrome</a>
+      <a class="btn ghost" href="https://github.com/GoNNoTDa/guardian-web">View the code</a>
+    </div>
+  </header>
+
+  <main class="wrap">
+
+    <section>
+      <span class="pill">No telemetry · Open source · Local mode</span>
+      <h2>Security that respects your privacy</h2>
+      <p class="lead">Most "free" security extensions protect you in exchange for your browsing history. Guardián Web does the opposite: it runs on your own device, never sends your browsing to any server, and its code is open and auditable. Turn on <strong>100% local mode</strong> and nothing leaves your machine.</p>
+    </section>
+
+    <section>
+      <h2>What it detects</h2>
+      <div class="grid">
+        <div class="card"><div class="ic">🎣</div><h3>Phishing &amp; impersonation</h3><p>Domains that mimic brands and tricks like “g00gle” or characters that fool the eye (homographs).</p></div>
+        <div class="card"><div class="ic">💳</div><h3>Card theft</h3><p>Forms that send your card number or data to another domain (skimmers).</p></div>
+        <div class="card"><div class="ic">⛏️</div><h3>Cryptojacking</h3><p>Pages that mine cryptocurrency using your processor without permission.</p></div>
+        <div class="card"><div class="ic">🔒</div><h3>Scams &amp; hijacks</h3><p>The classic “your computer is infected, call now” and pages that lock your browser.</p></div>
+        <div class="card"><div class="ic">🕵️</div><h3>Tracking &amp; fingerprinting</h3><p>Covert identification and domains that follow you across the web.</p></div>
+        <div class="card"><div class="ic">⬇️</div><h3>Dangerous downloads</h3><p>Executables disguised as PDFs and files with double extensions.</p></div>
+      </div>
+      <p class="lead" style="margin-top:18px">Unlike other tools, it doesn't just match the URL against a list: it analyzes <strong>behavior</strong>, so it catches brand-new threats not yet on any list.</p>
+    </section>
+
+    <section>
+      <h2><span class="es-flag">🇪🇸</span> Built for Spain, too</h2>
+      <p class="lead">It specifically recognizes impersonation attempts against the brands and institutions most faked in SMS and email campaigns:</p>
+      <ul class="brands">
+        <li>BBVA, CaixaBank, Santander</li>
+        <li>Bizum</li>
+        <li>Tax Agency (AEAT)</li>
+        <li>Correos (postal service)</li>
+        <li>DGT (traffic authority)</li>
+        <li>Social Security · SEPE</li>
+        <li>Cl@ve</li>
+        <li>Telecom &amp; energy companies</li>
+      </ul>
+    </section>
+
+    <section>
+      <h2>📚 And it teaches, too</h2>
+      <p class="lead">Every warning includes a link to learn about that threat (OWASP, EFF, MDN). The goal isn't only to protect you, but to help you recognize danger yourself. Because the best defense is you, knowing how to look.</p>
+    </section>
+
+    <section>
+      <h2>Privacy, specifically</h2>
+      <ul class="privacy">
+        <li>🚫 <strong>No telemetry or analytics.</strong> Your activity is never collected.</li>
+        <li>🙈 <strong>No account, no sign-up.</strong> We don't ask for email or personal data.</li>
+        <li>🏠 <strong>Optional local mode.</strong> Disables every external query.</li>
+        <li>🔐 <strong>What you type stays with you.</strong> Compared on your device; never stored or sent.</li>
+        <li>🤝 <strong>Community reputation with k-anonymity.</strong> On lookups, the server never knows which site you're visiting.</li>
+        <li>🔎 <strong>Open source.</strong> Anyone can review exactly what it does.</li>
+      </ul>
+    </section>
+
+    <section id="install">
+      <h2>Install</h2>
+      <p class="lead">Coming soon to the Chrome Web Store. In the meantime, you can load it in developer mode from the repository, or wait for the release.</p>
+      <div class="cta" style="justify-content:flex-start; margin-top:16px">
+        <a class="btn primary" href="#" id="codigo">Chrome Web Store (coming soon)</a>
+        <a class="btn ghost" href="https://github.com/GoNNoTDa/guardian-web">Code on GitHub</a>
+      </div>
+    </section>
+
+    <section id="support" style="text-align:center">
+      <h2>Support the project 💛</h2>
+      <p class="lead" style="margin:0 auto 20px">Guardián Web is free, open source and non-profit. If you find it useful, you can help keep it alive and up to date against new threats.</p>
+      <div class="cta">
+        <a class="btn primary" href="https://github.com/sponsors/GoNNoTDa">❤️ Sponsor on GitHub Sponsors</a>
+      </div>
+    </section>
+
+  </main>
+
+  <footer>
+    <div>
+      <a href="/privacy.en.html">Privacy</a> ·
+      <a href="https://github.com/GoNNoTDa/guardian-web">GitHub</a> ·
+      <a href="https://github.com/sponsors/GoNNoTDa">Sponsor</a> ·
+      <a href="https://github.com/GoNNoTDa/guardian-web/blob/main/LICENSE">MIT License</a>
+    </div>
+    <p class="disclaimer">Guardián Web is a <strong>defensive</strong> tool: it warns and explains, you decide. It's not a replacement for an antivirus. Open-source project for cybersecurity-awareness outreach.</p>
+  </footer>
+</body>
+</html>
