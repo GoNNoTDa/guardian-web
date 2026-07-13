@@ -1,9 +1,25 @@
-# Guardián Web
+# 🛡️ Guardián Web
 
-Extensión de Chrome (Manifest V3) que **avisa cuando una web tiene actividad
-extraña o potencialmente dañina**. Es una herramienta **defensiva**: solo
-observa el comportamiento del sitio y puntúa el riesgo; nunca bloquea ni
-modifica el tráfico.
+**La extensión de seguridad que te protege _sin_ espiarte.** Detecta phishing,
+skimmers, cryptojacking y estafas por su **comportamiento** (no por listas),
+funciona en modo **100 % local**, y **te enseña** con cada aviso. Código
+abierto, 7 idiomas, con protección específica para banca y organismos españoles.
+
+> Sitio web: <https://sec.fourmartech.es> · Privacidad:
+> <https://sec.fourmartech.es/privacidad.html>
+
+## Filosofía
+
+- **Sin telemetría.** No se recopila ni se vende tu navegación. Nunca.
+- **Comportamiento, no listas.** Analiza cómo actúa la web, así detecta
+  amenazas nuevas que aún no están fichadas en ninguna base de datos.
+- **Local primero.** El modo local desactiva toda consulta externa: nada sale
+  de tu equipo.
+- **Educativa.** Cada aviso enlaza a material para aprender del vector. La
+  mejor defensa eres tú sabiendo mirar.
+
+Es una herramienta **defensiva**: solo observa y puntúa el riesgo; nunca
+bloquea ni modifica el tráfico. No sustituye a un antivirus.
 
 ## Qué detecta
 
