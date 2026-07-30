@@ -6,3 +6,6 @@ Thumbs.db
 
 # Backend: la config real con credenciales nunca se sube.
 server/config.php
+
+# Ajustes locales de las herramientas de desarrollo (Claude Code).
+.claude/
