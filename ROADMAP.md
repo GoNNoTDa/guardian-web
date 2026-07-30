@@ -49,6 +49,13 @@ Estado y pendientes del proyecto. La versión actual es **v0.6.0**.
   **frase de recuperación** en un formulario (90): se exige «frase» +
   «recuperación/semilla» juntas, para no confundirla con el «correo» o el
   «código» de recuperación de toda la vida.
+- Prompt injection indirecta: texto escondido en la página (comentarios HTML,
+  `left:-9999px`, letra de tamaño cero, color igual al fondo, `display:none`,
+  `aria-hidden`, datos `ld+json`) con órdenes dirigidas a un asistente de IA que
+  lea la página por el usuario. Exige que el texto esté oculto **y** que tenga
+  forma de instrucción a un modelo: hay mucho texto oculto legítimo y muchas
+  páginas que hablan de IA a la vista. El aviso incluye un trozo de lo que se
+  escondía, que es lo que de verdad enseña qué intentaba la página.
 - Malware/privacidad: cryptojacking, fingerprinting, terceros, rastreadores
   aprendidos (heurístico, sin listas).
 - Descargas peligrosas (doble extensión, ejecutables).
@@ -68,7 +75,7 @@ Estado y pendientes del proyecto. La versión actual es **v0.6.0**.
 - Consulta con k-anonimato; reporte manual; UUID anónimo hasheado.
 
 ### Plataforma
-- i18n en 7 idiomas (es, en, ca, fr, it, zh_CN, ja), 192 claves con paridad.
+- i18n en 7 idiomas (es, en, ca, fr, it, zh_CN, ja), 196 claves con paridad.
 - Enlaces educativos por vector (OSI/INCIBE, OWASP/EFF/MDN).
 - Laboratorio local de pruebas manuales (`test-lab/`).
 - Licencia MIT, política de privacidad, guía de contribución, script de build.
@@ -115,18 +122,15 @@ Para no publicar antes de tiempo, la vara de medir es:
 
 Del repaso al panorama de amenazas de julio de 2026. Ya están hechos (ver
 arriba): **ClickFix**, **marca + contraseña en dominio ajeno**, **secuestro del
-portapapeles**, **Web3 / drainers de cartera**, **Browser-in-the-Browser** y
-**HTML smuggling**. El resto sigue en pie, en orden de valor por línea de código.
-Los pesos son propuestas de partida, a calibrar en el rodaje.
+portapapeles**, **Web3 / drainers de cartera**, **Browser-in-the-Browser**,
+**HTML smuggling** y **prompt injection oculto**. Quedan dos, en orden de valor
+por línea de código. Los pesos son propuestas de partida, a calibrar en el
+rodaje.
 
 1. **SVG con JavaScript** (~45, y ~70 si el documento principal es un SVG con
    formulario de login). Los adjuntos SVG maliciosos se multiplicaron por 50 en
    un año.
-2. **Prompt injection oculto** (~40). Texto invisible (`left:-9999px`,
-   `font-size:0`, color del fondo) con instrucciones dirigidas a un agente de
-   IA. Novedad de 2026; útil para quien navegue con un agente o pegue páginas en
-   un chatbot.
-3. **Reforzar el aviso de notificaciones** (15 → ~40) cuando la petición llega
+2. **Reforzar el aviso de notificaciones** (15 → ~40) cuando la petición llega
    con el señuelo del reproductor falso («pulsa Permitir para ver el vídeo») o
    se registra un service worker en un dominio no confiable.
 

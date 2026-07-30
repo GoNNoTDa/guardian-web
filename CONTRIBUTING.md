@@ -53,7 +53,7 @@ background; si está en el **HTML o el dominio**, en `content.js`; si hay que ve
 
 Copia `_locales/es/messages.json` a `_locales/<código>/messages.json` y traduce
 los valores sin tocar las claves. La paridad es obligatoria: los 7 idiomas
-tienen hoy 192 claves y `t()` (en `ui/i18n.js`) devuelve **la clave literal**
+tienen hoy 196 claves y `t()` (en `ui/i18n.js`) devuelve **la clave literal**
 cuando falta el mensaje, así que un hueco pasa desapercibido en revisión y luego
 aparece en la interfaz como `fAlgoTitle`.
 

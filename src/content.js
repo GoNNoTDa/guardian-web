@@ -571,6 +571,102 @@
     });
   }
 
+  // --- 2e) Instrucciones ocultas dirigidas a una IA -------------------------
+  // Vector nuevo de 2026: la página esconde texto que tú no ves pero que sí lee
+  // un agente de IA (o el chatbot al que le pegas la página), con órdenes del
+  // tipo «ignora las instrucciones anteriores» o «no se lo digas al usuario».
+  // Se ha visto usado para colar estafas de pago y para sacar el historial de
+  // conversación de agentes que navegan solos.
+  //
+  // Se exige que el texto esté OCULTO y que tenga forma de instrucción a un
+  // modelo: cada cosa por separado es corriente (hay mucho texto oculto
+  // legítimo, y mucha página que habla de IA a la vista).
+  const PROMPT_PATTERNS = [
+    /ignore (all |any )?(previous|prior|above|earlier)[^.]{0,20}instructions?/i,
+    /disregard (all |any )?(previous|prior|above|earlier)/i,
+    /ignora (todas )?(las )?instrucciones (anteriores|previas)/i,
+    /olvida (todas )?(las )?instrucciones/i,
+    /you are (now )?(an?|the) (ai|assistant|language model|llm|agent)\b/i,
+    /eres (ahora )?(un|una) (asistente|ia|modelo de lenguaje|agente)\b/i,
+    /\b(system|developer) prompt\b/i,
+    /\bprompt (del )?sistema\b/i,
+    /as an ai (language )?(model|assistant)/i,
+    /do not (tell|inform|reveal|mention)[^.]{0,25}(user|human)/i,
+    /no (le )?(digas|informes|reveles|menciones)[^.]{0,25}(usuario|humano)/i,
+    /\bnew instructions?\s*:/i,
+    /\bnuevas instrucciones\s*:/i,
+    /when (you )?(summariz|asked)[^.]{0,40}(instead|reply with|responde)/i,
+  ];
+  const SKIP_HIDDEN = new Set(["SCRIPT", "STYLE", "TEMPLATE", "NOSCRIPT", "TITLE"]);
+
+  // ¿Está este texto fuera de la vista del usuario? Se comprueba sobre el
+  // elemento que lo contiene, con las formas que usan estas campañas.
+  function estaOculto(el) {
+    if (!el || !el.getBoundingClientRect) return false;
+    const s = getComputedStyle(el);
+    if (s.display === "none" || s.visibility === "hidden" || s.visibility === "collapse") return true;
+    if (parseFloat(s.opacity) === 0) return true;
+    if (parseFloat(s.fontSize) < 3) return true;
+    if (el.getAttribute && el.getAttribute("aria-hidden") === "true") return true;
+    const r = el.getBoundingClientRect();
+    if (r.width < 2 || r.height < 2) return true;
+    // Empujado fuera de la pantalla (el clásico left:-9999px).
+    if (r.right < 0 || r.bottom < 0) return true;
+    // Escrito del color exacto del fondo.
+    if (s.color && s.color === s.backgroundColor) return true;
+    return false;
+  }
+
+  function scanPromptInjection() {
+    const sospechosos = [];
+    const anotar = (texto, via) => {
+      if (sospechosos.length) return;
+      const t2 = String(texto || "").replace(/\s+/g, " ").trim();
+      if (t2.length < 40) return; // una instrucción es una frase, no dos palabras
+      if (PROMPT_PATTERNS.some((re) => re.test(t2))) sospechosos.push({ t: t2, via });
+    };
+
+    // 1) Comentarios HTML: invisibles por definición.
+    const it = document.createNodeIterator(document.documentElement, NodeFilter.SHOW_COMMENT);
+    let c, vistos = 0;
+    while ((c = it.nextNode()) && vistos++ < 400 && !sospechosos.length) {
+      anotar(c.nodeValue, "comentario");
+    }
+
+    // 2) Datos estructurados: los lee la máquina, no la persona.
+    if (!sospechosos.length) {
+      document.querySelectorAll('script[type="application/ld+json"]').forEach((s) => anotar(s.textContent, "json-ld"));
+    }
+
+    // 3) Texto oculto en el propio DOM. Se filtra primero por longitud, que es
+    // barato, y solo entonces se consultan estilos y geometría.
+    if (!sospechosos.length) {
+      const walker = document.createTreeWalker(document.body || document.documentElement, NodeFilter.SHOW_TEXT, {
+        acceptNode: (n) =>
+          n.nodeValue && n.nodeValue.trim().length >= 40 && !SKIP_HIDDEN.has(n.parentElement?.tagName)
+            ? NodeFilter.FILTER_ACCEPT
+            : NodeFilter.FILTER_REJECT,
+      });
+      let n, mirados = 0;
+      while ((n = walker.nextNode()) && mirados++ < 1500 && !sospechosos.length) {
+        if (!PROMPT_PATTERNS.some((re) => re.test(n.nodeValue))) continue;
+        if (estaOculto(n.parentElement)) anotar(n.nodeValue, "texto oculto");
+      }
+    }
+
+    if (!sospechosos.length) return;
+    // Se incluye un trozo de lo escondido: ver la orden es lo que enseña de
+    // verdad qué ha intentado la página. Los textos se escapan al pintarlos.
+    const muestra = sospechosos[0].t.slice(0, 80) + (sospechosos[0].t.length > 80 ? "…" : "");
+    add({
+      id: "promptinject",
+      weight: 40,
+      category: "scam",
+      title: t("fPromptInjectTitle"),
+      detail: t("fPromptInjectDetail", [muestra]),
+    });
+  }
+
   // --- 3) Texto típico de estafa / soporte técnico falso ---------------------
   const SCAM_PATTERNS = [
     /su (ordenador|equipo|pc) (está|ha sido) infectad/i,
@@ -652,6 +748,7 @@
     scanBrandForm();
     scanFakeWindow();
     scanSeedPhrase();
+    scanPromptInjection();
     scanScam();
     scanClickFix();
     scanIframes();

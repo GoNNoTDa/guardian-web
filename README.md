@@ -88,6 +88,7 @@ positive spends the user's trust — the only thing this kind of tool really has
 | Crypto | `setApprovalForAll` over a whole NFT collection | 70 |
 | Crypto | Unlimited token spending approval | 70 |
 | Crypto | Off-chain `Permit`/`Permit2` spending signature | 50 |
+| AI | Hidden instructions aimed at an AI agent (indirect prompt injection) | 40 |
 | Privacy | Canvas fingerprinting | 20 |
 | Privacy | Excessive third-party domains | 15 |
 | Privacy | Heuristically learned trackers (seen on 3+ sites) | 15 |
@@ -252,6 +253,7 @@ herramienta así.
 | Cripto | `setApprovalForAll` sobre una colección entera de NFT | 70 |
 | Cripto | Aprobación de gasto ilimitado de tokens | 70 |
 | Cripto | Firma de gasto `Permit`/`Permit2` fuera de cadena | 50 |
+| IA | Instrucciones ocultas dirigidas a un agente de IA (prompt injection indirecta) | 40 |
 | Privacidad | Fingerprinting de canvas | 20 |
 | Privacidad | Exceso de dominios de terceros | 15 |
 | Privacidad | Rastreadores aprendidos (aparecen en 3+ sitios) | 15 |
@@ -359,7 +361,7 @@ src/
                     domain, trackers, learn, community
 ui/
   popup.* panel.* options.*   Interfaces (comparten render.js e i18n.js)
-_locales/           7 idiomas (es, en, ca, fr, it, zh_CN, ja) · 192 claves
+_locales/           7 idiomas (es, en, ca, fr, it, zh_CN, ja) · 196 claves
 icons/              16 / 48 / 128 px
 test-lab/           Laboratorio de pruebas local (Node)
 server/             Sitio web (ES/EN) + backend PHP/MySQL de reputación

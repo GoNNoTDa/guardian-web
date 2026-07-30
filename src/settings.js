@@ -30,6 +30,7 @@ export const DETECTORS = [
   { key: "fingerprint", group: "privacy" },
   { key: "walletsign", group: "web3" },
   { key: "seedphrase", group: "web3" },
+  { key: "promptinject", group: "ai" },
   { key: "downloads", group: "downloads" },
   { key: "smuggling", group: "downloads" },
 ];
@@ -99,6 +100,7 @@ const ID_TO_DETECTOR = {
   "fp-canvas": "fingerprint",
   web3: "walletsign",
   seedphrase: "seedphrase",
+  promptinject: "promptinject",
   download: "downloads",
   smuggling: "smuggling",
 };
