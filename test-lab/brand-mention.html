@@ -1,0 +1,55 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <!-- Identidad PROPIA: esta web no dice ser ningún banco, solo los menciona.
+       Es el caso de un comparador, un periódico económico o un foro. -->
+  <title>ComparaTuHipoteca — Comparador independiente</title>
+  <meta property="og:site_name" content="ComparaTuHipoteca">
+</head>
+<body style="font: 15px/1.5 system-ui, sans-serif; max-width: 700px; margin: 40px auto;">
+  <h1>🧪 Control de falso positivo: menciones de marca</h1>
+  <p><b>Esperado:</b> <b>NO</b> debe aparecer «Esta página dice ser…».
+     Solo la señal de contraseña por HTTP (+50), inevitable en el laboratorio
+     porque se sirve por <code>http://</code>.</p>
+  <p><b>Qué se prueba:</b> la página menciona varios bancos en el cuerpo del
+     texto y tiene su propio formulario con contraseña. El detector solo mira la
+     cabecera (título, <code>og:site_name</code>, <code>h1</code> y el alt del
+     logo), así que estas menciones no deben contar como identidad suplantada.
+     Si salta la señal de marca, es un falso positivo.</p>
+  <hr>
+
+  <header style="border-bottom: 1px solid #ddd; padding-bottom: 12px; margin-bottom: 20px;">
+    <img alt="ComparaTuHipoteca" width="180" height="32"
+         src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='180' height='32'%3E%3Crect width='180' height='32' fill='%23444'/%3E%3Ctext x='8' y='22' font-family='sans-serif' font-size='14' fill='white'%3EComparaTuHipoteca%3C/text%3E%3C/svg%3E">
+  </header>
+
+  <h2>Comparativa de hipotecas variables</h2>
+  <p>Analizamos las condiciones de <b>CaixaBank</b>, <b>BBVA</b>, Banco
+     Santander, Bankinter, Ibercaja y Openbank. Según los datos publicados, la
+     hipoteca de BBVA aplica una bonificación por domiciliar la nómina, mientras
+     que CaixaBank exige contratar seguro de hogar. También comparamos el
+     Bizum de cada entidad y los trámites con la Agencia Tributaria.</p>
+  <p>Los usuarios de Correos y de Amazon nos preguntan a menudo por PayPal y
+     Netflix: esas menciones tampoco deben disparar nada.</p>
+
+  <h2>Área de clientes de ComparaTuHipoteca</h2>
+  <form id="f" style="border: 1px solid #ccc; padding: 16px; border-radius: 8px; max-width: 340px;">
+    <p><label>Correo electrónico<br><input name="email" style="width: 100%;"></label></p>
+    <p><label>Contraseña<br><input type="password" name="clave" style="width: 100%;"></label></p>
+    <p><button type="submit">Acceder</button></p>
+    <p id="msg" style="color: #b0281a;"></p>
+  </form>
+
+  <p><a href="/brand-login.html">→ Ver el caso que SÍ debe saltar</a> ·
+     <a href="/index.html">← Volver al índice</a></p>
+
+  <script>
+    document.getElementById("f").addEventListener("submit", (e) => {
+      e.preventDefault();
+      document.getElementById("msg").textContent =
+        "Envío cancelado: esta página de prueba no transmite nada.";
+    });
+  </script>
+</body>
+</html>

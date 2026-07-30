@@ -69,6 +69,7 @@ positive spends the user's trust — the only thing this kind of tool really has
 | Phishing | Homograph domain (punycode/cyrillic/leet: `g00gle.com`) | 80 |
 | Phishing | Typosquatting (impersonates a known brand) | 60 |
 | Phishing | Known brand under a different TLD (`agenciatributaria.com`) | 30 |
+| Phishing | Page claims to be a known brand and asks for a password | 60 |
 | Phishing | Password sent unencrypted (HTTP) | 50 |
 | Phishing | Login sent to another domain | 35 |
 | Phishing | Card theft / skimmer (card number to a third party, Luhn) | 90 |
@@ -224,6 +225,7 @@ herramienta así.
 | Phishing | Dominio homógrafo (punycode/cirílico/leet: `g00gle.com`) | 80 |
 | Phishing | Typosquatting (imita a una marca conocida) | 60 |
 | Phishing | Marca conocida bajo otro TLD (`agenciatributaria.com`) | 30 |
+| Phishing | La página dice ser una marca conocida y pide contraseña | 60 |
 | Phishing | Contraseña enviada sin cifrar (HTTP) | 50 |
 | Phishing | Login enviado a otro dominio | 35 |
 | Phishing | Robo de tarjeta / skimmer (nº de tarjeta a un tercero, Luhn) | 90 |
@@ -341,7 +343,7 @@ src/
                     domain, trackers, learn, community
 ui/
   popup.* panel.* options.*   Interfaces (comparten render.js e i18n.js)
-_locales/           7 idiomas (es, en, ca, fr, it, zh_CN, ja) · 158 claves
+_locales/           7 idiomas (es, en, ca, fr, it, zh_CN, ja) · 168 claves
 icons/              16 / 48 / 128 px
 test-lab/           Laboratorio de pruebas local (Node)
 server/             Sitio web (ES/EN) + backend PHP/MySQL de reputación

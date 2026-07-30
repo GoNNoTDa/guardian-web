@@ -1,0 +1,56 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <!-- La identidad falsa vive aquí: título, og:site_name, h1 y el alt del logo.
+       Es exactamente lo que hace un kit de phishing al clonar la web del banco. -->
+  <title>CaixaBank — Acceso a banca digital</title>
+  <meta property="og:site_name" content="CaixaBank">
+</head>
+<body style="font: 15px/1.5 system-ui, sans-serif; max-width: 700px; margin: 40px auto;">
+  <h1>🏦 Prueba: marca suplantada con formulario de contraseña</h1>
+  <p><b>Esperado:</b> marca suplantada (+60) + contraseña por HTTP (+50) = 110 →
+     banner <b>ROJO</b>. La señal salta al cargar, sin tocar nada.</p>
+  <p><b>Por qué salta:</b> la página dice ser <i>CaixaBank</i> (título,
+     <code>og:site_name</code>, logo) y pide una contraseña, pero está servida
+     desde <code>127.0.0.1</code>, que no es un dominio de CaixaBank.</p>
+  <p style="background:#fdf6e3; border:1px solid #f0e0b0; border-radius:8px; padding:10px 14px;">
+     ⚠️ Inofensiva: el formulario no envía nada a ninguna parte
+     (<code>action</code> vacío y <code>submit</code> cancelado). No escribas
+     credenciales reales, obviamente.</p>
+  <hr>
+
+  <!-- Imitación de la cabecera de la web legítima -->
+  <header style="border-bottom: 1px solid #ddd; padding-bottom: 12px; margin-bottom: 20px;">
+    <img alt="CaixaBank" width="140" height="32"
+         src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='140' height='32'%3E%3Crect width='140' height='32' fill='%23007eae'/%3E%3Ctext x='8' y='22' font-family='sans-serif' font-size='16' fill='white'%3ECaixaBank%3C/text%3E%3C/svg%3E">
+  </header>
+
+  <h2>Acceso a banca digital para particulares</h2>
+  <form id="f" style="border: 1px solid #ccc; padding: 16px; border-radius: 8px; max-width: 340px;">
+    <p><label>Usuario / DNI<br><input name="usuario" style="width: 100%;"></label></p>
+    <p><label>Contraseña<br><input type="password" name="clave" style="width: 100%;"></label></p>
+    <p><button type="submit">Entrar</button></p>
+    <p id="msg" style="color: #b0281a;"></p>
+  </form>
+
+  <h3>Controles de falso positivo</h3>
+  <p>Estas variantes <b>no</b> deben disparar la señal:</p>
+  <ul>
+    <li><a href="/brand-mention.html">brand-mention.html</a> — menciona bancos en
+        el cuerpo del texto (como un comparador o un periódico), sin decir ser uno.</li>
+    <li><a href="/clean.html">clean.html</a> — control general.</li>
+  </ul>
+
+  <p><a href="/index.html">← Volver al índice</a></p>
+
+  <script>
+    // Nada sale de aquí: el envío se cancela.
+    document.getElementById("f").addEventListener("submit", (e) => {
+      e.preventDefault();
+      document.getElementById("msg").textContent =
+        "Envío cancelado: esta página de prueba no transmite nada.";
+    });
+  </script>
+</body>
+</html>

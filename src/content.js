@@ -355,6 +355,116 @@
     });
   }
 
+  // --- 2b) Marca conocida + contraseña en un dominio que no es el suyo -------
+  // El detector de typosquatting mira el DOMINIO; este mira lo que la página
+  // DICE SER. Es el patrón de las campañas que avisa el INCIBE: un dominio sin
+  // ninguna relación ("verificacion-cliente-2026.top") clona la web del banco
+  // con su logo y su título y pide las credenciales. Ahí no hay parecido
+  // tipográfico que detectar: el engaño está en el contenido.
+  //
+  // El nombre de la marca se busca solo en la CABECERA de la página (título,
+  // og:site_name, h1 y el alt del logo), nunca en todo el texto: así un
+  // comparador de hipotecas, un periódico o un foro que mencionen al banco no
+  // se marcan. Los dominios propios de cada marca se comprueban por nombre
+  // registrable, de modo que login.caixabank.es no salta y caixabank-seguro.top
+  // sí. Las marcas con nombre ambiguo (Santander es una ciudad, Correos una
+  // palabra común, Apple una fruta) exigen además contexto de acceso.
+  const BRAND_CONTEXT =
+    /banca|banco|bank|acceso|access|cliente|client|particular|empresa|sede|electr[óo]nic|cuenta|account|sign[ -]?in|log[ -]?in|login|contrase|password|identif|verific/i;
+  const BRAND_IDENTITIES = [
+    // Banca y administración españolas: el foco del proyecto.
+    { label: "CaixaBank", re: /\bcaixabank\b|\bla caixa\b/i, slds: ["caixabank", "lacaixa", "caixabanknow", "imaginbank"] },
+    { label: "BBVA", re: /\bbbva\b/i, slds: ["bbva"] },
+    { label: "Banco Santander", re: /\bsantander\b/i, slds: ["santander", "bancosantander"], strict: true },
+    { label: "Banco Sabadell", re: /\bban[cq]o? sabadell\b|\bbancsabadell\b/i, slds: ["bancsabadell", "bancosabadell"] },
+    { label: "Bankinter", re: /\bbankinter\b/i, slds: ["bankinter"] },
+    { label: "Unicaja", re: /\bunicaja\b/i, slds: ["unicajabanco", "unicaja"] },
+    { label: "Abanca", re: /\babanca\b/i, slds: ["abanca"] },
+    { label: "ING", re: /\bing direct\b|\bing\.es\b/i, slds: ["ing"] },
+    { label: "Openbank", re: /\bopenbank\b/i, slds: ["openbank"] },
+    { label: "Kutxabank", re: /\bkutxabank\b/i, slds: ["kutxabank"] },
+    { label: "Ibercaja", re: /\bibercaja\b/i, slds: ["ibercaja"] },
+    { label: "Cajamar", re: /\bcajamar\b/i, slds: ["cajamar"] },
+    { label: "EVO Banco", re: /\bevo banco\b/i, slds: ["evobanco"] },
+    { label: "Bizum", re: /\bbizum\b/i, slds: ["bizum"] },
+    { label: "Ruralvía", re: /\bruralv[ií]a\b/i, slds: ["ruralvia"] },
+    { label: "Agencia Tributaria", re: /\bagencia tributaria\b/i, slds: ["agenciatributaria"] },
+    { label: "Seguridad Social", re: /\bseguridad social\b|\bimport@ss\b/i, slds: ["seg-social", "segsocial"] },
+    { label: "SEPE", re: /\bsepe\b/i, slds: ["sepe"] },
+    { label: "DGT", re: /\bdgt\b|\bdirecci[óo]n general de tr[áa]fico\b/i, slds: ["dgt"], strict: true },
+    { label: "Correos", re: /\bcorreos\b(?!\s*electr)/i, slds: ["correos"], strict: true },
+    { label: "Cl@ve", re: /\bcl@ve\b/i, slds: ["clave"] },
+    // Marcas globales entre las más suplantadas del mundo.
+    { label: "Microsoft", re: /\bmicrosoft\b|\boffice ?365\b/i, slds: ["microsoft", "microsoftonline", "office", "live"] },
+    { label: "Outlook", re: /\boutlook\b/i, slds: ["outlook", "live", "microsoft", "office"] },
+    { label: "Google", re: /\bgoogle\b/i, slds: ["google", "googlemail"] },
+    { label: "Apple", re: /\bapple\b|\bicloud\b/i, slds: ["apple", "icloud"], strict: true },
+    { label: "Amazon", re: /\bamazon\b/i, slds: ["amazon"] },
+    { label: "PayPal", re: /\bpaypal\b/i, slds: ["paypal"] },
+    { label: "Netflix", re: /\bnetflix\b/i, slds: ["netflix"] },
+    { label: "Facebook", re: /\bfacebook\b/i, slds: ["facebook", "meta"] },
+    { label: "Instagram", re: /\binstagram\b/i, slds: ["instagram"] },
+    { label: "WhatsApp", re: /\bwhatsapp\b/i, slds: ["whatsapp"] },
+    { label: "LinkedIn", re: /\blinkedin\b/i, slds: ["linkedin"] },
+    { label: "Binance", re: /\bbinance\b/i, slds: ["binance"] },
+    { label: "Coinbase", re: /\bcoinbase\b/i, slds: ["coinbase"] },
+    { label: "Movistar", re: /\bmovistar\b/i, slds: ["movistar", "telefonica"] },
+    { label: "Vodafone", re: /\bvodafone\b/i, slds: ["vodafone"] },
+    { label: "Endesa", re: /\bendesa\b/i, slds: ["endesa"] },
+    { label: "Iberdrola", re: /\biberdrola\b/i, slds: ["iberdrola"] },
+    { label: "El Corte Inglés", re: /\bel corte ingl[ée]s\b/i, slds: ["elcorteingles"] },
+    { label: "Wallapop", re: /\bwallapop\b/i, slds: ["wallapop"] },
+    { label: "Vinted", re: /\bvinted\b/i, slds: ["vinted"] },
+    { label: "Renfe", re: /\brenfe\b/i, slds: ["renfe"] },
+    { label: "Booking.com", re: /\bbooking\.com\b/i, slds: ["booking"] },
+    { label: "Telegram", re: /\btelegram\b/i, slds: ["telegram", "t"], strict: true },
+    { label: "Dropbox", re: /\bdropbox\b/i, slds: ["dropbox"] },
+    { label: "GitHub", re: /\bgithub\b/i, slds: ["github"] },
+  ];
+
+  // "Cabecera" de la página: lo que la web declara ser. Del alt de las imágenes
+  // solo se toman los logos (cabecera, navegación o un alt/clase que lo diga):
+  // el alt de un banner publicitario cualquiera no debe contar como identidad.
+  function headline() {
+    const parts = [document.title || ""];
+    const meta = document.querySelector('meta[property="og:site_name"], meta[name="application-name"]');
+    if (meta) parts.push(meta.getAttribute("content") || "");
+    document.querySelectorAll("h1").forEach((h) => parts.push(h.innerText || ""));
+    document
+      .querySelectorAll(
+        'header img[alt], nav img[alt], img[alt*="logo" i], img[class*="logo" i][alt],' +
+          ' img[id*="logo" i][alt], img[src*="logo" i][alt], [aria-label*="logo" i]'
+      )
+      .forEach((el) => parts.push(el.getAttribute("alt") || el.getAttribute("aria-label") || ""));
+    return parts.join(" · ").slice(0, 2000);
+  }
+
+  function scanBrandForm() {
+    // Debe haber un campo de contraseña VISIBLE: un registro colapsado o un
+    // login escondido en el pie no son una pantalla de credenciales.
+    const pwd = [...document.querySelectorAll('input[type="password"]')].find(
+      (el) => el.offsetParent !== null || el.getClientRects().length > 0
+    );
+    if (!pwd) return;
+
+    const host = location.hostname.replace(/^www\./, "").toLowerCase();
+    const hostSld = sld(host);
+    const head = headline();
+    for (const b of BRAND_IDENTITIES) {
+      if (!b.re.test(head)) continue;
+      if (b.slds.includes(hostSld)) continue; // es su web de verdad
+      if (b.strict && !BRAND_CONTEXT.test(head)) continue;
+      add({
+        id: `brandform:${b.label}`,
+        weight: 60,
+        category: "phishing",
+        title: t("fBrandFormTitle", [b.label]),
+        detail: t("fBrandFormDetail", [b.label, host]),
+      });
+      return; // con una marca suplantada basta
+    }
+  }
+
   // --- 3) Texto típico de estafa / soporte técnico falso ---------------------
   const SCAM_PATTERNS = [
     /su (ordenador|equipo|pc) (está|ha sido) infectad/i,
@@ -433,6 +543,7 @@
   function runScans() {
     checkDomain();
     scanForms();
+    scanBrandForm();
     scanScam();
     scanClickFix();
     scanIframes();

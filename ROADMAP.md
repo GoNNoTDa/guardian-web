@@ -21,6 +21,11 @@ Estado y pendientes del proyecto. La versión actual es **v0.6.0**.
 - Phishing: typosquatting, homógrafos, formularios inseguros, exfiltración,
   skimmer de tarjetas (Luhn).
 - Scam: texto de estafa, iframes ocultos, permisos al entrar, browser locker.
+- Suplantación de marca con login: la página dice ser un banco u organismo (en
+  el título, `og:site_name`, `h1` o el alt del logo) y pide contraseña desde un
+  dominio que no es suyo. Mira el CONTENIDO, no el parecido del dominio, que es
+  como funcionan de verdad las campañas que avisa el INCIBE. 45 marcas, con
+  contexto obligatorio en las de nombre ambiguo (Santander, Correos, Apple).
 - ClickFix / CAPTCHA falso: vigila lo que la web escribe en el portapapeles
   (`writeText`, evento `copy` y `execCommand`) y reconoce el camuflaje con
   espacios; el señuelo textual («verifica que eres humano» + `Win+R`/`Ctrl+V`)
@@ -37,7 +42,7 @@ Estado y pendientes del proyecto. La versión actual es **v0.6.0**.
 - Consulta con k-anonimato; reporte manual; UUID anónimo hasheado.
 
 ### Plataforma
-- i18n en 7 idiomas (es, en, ca, fr, it, zh_CN, ja), 158 claves con paridad.
+- i18n en 7 idiomas (es, en, ca, fr, it, zh_CN, ja), 168 claves con paridad.
 - Enlaces educativos por vector (OSI/INCIBE, OWASP/EFF/MDN).
 - Laboratorio local de pruebas manuales (`test-lab/`).
 - Licencia MIT, política de privacidad, guía de contribución, script de build.
@@ -82,38 +87,34 @@ Para no publicar antes de tiempo, la vara de medir es:
 
 ## 🎯 Detectores contra técnicas de 2025-2026
 
-Del repaso al panorama de amenazas de julio de 2026. ClickFix ya está hecho; el
-resto sigue en pie, en orden de valor por línea de código. Los pesos son
-propuestas de partida, a calibrar en el rodaje.
+Del repaso al panorama de amenazas de julio de 2026. **ClickFix** y **marca +
+contraseña en dominio ajeno** ya están hechos (ver arriba); el resto sigue en
+pie, en orden de valor por línea de código. Los pesos son propuestas de partida,
+a calibrar en el rodaje.
 
-1. **Marca + contraseña en dominio ajeno** (~60). El typosquatting actual mira
-   el dominio; esto mira el contenido: hay `input[type=password]`, el dominio no
-   es de confianza y el título/`h1`/`alt` del logo nombra a un banco o organismo
-   de la lista. Es el patrón exacto de las campañas que avisa INCIBE, y el
-   phishing bancario es el 40 % de los incidentes en España.
-2. **Secuestro del portapapeles** (~70). En el evento `copy`, comparar
+1. **Secuestro del portapapeles** (~70). En el evento `copy`, comparar
    `getSelection()` con lo que el sitio escribe: si difiere, te está cambiando el
    IBAN o la dirección de la wallet. Reutiliza los ganchos de ClickFix.
-3. **Web3 / wallet drainers** (detector nuevo). Envolver `window.ethereum`:
+2. **Web3 / wallet drainers** (detector nuevo). Envolver `window.ethereum`:
    `eth_sign` (~70), `setApprovalForAll`/`approve` con `MAX_UINT256` (~70),
    `personal_sign` con `Permit`/`Permit2` (~50) y, sobre todo, petición de
    **frase semilla** en un formulario (~90): eso no lo pide nadie legítimo.
-4. **Browser-in-the-Browser** (~70). Contenedor con aspecto de ventana (sombra,
+3. **Browser-in-the-Browser** (~70). Contenedor con aspecto de ventana (sombra,
    cabecera, botones de cerrar) que pinta una URL `https://` de otra marca y
    contiene un campo de contraseña. Ninguna web honesta dibuja una barra de
    direcciones.
-5. **HTML smuggling** (~50). Envolver `URL.createObjectURL` y detectar
+4. **HTML smuggling** (~50). Envolver `URL.createObjectURL` y detectar
    `<a download>` con `blob:`/`data:` disparado por `.click()` sin gesto del
    usuario. Es el hueco que solo una extensión puede tapar: sin petición de red,
    ni proxy ni reputación de URL ven nada.
-6. **SVG con JavaScript** (~45, y ~70 si el documento principal es un SVG con
+5. **SVG con JavaScript** (~45, y ~70 si el documento principal es un SVG con
    formulario de login). Los adjuntos SVG maliciosos se multiplicaron por 50 en
    un año.
-7. **Prompt injection oculto** (~40). Texto invisible (`left:-9999px`,
+6. **Prompt injection oculto** (~40). Texto invisible (`left:-9999px`,
    `font-size:0`, color del fondo) con instrucciones dirigidas a un agente de
    IA. Novedad de 2026; útil para quien navegue con un agente o pegue páginas en
    un chatbot.
-8. **Reforzar el aviso de notificaciones** (15 → ~40) cuando la petición llega
+7. **Reforzar el aviso de notificaciones** (15 → ~40) cuando la petición llega
    con el señuelo del reproductor falso («pulsa Permitir para ver el vídeo») o
    se registra un service worker en un dominio no confiable.
 

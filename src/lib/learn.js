@@ -8,6 +8,7 @@
 
 const ES = {
   reputation: "https://www.osi.es/es/campanias/fraudes-en-la-red",
+  community: "https://www.osi.es/es/campanias/fraudes-en-la-red",
   redirects: "https://www.incibe.es/aprendeciberseguridad/ingenieria-social",
   tld: "https://www.osi.es/es/actualidad/blog",
   rawip: "https://www.osi.es/es/actualidad/blog",
@@ -17,6 +18,7 @@ const ES = {
   thirdparties: "https://www.osi.es/es/tu-informacion-personal",
   trackerlearn: "https://www.osi.es/es/tu-informacion-personal",
   typosquat: "https://www.incibe.es/aprendeciberseguridad/phishing",
+  brandform: "https://www.incibe.es/ciudadania/tags/phishing",
   insecureform: "https://www.osi.es/es/protege-tu-wifi",
   crossform: "https://www.incibe.es/aprendeciberseguridad/phishing",
   exfil: "https://www.osi.es/es/tu-informacion-personal",
@@ -32,6 +34,7 @@ const ES = {
 
 const INTL = {
   reputation: "https://safebrowsing.google.com/",
+  community: "https://owasp.org/www-community/attacks/Phishing",
   redirects: "https://owasp.org/www-community/attacks/Unvalidated_Redirects_and_Forwards_Cheat_Sheet",
   tld: "https://owasp.org/www-community/attacks/Phishing",
   rawip: "https://owasp.org/www-community/attacks/Phishing",
@@ -41,6 +44,7 @@ const INTL = {
   thirdparties: "https://www.eff.org/issues/online-behavioral-tracking",
   trackerlearn: "https://www.eff.org/issues/online-behavioral-tracking",
   typosquat: "https://owasp.org/www-community/attacks/Phishing",
+  brandform: "https://owasp.org/www-community/attacks/Phishing",
   insecureform: "https://developer.mozilla.org/docs/Web/Security/Transport_Layer_Security",
   crossform: "https://owasp.org/www-community/attacks/Phishing",
   exfil: "https://owasp.org/www-community/attacks/Data_Exfiltration",
