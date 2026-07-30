@@ -465,6 +465,50 @@
     }
   }
 
+  // --- 2c) Petición de la frase de recuperación de una cartera --------------
+  // Ninguna web, servicio o soporte legítimo pide nunca la frase semilla: quien
+  // la tiene se lleva los fondos, sin más. De ahí el peso alto.
+  //
+  // La expresión exige "frase" + "recuperación/semilla" juntas (o "mnemonic"),
+  // nunca "recovery" a secas: un campo «correo de recuperación» o «código de
+  // recuperación» es de lo más normal y no tiene nada que ver.
+  const SEED_RE =
+    /(frase (de )?(recuperaci[óo]n|semilla|secreta)|frase semilla|palabras de recuperaci[óo]n|seed phrase|recovery phrase|secret phrase|mnemonic|1[28][ -]?(palabras|words)|24[ -]?(palabras|words))/i;
+  function scanSeedPhrase() {
+    const fields = [...document.querySelectorAll("input, textarea")].filter(
+      (el) => !/^(hidden|checkbox|radio|submit|button|file|range|color|image|reset)$/i.test(el.type || "")
+    );
+    if (!fields.length) return;
+
+    // Camino 1: el propio campo se identifica como la frase de recuperación. Se
+    // mira solo la etiqueta del campo (placeholder, name, id, aria-label y su
+    // <label>), nunca el texto de la página: un artículo que explica qué es una
+    // frase semilla no tiene un campo llamado así.
+    const etiqueta = (el) => {
+      let asociada = "";
+      try {
+        if (el.labels) asociada = [...el.labels].map((l) => l.textContent || "").join(" ");
+      } catch {
+        /* labels no disponible en algún elemento exótico */
+      }
+      return [el.placeholder, el.name, el.id, el.getAttribute("aria-label"), asociada].join(" ");
+    };
+    const campoDirecto = fields.some((el) => SEED_RE.test(etiqueta(el)));
+
+    // Camino 2: la rejilla de 12/24 casillas que imita la pantalla de
+    // restauración de una cartera, con el vocabulario en la página.
+    const rejilla = fields.length >= 12 && SEED_RE.test((document.body?.innerText || "").slice(0, 20000));
+
+    if (!campoDirecto && !rejilla) return;
+    add({
+      id: "seedphrase",
+      weight: 90,
+      category: "phishing",
+      title: t("fSeedTitle"),
+      detail: t("fSeedDetail"),
+    });
+  }
+
   // --- 3) Texto típico de estafa / soporte técnico falso ---------------------
   const SCAM_PATTERNS = [
     /su (ordenador|equipo|pc) (está|ha sido) infectad/i,
@@ -544,6 +588,7 @@
     checkDomain();
     scanForms();
     scanBrandForm();
+    scanSeedPhrase();
     scanScam();
     scanClickFix();
     scanIframes();

@@ -454,6 +454,95 @@
     if (el && typeof el.value === "string") inspectClipboard(el.value);
   });
 
+  // --- Web3: firmas y permisos que vacían la cartera -----------------------
+  // Un "drainer" no roba tu clave privada: te hace FIRMAR algo que le da
+  // permiso para mover tus fondos cuando quiera. Son cuatro peticiones
+  // concretas las que aparecen en casi todos los casos.
+  //
+  // `window.ethereum` lo inyecta la cartera (MetaMask y compatibles) y puede no
+  // existir todavía en document_start. Se prueba al arrancar, en el evento
+  // `ethereum#initialized` y en tres reintentos cortos. Nunca se define ni se
+  // sustituye la propiedad —solo se envuelve `request()` si ya existe— para no
+  // interferir con la inyección de la cartera.
+  const SEL_APPROVAL_ALL = "a22cb465"; // setApprovalForAll(address,bool)
+  const SEL_APPROVE = "095ea7b3"; // approve(address,uint256)
+  const hexToText = (h) => {
+    const s = String(h).replace(/^0x/, "");
+    if (!/^[0-9a-f]+$/i.test(s) || s.length % 2 || s.length > 8192) return "";
+    let out = "";
+    for (let i = 0; i < s.length; i += 2) out += String.fromCharCode(parseInt(s.substr(i, 2), 16));
+    return out;
+  };
+  // Un registro por tipo de firma, no un flag único: si no, una web podría
+  // gastarlo con la petición más barata y pedir después la peligrosa sin que se
+  // avisara. Cada tipo se avisa una sola vez.
+  const web3Seen = new Set();
+  function inspectWeb3(req) {
+    if (!req || typeof req !== "object") return;
+    const method = String(req.method || "");
+    const params = Array.isArray(req.params) ? req.params : [];
+    const flag = (id, weight, titleKey, detailKey) => {
+      if (web3Seen.has(id)) return;
+      web3Seen.add(id);
+      post({ id, weight, category: "phishing", titleKey, detailKey });
+    };
+
+    // eth_sign: firma a ciegas de datos arbitrarios. Obsoleta y desaconsejada
+    // por las propias carteras; en la práctica es señal de drainer.
+    if (method === "eth_sign") {
+      return flag("web3:ethsign", 70, "fWeb3SignTitle", "fWeb3SignDetail");
+    }
+
+    if (method === "eth_sendTransaction") {
+      const data = String((params[0] && params[0].data) || "").toLowerCase().replace(/^0x/, "");
+      const selector = data.slice(0, 8);
+      const arg2 = data.slice(72, 136); // segundo argumento, 32 bytes
+      // setApprovalForAll(operador, true): entrega la colección completa.
+      if (selector === SEL_APPROVAL_ALL && /^0*1$/.test(arg2)) {
+        return flag("web3:approvalall", 70, "fWeb3ApprovalAllTitle", "fWeb3ApprovalAllDetail");
+      }
+      // approve(gastador, cantidad prácticamente infinita).
+      if (selector === SEL_APPROVE && /^f{56,64}$/.test(arg2)) {
+        return flag("web3:unlimited", 70, "fWeb3UnlimitedTitle", "fWeb3UnlimitedDetail");
+      }
+    }
+
+    // Permit / Permit2: una firma fuera de cadena que autoriza a gastar tus
+    // tokens sin que llegue a presentarse como una transacción.
+    if (method === "personal_sign" || method === "eth_signTypedData" || method === "eth_signTypedData_v3" || method === "eth_signTypedData_v4") {
+      const raw = params
+        .map((p) => {
+          if (typeof p !== "string") {
+            try {
+              return JSON.stringify(p);
+            } catch {
+              return "";
+            }
+          }
+          return /^0x[0-9a-f]+$/i.test(p) ? hexToText(p) : p;
+        })
+        .join(" ")
+        .slice(0, 8192);
+      if (/\bpermit2?\b/i.test(raw)) {
+        return flag("web3:permit", 50, "fWeb3PermitTitle", "fWeb3PermitDetail");
+      }
+    }
+  }
+
+  let web3Armed = false;
+  function armWeb3() {
+    if (web3Armed) return true;
+    const eth = window.ethereum;
+    if (!eth || typeof eth.request !== "function") return false;
+    web3Armed = true;
+    wrap(eth, "request", inspectWeb3);
+    return true;
+  }
+  if (!armWeb3()) {
+    window.addEventListener("ethereum#initialized", armWeb3, { once: true });
+    [300, 1000, 3000].forEach((ms) => setTimeout(armWeb3, ms));
+  }
+
   // Envuelve un método conservando su comportamiento; onCall es un espía.
   // Devuelve una función que RESTAURA el original (espías de un solo uso).
   function wrap(obj, name, onCall) {

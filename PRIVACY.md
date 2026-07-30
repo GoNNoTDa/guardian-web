@@ -16,6 +16,8 @@ de mínima recogida de datos.
 | Ajustes y claves de API | `chrome.storage.local` | No |
 | Copia local del feed de URLhaus | `chrome.storage.local` | No (se descarga, nunca se sube nada) |
 | Valores tecleados en campos sensibles (detector de exfiltración) | Solo memoria de la propia página; se comparan localmente | **No. Nunca se almacenan ni se transmiten** |
+| Texto que la web escribe en el portapapeles (detectores ClickFix y de secuestro del portapapeles) | Solo memoria de la propia página; se compara con lo que tenías seleccionado | **No. Nunca se almacena ni se transmite** |
+| Peticiones de firma de tu cartera de criptomonedas (detector Web3) | Solo memoria de la propia página; se mira el tipo de petición | **No. Nunca se almacenan ni se transmiten** |
 
 ## Consultas a servicios externos (opcionales)
 

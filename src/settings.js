@@ -27,6 +27,8 @@ export const DETECTORS = [
   { key: "permissions", group: "scam" },
   { key: "locker", group: "scam" },
   { key: "fingerprint", group: "privacy" },
+  { key: "walletsign", group: "web3" },
+  { key: "seedphrase", group: "web3" },
   { key: "downloads", group: "downloads" },
 ];
 
@@ -92,6 +94,8 @@ const ID_TO_DETECTOR = {
   "perm-geo": "permissions",
   locker: "locker",
   "fp-canvas": "fingerprint",
+  web3: "walletsign",
+  seedphrase: "seedphrase",
   download: "downloads",
 };
 

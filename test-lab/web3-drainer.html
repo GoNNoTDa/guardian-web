@@ -1,0 +1,103 @@
+<!DOCTYPE html>
+<html lang="es">
+<head><meta charset="UTF-8"><title>Prueba: drainer de cartera (Web3)</title></head>
+<body style="font: 15px/1.5 system-ui, sans-serif; max-width: 700px; margin: 40px auto;">
+  <h1>🪙 Prueba: drainer de cartera (Web3)</h1>
+  <p><b>Esperado:</b> cada botón dispara una señal distinta (70, 70, 70 y 50).
+     El formulario de frase de recuperación dispara +90 al cargar → banner
+     <b>ROJO</b>.</p>
+  <p style="background:#fdf6e3; border:1px solid #f0e0b0; border-radius:8px; padding:10px 14px;">
+     ⚠️ <b>No hay ninguna cartera real de por medio.</b> Esta página simula un
+     <code>window.ethereum</code> de juguete que solo registra las peticiones y
+     no firma ni envía nada a ninguna cadena. Funciona igual con o sin MetaMask
+     instalado: si ya hay una cartera, esta prueba no la toca.</p>
+  <hr>
+
+  <h2>1) Firmas y permisos peligrosos</h2>
+  <p>
+    <button id="ethsign">eth_sign (firma a ciegas, +70)</button>
+    <button id="approvalall">setApprovalForAll (+70)</button>
+  </p>
+  <p>
+    <button id="unlimited">approve ilimitado (+70)</button>
+    <button id="permit">Permit2 (+50)</button>
+  </p>
+  <h3>Controles que NO deben disparar nada</h3>
+  <p>
+    <button id="accounts">eth_requestAccounts (conexión normal)</button>
+    <button id="limited">approve con importe concreto</button>
+  </p>
+  <p id="log" style="font-family: monospace; font-size: 13px; color: #555;"></p>
+
+  <h2>2) Petición de frase de recuperación (+90)</h2>
+  <form id="seed" style="border: 1px solid #ccc; padding: 16px; border-radius: 8px; max-width: 420px;">
+    <p><label for="sp">Frase de recuperación (12 palabras)<br>
+      <textarea id="sp" name="seedPhrase" rows="3" style="width: 100%;"></textarea></label></p>
+    <p><button type="submit">Restaurar cartera</button></p>
+    <p id="msg" style="color:#b0281a;"></p>
+  </form>
+  <p style="color:#555;">Junto a él, un control: un campo de recuperación de
+     cuenta de los de toda la vida, que <b>no</b> debe contar como frase semilla
+     (dice «recuperación», pero no es una frase semilla).</p>
+  <p><label>Correo de recuperación<br><input type="email" name="recoveryEmail"></label></p>
+
+  <p><a href="/index.html">← Volver al índice</a></p>
+
+  <script>
+    const log = (m) => { document.getElementById("log").textContent = m; };
+
+    // Cartera de juguete: registra la petición y responde algo inocuo. No se
+    // instala si ya existe una cartera real, para no interferir con ella.
+    if (!window.ethereum) {
+      window.ethereum = {
+        isSimulated: true,
+        request: async (req) => {
+          log("petición registrada: " + req.method);
+          return req.method === "eth_requestAccounts"
+            ? ["0x0000000000000000000000000000000000000000"]
+            : "0x0";
+        },
+      };
+      // Las carteras avisan de su llegada con este evento; el probe lo escucha.
+      window.dispatchEvent(new Event("ethereum#initialized"));
+    }
+
+    const CERO = "0000000000000000000000000000000000000000000000000000000000000000";
+    const dir32 = "000000000000000000000000dead00000000000000000000000000000000beef";
+    const pedir = (req) => window.ethereum.request(req).catch((e) => log("error: " + e));
+
+    document.getElementById("ethsign").onclick = () =>
+      pedir({ method: "eth_sign", params: ["0xdead...", "0xdeadbeef"] });
+
+    // setApprovalForAll(operador, true)
+    document.getElementById("approvalall").onclick = () =>
+      pedir({ method: "eth_sendTransaction",
+              params: [{ data: "0xa22cb465" + dir32 + CERO.slice(0, 63) + "1" }] });
+
+    // approve(gastador, 2^256-1)
+    document.getElementById("unlimited").onclick = () =>
+      pedir({ method: "eth_sendTransaction",
+              params: [{ data: "0x095ea7b3" + dir32 + "f".repeat(64) }] });
+
+    // Permit2 fuera de cadena (el mensaje va en hexadecimal, como en la vida real)
+    document.getElementById("permit").onclick = () => {
+      const texto = "Permit2: autoriza el gasto de tus tokens";
+      let hex = "0x";
+      for (const c of texto) hex += c.charCodeAt(0).toString(16).padStart(2, "0");
+      pedir({ method: "personal_sign", params: [hex, "0xdead"] });
+    };
+
+    // Controles
+    document.getElementById("accounts").onclick = () => pedir({ method: "eth_requestAccounts" });
+    document.getElementById("limited").onclick = () =>
+      pedir({ method: "eth_sendTransaction",
+              params: [{ data: "0x095ea7b3" + dir32 + CERO.slice(0, 60) + "2710" }] });
+
+    document.getElementById("seed").addEventListener("submit", (e) => {
+      e.preventDefault();
+      document.getElementById("msg").textContent =
+        "Envío cancelado: esta página de prueba no transmite nada.";
+    });
+  </script>
+</body>
+</html>
