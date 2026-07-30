@@ -61,7 +61,7 @@
     <ul>
       <li>Solo se envían <strong>cuando pulsas manualmente</strong> «Reportar este sitio». Nada automático.</li>
       <li>Se usa un identificador de instalación <strong>anónimo y aleatorio</strong>, guardado hasheado en el servidor.</li>
-      <li>No se recoge email, cuenta ni dirección IP.</li>
+      <li>No se guarda email, cuenta ni dirección IP: el reporte solo contiene el dominio, la categoría y la fecha.</li>
     </ul>
 
     <h2>Lo que Guardián Web NO hace</h2>
@@ -69,7 +69,19 @@
       <li class="no">No recopila ni vende datos de navegación.</li>
       <li class="no">No usa analíticas ni telemetría.</li>
       <li class="no">No inyecta publicidad ni altera el contenido (salvo el banner de aviso).</li>
+      <li class="no">No crea cuentas: no hay email, nombre ni perfil que asociar a ti.</li>
+      <li class="no">No descarga ni ejecuta código remoto: solo corre el código del propio paquete.</li>
+      <li class="no">Recién instalada y sin claves de API, no envía nada a ningún servidor.</li>
     </ul>
+
+    <h2>Permisos que NO pide</h2>
+    <p class="lead">Tan importante como lo que pide es lo que no pide. Guardián Web no declara <code>cookies</code>, <code>history</code>, <code>bookmarks</code>, <code>clipboardRead</code>, <code>identity</code> ni <code>nativeMessaging</code>: técnicamente no puede leer tus cookies de sesión, tu historial, tus marcadores ni tu portapapeles, ni comunicarse con programas de tu equipo. La lista completa está en el <code>manifest.json</code> del repositorio.</p>
+
+    <h2>Cómo borrar tus datos</h2>
+    <p class="lead">No hay cuenta que cancelar porque nunca se crea ninguna. El historial de avisos se borra desde el propio popup; la lista de confianza, los ajustes y las claves, desde la página de opciones. Desinstalar la extensión elimina todo su almacenamiento de golpe.</p>
+
+    <h2>Este sitio web</h2>
+    <p class="lead">Esta página no usa cookies, ni analíticas, ni fuentes o scripts de terceros: es HTML y CSS estáticos. Como cualquier servidor web, recibe la dirección IP de las peticiones para poder responderlas; no se cruza con los datos de la extensión ni se usa para identificar a nadie.</p>
 
     <h2>Código abierto</h2>
     <p class="lead">Todo el código es público y auditable bajo licencia MIT. Puedes comprobar por ti mismo exactamente qué hace la extensión.</p>

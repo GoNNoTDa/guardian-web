@@ -62,7 +62,7 @@
     <ul>
       <li>Sent only <strong>when you manually click</strong> "Report this site." Nothing automatic.</li>
       <li>An <strong>anonymous, random</strong> installation identifier is used, stored hashed on the server.</li>
-      <li>No email, account or IP address is collected.</li>
+      <li>No email, account or IP address is stored: a report contains only the domain, the category and the date.</li>
     </ul>
 
     <h2>What Guardián Web does NOT do</h2>
@@ -70,7 +70,19 @@
       <li class="no">Does not collect or sell browsing data.</li>
       <li class="no">Does not use analytics or telemetry.</li>
       <li class="no">Does not inject ads or alter content (except the warning banner).</li>
+      <li class="no">Does not create accounts: there is no email, name or profile tied to you.</li>
+      <li class="no">Does not download or run remote code: only the code shipped in the package runs.</li>
+      <li class="no">Freshly installed and with no API keys, it sends nothing to any server.</li>
     </ul>
+
+    <h2>Permissions it does NOT request</h2>
+    <p class="lead">What it doesn't ask for matters as much as what it does. Guardián Web declares no <code>cookies</code>, <code>history</code>, <code>bookmarks</code>, <code>clipboardRead</code>, <code>identity</code> or <code>nativeMessaging</code> permission: it technically cannot read your session cookies, your browsing history, your bookmarks or your clipboard, nor talk to programs on your machine. The full list is in the repository's <code>manifest.json</code>.</p>
+
+    <h2>How to delete your data</h2>
+    <p class="lead">There is no account to close because none is ever created. The warning history is cleared from the popup itself; the trust list, settings and API keys from the options page. Uninstalling the extension wipes all of its storage at once.</p>
+
+    <h2>This website</h2>
+    <p class="lead">This page uses no cookies, no analytics and no third-party fonts or scripts: it's static HTML and CSS. Like any web server, it receives the IP address of incoming requests in order to answer them; it is never cross-referenced with extension data or used to identify anyone.</p>
 
     <h2>Open source</h2>
     <p class="lead">All the code is public and auditable under the MIT license. You can verify for yourself exactly what the extension does.</p>

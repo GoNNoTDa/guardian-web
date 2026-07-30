@@ -2,6 +2,13 @@
 
 **The security extension that protects you _without_ spying on you.**
 
+![version](https://img.shields.io/badge/version-0.6.0-2e7d32)
+![license](https://img.shields.io/badge/license-MIT-blue)
+![manifest](https://img.shields.io/badge/Manifest-V3-4285f4)
+![i18n](https://img.shields.io/badge/i18n-7%20languages-6a1b9a)
+![dependencies](https://img.shields.io/badge/dependencies-none-455a64)
+![telemetry](https://img.shields.io/badge/telemetry-zero-c62828)
+
 *[English](#english) · [Español](#español)*
 
 ---
@@ -13,8 +20,8 @@
 with every warning.** Open source, 7 languages, with specific protection for
 Spanish banks and public services.
 
-> Website: <https://sec.fourmartech.es> · Privacy:
-> <https://sec.fourmartech.es/privacidad.html>
+> Website: <https://sec.fourmartech.es/index.en.html> · Privacy:
+> <https://sec.fourmartech.es/privacy.en.html>
 
 ### Philosophy
 
@@ -28,6 +35,23 @@ Spanish banks and public services.
 
 It's a **defensive** tool: it only observes and scores risk; it never blocks or
 modifies traffic. It's not a replacement for an antivirus.
+
+### How it works
+
+Three layers watch the same tab from different vantage points and feed a single
+score:
+
+1. **Network** (`background.js`, service worker) — requests, redirect chains,
+   reputation lookups, domain age, downloads.
+2. **DOM** (`content.js`, isolated world) — the domain name itself, forms,
+   scam wording, and the in-page warning banner.
+3. **Page behavior** (`page-probe.js`, MAIN world) — what the site's own
+   JavaScript tries to do: fingerprinting, mining, form exfiltration, locking
+   the browser.
+
+Each signal adds points instead of issuing a verdict on its own. That's
+deliberate: single-signal detectors are the ones that cry wolf, and a false
+positive spends the user's trust — the only thing this kind of tool really has.
 
 ### What it detects
 
@@ -44,6 +68,7 @@ modifies traffic. It's not a replacement for an antivirus.
 | Reputation | Frequently abused TLD | 5 |
 | Phishing | Homograph domain (punycode/cyrillic/leet: `g00gle.com`) | 80 |
 | Phishing | Typosquatting (impersonates a known brand) | 60 |
+| Phishing | Known brand under a different TLD (`agenciatributaria.com`) | 30 |
 | Phishing | Password sent unencrypted (HTTP) | 50 |
 | Phishing | Login sent to another domain | 35 |
 | Phishing | Card theft / skimmer (card number to a third party, Luhn) | 90 |
@@ -63,6 +88,17 @@ modifies traffic. It's not a replacement for an antivirus.
 Weights add up: **≥50 → orange warning**, **≥100 → red warning** (configurable).
 Warnings appear as a **badge** on the icon, an in-page **banner**, a system
 **notification** and in the **side panel**.
+
+Every signal can be switched off individually from the options page, grouped by
+layer. On the ~110 built-in trusted domains, heuristic signals are suppressed
+altogether: there, only threats **confirmed** by a reputation API will warn you.
+
+### Search results guard
+
+Before you even click, risk icons appear next to the results on **Google**
+(.com and .es), **Bing**, **DuckDuckGo**, **Brave Search** and **Yahoo**. This
+runs entirely locally — it only uses what the extension already knows about
+those domains, and sends nothing anywhere. Toggle it off in the options.
 
 ### Install
 
@@ -90,6 +126,30 @@ lookups use k-anonymity (only a hash prefix is sent). See `PRIVACY.md`.
 
 `test-lab/` is a harmless local lab: run `node server.js` and open
 <http://127.0.0.1:8000>. Each page triggers a specific detector.
+
+### FAQ
+
+**Does it work without any API key?** Yes. Without keys it runs on local
+heuristics only, which is most of the detectors — and nothing leaves your
+device. Keys only add the reputation layer.
+
+**Why does it need access to all sites?** Because the dangerous site is, by
+definition, the one nobody has on a list yet. An allowlist of "sites to protect"
+would leave you unprotected exactly where it matters. It only reads; it never
+modifies (see `PRIVACY.md`).
+
+**Does it slow down browsing?** The detectors are lightweight and observational:
+no traffic is intercepted or delayed, and there is no build step or framework
+underneath. On trusted domains, most heuristics don't even run.
+
+**Is it a replacement for an antivirus?** No. It watches what a web page does in
+your browser. It doesn't scan files or protect the rest of your system.
+
+**Why isn't it in the Chrome Web Store yet?** It's being calibrated in daily use
+first — see `ROADMAP.md`. Meanwhile it installs as an unpacked extension.
+
+**Can I use it in a company or a classroom?** Yes, MIT licensed. For a
+classroom, `test-lab/` is a walkable "threat museum" for live demos.
 
 ### Support the project 💛
 
@@ -128,6 +188,24 @@ para banca y organismos españoles.
 Es una herramienta **defensiva**: solo observa y puntúa el riesgo; nunca
 bloquea ni modifica el tráfico. No sustituye a un antivirus.
 
+### Cómo funciona
+
+Tres capas vigilan la misma pestaña desde sitios distintos y alimentan una sola
+puntuación:
+
+1. **Red** (`background.js`, service worker) — peticiones, cadenas de
+   redirección, consultas de reputación, edad del dominio, descargas.
+2. **DOM** (`content.js`, mundo aislado) — el propio nombre de dominio, los
+   formularios, el texto de estafa y el banner de aviso en la página.
+3. **Comportamiento de página** (`page-probe.js`, mundo MAIN) — qué intenta
+   hacer el JavaScript del sitio: fingerprinting, minado, exfiltración de
+   formularios, secuestro del navegador.
+
+Cada señal suma puntos en lugar de dictar un veredicto por sí sola. Es
+deliberado: los detectores de señal única son los que gritan «lobo», y un falso
+positivo gasta la confianza del usuario, que es lo único que de verdad tiene una
+herramienta así.
+
 ### Qué detecta
 
 | Capa | Señal | Peso |
@@ -143,6 +221,7 @@ bloquea ni modifica el tráfico. No sustituye a un antivirus.
 | Reputación | TLD con abuso frecuente | 5 |
 | Phishing | Dominio homógrafo (punycode/cirílico/leet: `g00gle.com`) | 80 |
 | Phishing | Typosquatting (imita a una marca conocida) | 60 |
+| Phishing | Marca conocida bajo otro TLD (`agenciatributaria.com`) | 30 |
 | Phishing | Contraseña enviada sin cifrar (HTTP) | 50 |
 | Phishing | Login enviado a otro dominio | 35 |
 | Phishing | Robo de tarjeta / skimmer (nº de tarjeta a un tercero, Luhn) | 90 |
@@ -162,6 +241,18 @@ bloquea ni modifica el tráfico. No sustituye a un antivirus.
 Se suman los pesos: **≥50 → aviso naranja**, **≥100 → aviso rojo**
 (configurable). Los avisos aparecen como **badge** en el icono, **banner** en la
 página, **notificación** del sistema y en el **panel lateral**.
+
+Cada señal se puede desactivar por separado desde la página de opciones,
+agrupadas por capa. En los ~110 dominios de confianza que vienen embebidos las
+señales heurísticas se suprimen por completo: allí solo avisan las amenazas
+**confirmadas** por una API de reputación.
+
+### Guardián de resultados de búsqueda
+
+Antes incluso de hacer clic, aparecen iconos de riesgo junto a los resultados de
+**Google** (.com y .es), **Bing**, **DuckDuckGo**, **Brave Search** y **Yahoo**.
+Funciona en local: solo usa lo que la extensión ya sabe de esos dominios y no
+envía nada a ninguna parte. Se puede desactivar en las opciones.
 
 ### Instalación
 
@@ -192,6 +283,31 @@ memoria dentro de la propia página. Las consultas de comunidad usan k-anonimato
 En `test-lab/` hay un laboratorio local e inofensivo: `node server.js` y abre
 <http://127.0.0.1:8000>. Cada página dispara un detector concreto.
 
+### Preguntas frecuentes
+
+**¿Funciona sin claves de API?** Sí. Sin claves funciona solo con heurísticas
+locales, que son la mayoría de los detectores, y nada sale de tu equipo. Las
+claves únicamente añaden la capa de reputación.
+
+**¿Por qué necesita acceso a todos los sitios?** Porque el sitio peligroso es,
+por definición, el que todavía no está en ninguna lista. Una lista de «sitios a
+proteger» te dejaría sin protección justo donde importa. Solo lee; nunca
+modifica (ver `PRIVACY.md`).
+
+**¿Ralentiza la navegación?** Los detectores son ligeros y de observación: no se
+intercepta ni se retrasa ninguna petición, y no hay build ni framework debajo.
+En los dominios de confianza la mayoría de heurísticas ni se ejecutan.
+
+**¿Sustituye a un antivirus?** No. Vigila lo que hace una página web dentro de
+tu navegador. No escanea ficheros ni protege el resto de tu sistema.
+
+**¿Por qué no está aún en la Chrome Web Store?** Porque primero se está
+calibrando con uso diario, ver `ROADMAP.md`. Mientras tanto se instala como
+extensión descomprimida.
+
+**¿Puedo usarla en una empresa o en clase?** Sí, licencia MIT. Para clase,
+`test-lab/` es un «museo de amenazas» navegable, ideal para demos en vivo.
+
 ### Apoyar el proyecto 💛
 
 Guardián Web es gratis, de código abierto y sin ánimo de lucro. Si te resulta
@@ -215,19 +331,27 @@ src/
   background.js     Service worker: red, reputación, descargas, comunidad
   content.js        DOM: homógrafos, formularios, scams, exfil + banner
   page-probe.js     Mundo MAIN: fingerprinting, minado, exfil, browser locker
-  search-guard.js   Iconos de riesgo en resultados de búsqueda
+  search-guard.js   Iconos de riesgo en 6 buscadores (local)
   settings.js       Ajustes (storage) + mapa de detectores
   lib/              reputation, scoring, blocklists, trusted, blockfeed,
                     domain, trackers, learn, community
 ui/
   popup.* panel.* options.*   Interfaces (comparten render.js e i18n.js)
-_locales/           7 idiomas (es, en, ca, fr, it, zh_CN, ja)
+_locales/           7 idiomas (es, en, ca, fr, it, zh_CN, ja) · 158 claves
 icons/              16 / 48 / 128 px
 test-lab/           Laboratorio de pruebas local (Node)
-server/             Backend PHP + MySQL de reputación colaborativa
-store/              Ficha para la Chrome Web Store
+server/             Sitio web (ES/EN) + backend PHP/MySQL de reputación
+                    colaborativa (api/, admin/, schema.sql)
+store/              Ficha, capturas, tiles y checklist de la Chrome Web Store
 scripts/build.ps1   Empaquetado para la Web Store
+.github/FUNDING.yml Patrocinio
 ```
+
+Sin dependencias, sin build step: lo que está en el repo es exactamente lo que se
+ejecuta en el navegador. El `build.ps1` solo empaqueta el zip.
+
+*No dependencies, no build step: what's in the repo is exactly what runs in the
+browser — `build.ps1` only zips it up.*
 
 ## Build
 
