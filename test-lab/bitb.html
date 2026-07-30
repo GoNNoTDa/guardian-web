@@ -1,0 +1,102 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <title>Prueba: Browser-in-the-Browser</title>
+  <style>
+    body { font: 15px/1.5 system-ui, sans-serif; max-width: 760px; margin: 40px auto; }
+    /* Imitación de una ventana emergente del navegador, dibujada con HTML. */
+    .ventana { width: 420px; border: 1px solid #c8c8c8; border-radius: 8px;
+               box-shadow: 0 12px 34px rgba(0,0,0,.28); overflow: hidden; background: #fff; }
+    .barra { display: flex; align-items: center; gap: 8px; background: #f1f3f4;
+             padding: 6px 10px; border-bottom: 1px solid #dcdcdc; }
+    .barra .url { flex: 1; background: #fff; border: 1px solid #dadce0; border-radius: 12px;
+                  padding: 3px 10px; font-size: 12px; color: #202124; }
+    .barra .btns { color: #5f6368; letter-spacing: 3px; }
+    .cuerpo { padding: 18px; }
+    .cuerpo input { width: 100%; padding: 6px; margin: 4px 0 12px; }
+    .tarjeta { max-width: 420px; border: 1px solid #ccc; border-radius: 8px;
+               box-shadow: 0 8px 20px rgba(0,0,0,.15); padding: 18px; }
+    .nota { background:#fdf6e3; border:1px solid #f0e0b0; border-radius:8px; padding:10px 14px; }
+  </style>
+</head>
+<body>
+  <h1>🪟 Prueba: Browser-in-the-Browser</h1>
+  <p><b>Esperado:</b> ventana de navegador dibujada (+70) + contraseña por HTTP
+     (+50) = 120 → banner <b>ROJO</b>, al cargar y sin tocar nada.</p>
+  <p class="nota">⚠️ Inofensiva: ningún formulario de esta página envía nada
+     (todos cancelan el envío). La «ventana» es HTML corriente, que es
+     precisamente lo que la hace peligrosa en la vida real.</p>
+  <hr>
+
+  <h2>1) El ataque: ventana falsa con barra de direcciones falsa</h2>
+  <div class="ventana">
+    <div class="barra">
+      <span>🔒</span>
+      <span class="url">https://login.microsoftonline.com/oauth2/authorize</span>
+      <span class="btns">– □ ✕</span>
+    </div>
+    <div class="cuerpo">
+      <b>Inicia sesión con tu cuenta</b>
+      <form class="f">
+        <label>Correo<input name="u" type="email"></label>
+        <label>Contraseña<input name="p" type="password"></label>
+        <button type="submit">Siguiente</button>
+      </form>
+    </div>
+  </div>
+  <p style="color:#555;">La barra de arriba es un <code>div</code>: el texto de
+     la «dirección» lo escribe la página. Mira la barra de direcciones de verdad
+     de tu navegador: sigue diciendo <code>127.0.0.1:8000</code>.</p>
+
+  <h2>2) Controles que NO deben disparar la señal</h2>
+
+  <h3>a) Tarjeta de login normal (sin barra de direcciones)</h3>
+  <div class="tarjeta">
+    <b>Accede a tu cuenta</b>
+    <form class="f">
+      <label>Usuario<input name="u2"></label>
+      <label>Contraseña<input name="p2" type="password"></label>
+      <button type="submit">Entrar</button>
+    </form>
+  </div>
+
+  <h3>b) Una URL mencionada en prosa, junto a un formulario</h3>
+  <div class="tarjeta">
+    <p>Si tienes dudas, consulta la documentación en
+       https://ejemplo-de-otro-dominio.test/ayuda antes de continuar.</p>
+    <form class="f">
+      <label>Contraseña<input name="p3" type="password"></label>
+      <button type="submit">Confirmar</button>
+    </form>
+  </div>
+
+  <h3>c) Ventana dibujada que muestra la dirección de ESTA página</h3>
+  <div class="ventana">
+    <div class="barra">
+      <span class="url">http://127.0.0.1:8000/bitb.html</span>
+      <span class="btns">– □ ✕</span>
+    </div>
+    <div class="cuerpo">
+      <form class="f">
+        <label>Contraseña<input name="p4" type="password"></label>
+        <button type="submit">Entrar</button>
+      </form>
+    </div>
+  </div>
+  <p style="color:#555;">Un mockup de la propia web no suplanta a nadie, así que
+     tampoco debe contar.</p>
+
+  <p><a href="/index.html">← Volver al índice</a></p>
+
+  <script>
+    document.querySelectorAll("form.f").forEach((f) =>
+      f.addEventListener("submit", (e) => {
+        e.preventDefault();
+        f.insertAdjacentHTML("beforeend",
+          '<p style="color:#b0281a">Envío cancelado: esta página no transmite nada.</p>');
+      })
+    );
+  </script>
+</body>
+</html>

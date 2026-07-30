@@ -26,6 +26,11 @@ Estado y pendientes del proyecto. La versión actual es **v0.6.0**.
   dominio que no es suyo. Mira el CONTENIDO, no el parecido del dominio, que es
   como funcionan de verdad las campañas que avisa el INCIBE. 45 marcas, con
   contexto obligatorio en las de nombre ambiguo (Santander, Correos, Apple).
+- Browser-in-the-Browser: reconoce la ventana de navegador dibujada con HTML,
+  con su barra de direcciones falsa, dentro de la propia página. Exige las tres
+  cosas a la vez: un texto que es solo una URL de otro dominio (no prosa que la
+  mencione), credenciales o un iframe en el mismo marco, y que el marco parezca
+  una ventana con la barra arriba. Un mockup de la propia web no cuenta.
 - Secuestro del portapapeles: compara lo que el usuario tenía seleccionado con
   lo que la web escribe al copiar. Distingue adornar (añadir la fuente, formato
   Markdown) de sustituir, y solo actúa dentro de un evento `copy` real, para que
@@ -55,7 +60,7 @@ Estado y pendientes del proyecto. La versión actual es **v0.6.0**.
 - Consulta con k-anonimato; reporte manual; UUID anónimo hasheado.
 
 ### Plataforma
-- i18n en 7 idiomas (es, en, ca, fr, it, zh_CN, ja), 186 claves con paridad.
+- i18n en 7 idiomas (es, en, ca, fr, it, zh_CN, ja), 189 claves con paridad.
 - Enlaces educativos por vector (OSI/INCIBE, OWASP/EFF/MDN).
 - Laboratorio local de pruebas manuales (`test-lab/`).
 - Licencia MIT, política de privacidad, guía de contribución, script de build.
@@ -102,26 +107,22 @@ Para no publicar antes de tiempo, la vara de medir es:
 
 Del repaso al panorama de amenazas de julio de 2026. Ya están hechos (ver
 arriba): **ClickFix**, **marca + contraseña en dominio ajeno**, **secuestro del
-portapapeles** y **Web3 / drainers de cartera**. El resto sigue en pie, en orden
-de valor por línea de código. Los pesos son propuestas de partida, a calibrar en
-el rodaje.
+portapapeles**, **Web3 / drainers de cartera** y **Browser-in-the-Browser**. El
+resto sigue en pie, en orden de valor por línea de código. Los pesos son
+propuestas de partida, a calibrar en el rodaje.
 
-1. **Browser-in-the-Browser** (~70). Contenedor con aspecto de ventana (sombra,
-   cabecera, botones de cerrar) que pinta una URL `https://` de otra marca y
-   contiene un campo de contraseña. Ninguna web honesta dibuja una barra de
-   direcciones.
-2. **HTML smuggling** (~50). Envolver `URL.createObjectURL` y detectar
+1. **HTML smuggling** (~50). Envolver `URL.createObjectURL` y detectar
    `<a download>` con `blob:`/`data:` disparado por `.click()` sin gesto del
    usuario. Es el hueco que solo una extensión puede tapar: sin petición de red,
    ni proxy ni reputación de URL ven nada.
-3. **SVG con JavaScript** (~45, y ~70 si el documento principal es un SVG con
+2. **SVG con JavaScript** (~45, y ~70 si el documento principal es un SVG con
    formulario de login). Los adjuntos SVG maliciosos se multiplicaron por 50 en
    un año.
-4. **Prompt injection oculto** (~40). Texto invisible (`left:-9999px`,
+3. **Prompt injection oculto** (~40). Texto invisible (`left:-9999px`,
    `font-size:0`, color del fondo) con instrucciones dirigidas a un agente de
    IA. Novedad de 2026; útil para quien navegue con un agente o pegue páginas en
    un chatbot.
-5. **Reforzar el aviso de notificaciones** (15 → ~40) cuando la petición llega
+4. **Reforzar el aviso de notificaciones** (15 → ~40) cuando la petición llega
    con el señuelo del reproductor falso («pulsa Permitir para ver el vídeo») o
    se registra un service worker en un dominio no confiable.
 

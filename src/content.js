@@ -465,6 +465,68 @@
     }
   }
 
+  // --- 2d) Browser-in-the-Browser: ventana de navegador falsa ---------------
+  // La página dibuja con HTML lo que parece una ventana emergente del navegador
+  // —con su barra de direcciones y sus botones— y dentro pide las credenciales.
+  // La barra es un div: se puede escribir cualquier cosa en ella. Ninguna web
+  // honesta tiene motivo para dibujar una barra de direcciones.
+  //
+  // Se exigen tres cosas a la vez, porque por separado cada una es común:
+  //   1. un texto que es SOLO una URL (no prosa que la mencione) de OTRO dominio
+  //   2. dentro del mismo marco, un campo de contraseña o un iframe
+  //   3. el marco parece una ventana (sombra y esquinas, o botones de ventana) y
+  //      la supuesta barra de direcciones está en su parte superior
+  const URL_ONLY = /\bhttps?:\/\/([a-z0-9-]+(?:\.[a-z0-9-]+)+)/i;
+  const WINDOW_BUTTONS = /[✕✖×⨯🗙⊗]|[–—]\s*□|□\s*[✕✖×]/;
+  function scanFakeWindow() {
+    const pageHost = location.hostname.replace(/^www\./, "").toLowerCase();
+    const candidatos = [];
+    const anotar = (el, texto) => {
+      const t = (texto || "").trim();
+      if (!t || t.length > 120) return;
+      const m = URL_ONLY.exec(t);
+      // La URL debe ser casi todo el contenido: una barra de direcciones no
+      // lleva prosa alrededor ("visita https://x.com para más información").
+      if (!m || t.length > m[0].length + 25) return;
+      const host = m[1].replace(/^www\./, "").toLowerCase();
+      if (host === pageHost || host.endsWith("." + pageHost)) return; // su propia URL
+      candidatos.push({ el, host });
+    };
+    // Los kits usan tanto un input de solo lectura como un div de texto.
+    document.querySelectorAll("input[readonly], input[disabled]").forEach((el) => anotar(el, el.value));
+    const hojas = document.querySelectorAll("div, span, p, code, small, label, td, li, b, strong");
+    for (let i = 0; i < hojas.length && i < 2500 && candidatos.length < 10; i++) {
+      if (!hojas[i].children.length) anotar(hojas[i], hojas[i].textContent);
+    }
+
+    for (const { el, host } of candidatos) {
+      let marco = el.parentElement;
+      for (let nivel = 0; marco && nivel < 6; nivel++, marco = marco.parentElement) {
+        if (!marco.querySelector('input[type="password"]') && !marco.querySelector("iframe")) continue;
+        const s = getComputedStyle(marco);
+        const rMarco = marco.getBoundingClientRect();
+        const rUrl = el.getBoundingClientRect();
+        if (rMarco.height < 80) continue;
+        // La barra de direcciones falsa va arriba, como en una ventana real.
+        if (rUrl.top - rMarco.top > rMarco.height * 0.35) continue;
+        const sombra = s.boxShadow && s.boxShadow !== "none";
+        const esquinas = (parseFloat(s.borderTopLeftRadius) || 0) >= 4;
+        const botones =
+          WINDOW_BUTTONS.test(marco.textContent.slice(0, 400)) ||
+          !!marco.querySelector('[aria-label*="close" i], [class*="titlebar" i], [class*="window-controls" i]');
+        if (!((sombra && esquinas) || botones)) continue;
+        add({
+          id: `fakewindow:${host}`,
+          weight: 70,
+          category: "phishing",
+          title: t("fFakeWindowTitle"),
+          detail: t("fFakeWindowDetail", [host]),
+        });
+        return;
+      }
+    }
+  }
+
   // --- 2c) Petición de la frase de recuperación de una cartera --------------
   // Ninguna web, servicio o soporte legítimo pide nunca la frase semilla: quien
   // la tiene se lleva los fondos, sin más. De ahí el peso alto.
@@ -588,6 +650,7 @@
     checkDomain();
     scanForms();
     scanBrandForm();
+    scanFakeWindow();
     scanSeedPhrase();
     scanScam();
     scanClickFix();
