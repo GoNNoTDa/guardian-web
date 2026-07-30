@@ -3,9 +3,10 @@
 <head><meta charset="UTF-8"><title>Prueba: drainer de cartera (Web3)</title></head>
 <body style="font: 15px/1.5 system-ui, sans-serif; max-width: 700px; margin: 40px auto;">
   <h1>🪙 Prueba: drainer de cartera (Web3)</h1>
-  <p><b>Esperado:</b> cada botón dispara una señal distinta (70, 70, 70 y 50).
-     El formulario de frase de recuperación dispara +90 al cargar → banner
-     <b>ROJO</b>.</p>
+  <p><b>Esperado:</b> el formulario de frase de recuperación dispara +90 al
+     cargar, que es banner <b>naranja</b> (el umbral rojo son 100 puntos). Cada
+     botón añade su señal (70, 70, 70 y 50), así que con la primera firma se
+     pasa de 100 y el banner se vuelve <b>ROJO</b>.</p>
   <p style="background:#fdf6e3; border:1px solid #f0e0b0; border-radius:8px; padding:10px 14px;">
      ⚠️ <b>No hay ninguna cartera real de por medio.</b> Esta página simula un
      <code>window.ethereum</code> de juguete que solo registra las peticiones y
