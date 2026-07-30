@@ -1,0 +1,51 @@
+<!DOCTYPE html>
+<html lang="es">
+<head><meta charset="UTF-8"><title>Prueba: SVG con JavaScript</title></head>
+<body style="font: 15px/1.5 system-ui, sans-serif; max-width: 720px; margin: 40px auto;">
+  <h1>🖼️ Prueba: SVG con JavaScript</h1>
+  <p><b>Esperado en esta página:</b> gráfico SVG con código (+45) y SVG externo
+     que puede ejecutar código (+45) = 90 → banner naranja.</p>
+  <p class="nota" style="background:#fdf6e3; border:1px solid #f0e0b0; border-radius:8px; padding:10px 14px;">
+     Inofensiva: el único script de un SVG que hay aquí escribe un texto dentro
+     del propio gráfico. El SVG «externo» apunta a un dominio
+     <code>.test</code> que no existe, así que no se carga nada.</p>
+  <hr>
+
+  <h2>1) SVG en línea con código dentro (+45)</h2>
+  <svg width="320" height="60" xmlns="http://www.w3.org/2000/svg">
+    <rect width="320" height="60" fill="#eef2f7"/>
+    <text id="dentro" x="10" y="35" font-size="14" fill="#333">Gráfico con script…</text>
+    <script type="text/javascript"><![CDATA[
+      document.getElementById("dentro").textContent = "El script del SVG en línea se ejecutó.";
+    ]]></script>
+  </svg>
+
+  <h2>2) SVG de otro dominio cargado con &lt;object&gt; (+45)</h2>
+  <p style="color:#555;">Cargado así, el SVG <b>sí</b> ejecuta su código. El
+     dominio no existe, así que no verás nada: la señal viene del cómo, no del qué.</p>
+  <object data="http://tercero-inexistente.test/logo.svg" type="image/svg+xml" width="200" height="60"></object>
+
+  <h2>3) El adjunto: un SVG abierto como documento (+70)</h2>
+  <p><a href="/malicious.svg">Abrir <code>malicious.svg</code></a> — es el caso
+     de los adjuntos que se multiplicaron por cincuenta en un año. Ábrelo y mira
+     el panel lateral allí: debe salir <b>«Esta imagen trae código»</b>.</p>
+
+  <h2>Controles que NO deben disparar nada</h2>
+  <h3>a) SVG en línea sin código (un icono normal)</h3>
+  <svg width="60" height="60" xmlns="http://www.w3.org/2000/svg">
+    <circle cx="30" cy="30" r="26" fill="#1e7e45"/>
+    <path d="M18 31 l8 8 l16 -18" stroke="#fff" stroke-width="4" fill="none"/>
+  </svg>
+
+  <h3>b) El mismo SVG con código, pero cargado como imagen</h3>
+  <p style="color:#555;">Con <code>&lt;img&gt;</code> el navegador <b>no</b>
+     ejecuta el script del SVG, así que no hay nada que avisar.</p>
+  <img src="/malicious.svg" width="240" alt="SVG cargado como imagen">
+
+  <h3>c) SVG del mismo origen con &lt;object&gt;</h3>
+  <p style="color:#555;">Mismo dominio: no es un tercero, no se marca.</p>
+  <object data="/malicious.svg" type="image/svg+xml" width="240" height="120"></object>
+
+  <p><a href="/index.html">← Volver al índice</a></p>
+</body>
+</html>

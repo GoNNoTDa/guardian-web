@@ -56,6 +56,11 @@ Estado y pendientes del proyecto. La versión actual es **v0.6.0**.
   forma de instrucción a un modelo: hay mucho texto oculto legítimo y muchas
   páginas que hablan de IA a la vista. El aviso incluye un trozo de lo que se
   escondía, que es lo que de verdad enseña qué intentaba la página.
+- SVG con JavaScript: un SVG es un documento XML y puede llevar `<script>`. Tres
+  señales: el documento que se está viendo **es** un SVG con código (70, el caso
+  del adjunto que se multiplicó por cincuenta en un año), SVG en línea con código
+  (45) y SVG de un tercero cargado por `object`/`embed`/`iframe`, que sí ejecuta
+  (45). Un `<img src="x.svg">` no ejecuta nada, así que no se marca.
 - Malware/privacidad: cryptojacking, fingerprinting, terceros, rastreadores
   aprendidos (heurístico, sin listas).
 - Descargas peligrosas (doble extensión, ejecutables).
@@ -75,7 +80,7 @@ Estado y pendientes del proyecto. La versión actual es **v0.6.0**.
 - Consulta con k-anonimato; reporte manual; UUID anónimo hasheado.
 
 ### Plataforma
-- i18n en 7 idiomas (es, en, ca, fr, it, zh_CN, ja), 196 claves con paridad.
+- i18n en 7 idiomas (es, en, ca, fr, it, zh_CN, ja), 203 claves con paridad.
 - Enlaces educativos por vector (OSI/INCIBE, OWASP/EFF/MDN).
 - Laboratorio local de pruebas manuales (`test-lab/`).
 - Licencia MIT, política de privacidad, guía de contribución, script de build.
@@ -123,14 +128,10 @@ Para no publicar antes de tiempo, la vara de medir es:
 Del repaso al panorama de amenazas de julio de 2026. Ya están hechos (ver
 arriba): **ClickFix**, **marca + contraseña en dominio ajeno**, **secuestro del
 portapapeles**, **Web3 / drainers de cartera**, **Browser-in-the-Browser**,
-**HTML smuggling** y **prompt injection oculto**. Quedan dos, en orden de valor
-por línea de código. Los pesos son propuestas de partida, a calibrar en el
-rodaje.
+**HTML smuggling**, **prompt injection oculto** y **SVG con JavaScript**. Queda
+uno. Los pesos son propuestas de partida, a calibrar en el rodaje.
 
-1. **SVG con JavaScript** (~45, y ~70 si el documento principal es un SVG con
-   formulario de login). Los adjuntos SVG maliciosos se multiplicaron por 50 en
-   un año.
-2. **Reforzar el aviso de notificaciones** (15 → ~40) cuando la petición llega
+1. **Reforzar el aviso de notificaciones** (15 → ~40) cuando la petición llega
    con el señuelo del reproductor falso («pulsa Permitir para ver el vídeo») o
    se registra un service worker en un dominio no confiable.
 

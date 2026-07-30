@@ -17,6 +17,9 @@ const MIME = {
   ".css": "text/css; charset=utf-8",
   ".png": "image/png",
   ".gif": "image/gif",
+  // Necesario para la prueba del SVG con código: si no se sirve con su tipo,
+  // el navegador no lo abre como documento y el caso no se puede reproducir.
+  ".svg": "image/svg+xml",
 };
 
 const server = http.createServer((req, res) => {

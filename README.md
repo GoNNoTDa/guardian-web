@@ -83,6 +83,9 @@ positive spends the user's trust — the only thing this kind of tool really has
 | Scam | Forced fullscreen on entry | 25 |
 | Scam | Hidden iframes (clickjacking) | 25 |
 | Malware | Cryptojacking (known mining domain / WASM + workers) | 40–80 |
+| Malware | The document you are viewing is an SVG carrying JavaScript | 70 |
+| Malware | Inline SVG carrying JavaScript | 45 |
+| Malware | Third-party SVG loaded so its code runs (`object`/`embed`/`iframe`) | 45 |
 | Crypto | Wallet recovery phrase requested in a form | 90 |
 | Crypto | `eth_sign` blind signature | 70 |
 | Crypto | `setApprovalForAll` over a whole NFT collection | 70 |
@@ -248,6 +251,9 @@ herramienta así.
 | Scam | Pantalla completa forzada al entrar | 25 |
 | Scam | Iframes ocultos (clickjacking) | 25 |
 | Malware | Cryptojacking (dominio de minado / WASM + workers) | 40–80 |
+| Malware | El documento que ves es un SVG con JavaScript dentro | 70 |
+| Malware | SVG en línea con JavaScript dentro | 45 |
+| Malware | SVG de un tercero cargado de forma que ejecuta su código (`object`/`embed`/`iframe`) | 45 |
 | Cripto | Frase de recuperación de la cartera pedida en un formulario | 90 |
 | Cripto | Firma a ciegas con `eth_sign` | 70 |
 | Cripto | `setApprovalForAll` sobre una colección entera de NFT | 70 |
@@ -361,7 +367,7 @@ src/
                     domain, trackers, learn, community
 ui/
   popup.* panel.* options.*   Interfaces (comparten render.js e i18n.js)
-_locales/           7 idiomas (es, en, ca, fr, it, zh_CN, ja) · 196 claves
+_locales/           7 idiomas (es, en, ca, fr, it, zh_CN, ja) · 203 claves
 icons/              16 / 48 / 128 px
 test-lab/           Laboratorio de pruebas local (Node)
 server/             Sitio web (ES/EN) + backend PHP/MySQL de reputación

@@ -571,6 +571,68 @@
     });
   }
 
+  // --- 2f) SVG con JavaScript dentro ----------------------------------------
+  // Un SVG es un documento XML, no una imagen tonta: puede llevar <script>. Los
+  // adjuntos SVG maliciosos se multiplicaron por cincuenta en un año, porque
+  // pasan los filtros de correo como si fueran imágenes y, al abrirlos en el
+  // navegador, montan una página de login falsa o redirigen a una.
+  //
+  // Importante: <img src="x.svg"> NO ejecuta scripts, así que no se marca. Sí
+  // los ejecutan el SVG en línea, y los SVG cargados por object/embed/iframe.
+  function scanSvgScript() {
+    // 1) El documento que estás viendo ES un SVG y trae código. Nadie manda
+    //    gráficos con JavaScript dentro: es el caso del adjunto malicioso.
+    const raiz = document.documentElement;
+    if (raiz && raiz.tagName && raiz.tagName.toLowerCase() === "svg") {
+      if (raiz.querySelector("script") || raiz.querySelector("[*|href^='javascript:']")) {
+        add({
+          id: "svgscript:document",
+          weight: 70,
+          category: "malware",
+          title: t("fSvgDocTitle"),
+          detail: t("fSvgDocDetail"),
+        });
+        return;
+      }
+    }
+
+    // 2) SVG en línea con <script> dentro. Los SVG de iconos no llevan código.
+    if (document.querySelector("svg script")) {
+      add({
+        id: "svgscript:inline",
+        weight: 45,
+        category: "malware",
+        title: t("fSvgInlineTitle"),
+        detail: t("fSvgInlineDetail"),
+      });
+    }
+
+    // 3) SVG de otro dominio cargado de una forma que SÍ ejecuta su código.
+    const pageHost = location.hostname.replace(/^www\./, "").toLowerCase();
+    const marcos = document.querySelectorAll("object[data], embed[src], iframe[src]");
+    for (let i = 0; i < marcos.length && i < 200; i++) {
+      const el = marcos[i];
+      const bruto = el.getAttribute("data") || el.getAttribute("src") || "";
+      let u;
+      try {
+        u = new URL(bruto, location.href);
+      } catch {
+        continue;
+      }
+      if (!/\.svgz?($|[?#])/i.test(u.pathname + u.search)) continue;
+      const host = u.hostname.replace(/^www\./, "").toLowerCase();
+      if (!host || host === pageHost || host.endsWith("." + pageHost)) continue;
+      add({
+        id: `svgscript:embed:${host}`,
+        weight: 45,
+        category: "malware",
+        title: t("fSvgEmbedTitle"),
+        detail: t("fSvgEmbedDetail", [host]),
+      });
+      return;
+    }
+  }
+
   // --- 2e) Instrucciones ocultas dirigidas a una IA -------------------------
   // Vector nuevo de 2026: la página esconde texto que tú no ves pero que sí lee
   // un agente de IA (o el chatbot al que le pegas la página), con órdenes del
@@ -748,6 +810,7 @@
     scanBrandForm();
     scanFakeWindow();
     scanSeedPhrase();
+    scanSvgScript();
     scanPromptInjection();
     scanScam();
     scanClickFix();
