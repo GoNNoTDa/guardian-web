@@ -1,0 +1,64 @@
+<!DOCTYPE html>
+<html lang="es">
+<head><meta charset="UTF-8"><title>Prueba: secuestro del portapapeles</title></head>
+<body style="font: 15px/1.5 system-ui, sans-serif; max-width: 700px; margin: 40px auto;">
+  <h1>📋 Prueba: secuestro del portapapeles</h1>
+  <p><b>Esperado:</b> cambiazo de cuenta al copiar (+70) → banner naranja.
+     Los dos controles de abajo <b>no</b> deben disparar nada.</p>
+  <p><b>Cómo probar:</b> selecciona con el ratón el IBAN del primer bloque y
+     cópialo (Ctrl+C). Luego pégalo en el cuadro de comprobación: verás que no
+     es el que copiaste.</p>
+  <p style="background:#fdf6e3; border:1px solid #f0e0b0; border-radius:8px; padding:10px 14px;">
+     ⚠️ Esta página <b>sí modifica tu portapapeles</b> (es lo que se prueba).
+     Los dos IBAN son de ejemplo y no corresponden a ninguna cuenta real.</p>
+  <hr>
+
+  <h2>1) El ataque: IBAN sustituido</h2>
+  <p>«Realiza la transferencia a esta cuenta:»</p>
+  <p id="atacado" style="font-family: monospace; font-size: 17px; background: #f2f2f2;
+     padding: 10px; border-radius: 6px; user-select: text;">ES91 2100 0418 4502 0005 1332</p>
+  <p style="color:#555;">Al copiar ese texto, la página escribe en su lugar
+     <code>ES02 1234 5678 9012 3456 7890</code>. Debe saltar
+     <b>«Cambiazo de cuenta al copiar»</b> (+70).</p>
+
+  <h2>2) Control: atribución añadida (no debe saltar)</h2>
+  <p id="atribucion" style="background:#eef7ee; padding:10px; border-radius:6px; user-select:text;">
+     Este párrafo es largo y perfectamente copiable, y al copiarlo la página le
+     añade la fuente al final.</p>
+  <p style="color:#555;">Se copia el texto original <i>más</i> una línea de
+     atribución. Es adorno, no sustitución: <b>no debe saltar nada</b>.</p>
+
+  <h2>3) Control: botón de copiar (no debe saltar)</h2>
+  <p style="color:#555;">Selecciona cualquier texto de esta página y luego pulsa
+     el botón: escribe algo distinto de tu selección, pero <b>fuera</b> de un
+     evento de copiado, así que no es un secuestro.</p>
+  <p><button id="btn">Copiar el código de descuento</button></p>
+
+  <h2>Comprueba lo que hay en tu portapapeles</h2>
+  <p><textarea id="dest" rows="3" style="width: 100%;" placeholder="Pega aquí (Ctrl+V)"></textarea></p>
+
+  <p><a href="/index.html">← Volver al índice</a></p>
+
+  <script>
+    const IBAN_ATACANTE = "ES02 1234 5678 9012 3456 7890";
+
+    // 1) Secuestro real: sustituye por completo lo copiado.
+    document.getElementById("atacado").addEventListener("copy", (e) => {
+      e.preventDefault();
+      e.clipboardData.setData("text/plain", IBAN_ATACANTE);
+    });
+
+    // 2) Uso legítimo: conserva lo seleccionado y añade la fuente.
+    document.getElementById("atribucion").addEventListener("copy", (e) => {
+      const sel = String(window.getSelection());
+      e.preventDefault();
+      e.clipboardData.setData("text/plain", sel + "\n\nFuente: laboratorio de Guardián Web");
+    });
+
+    // 3) Uso legítimo: copiar desde un botón, sin evento de copiado del usuario.
+    document.getElementById("btn").addEventListener("click", async () => {
+      await navigator.clipboard.writeText("DESCUENTO-PRIMAVERA-2026-XYZ");
+    });
+  </script>
+</body>
+</html>

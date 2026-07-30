@@ -355,14 +355,94 @@
     );
   }
 
+  // --- Secuestro del portapapeles ------------------------------------------
+  // Copias un IBAN o una dirección de criptomoneda y la web te la cambia por
+  // la del estafador: cuando pegas, el dinero va a otra cuenta. Se compara lo
+  // que el usuario tenía seleccionado con lo que el sitio escribe.
+  //
+  // Solo se actúa DENTRO de un evento copy/cut real (de ahí el flag): un botón
+  // "copiar código" pulsado mientras hay texto seleccionado en otra parte de la
+  // página escribe algo distinto de la selección sin que eso sea un ataque.
+  //
+  // Igual que arriba, nada de esto se almacena ni se envía: la comparación es
+  // en memoria y del hallazgo solo sale el tipo de dato afectado.
+  const ACCOUNT_PATTERNS = [
+    /\b[A-Z]{2}\d{2}[A-Z0-9]{10,30}\b/, // IBAN
+    /\b0x[a-fA-F0-9]{40}\b/, // Ethereum y compatibles
+    /\bbc1[a-z0-9]{25,62}\b/, // Bitcoin bech32
+    /\b[13][a-km-zA-HJ-NP-Z1-9]{25,34}\b/, // Bitcoin legacy
+    /\b4[0-9AB][1-9A-HJ-NP-Za-km-z]{93}\b/, // Monero
+  ];
+  const squash = (s) => String(s).replace(/\s+/g, " ").trim();
+  let inCopyEvent = false;
+  let copySelection = "";
+  const markCopy = () => {
+    inCopyEvent = true;
+    copySelection = squash(window.getSelection() || "");
+    // El flag vive solo mientras se despacha el evento.
+    setTimeout(() => {
+      inCopyEvent = false;
+    }, 0);
+  };
+  document.addEventListener("copy", markCopy, true);
+  document.addEventListener("cut", markCopy, true);
+
+  // Un flag por tipo de señal, no uno solo: si fuera único, una web podría
+  // gastarlo con una sustitución inocua y hacer después el cambiazo de cuenta
+  // sin que se avisara con el peso que le corresponde.
+  let swapFlagged = false;
+  let swapAccountFlagged = false;
+  function checkClipboardSwap(written) {
+    if (!inCopyEvent || typeof written !== "string") return;
+    const before = copySelection;
+    const after = squash(written);
+    if (!before || !after || before.length < 12 || before === after) return;
+    // Adorno, no sustitución: muchos sitios añaden la fuente o un formato
+    // (copiar un enlace como Markdown, añadir "leído en …"). Si el texto
+    // original sigue dentro de lo copiado, no te han cambiado nada.
+    if (after.includes(before) || before.includes(after)) return;
+
+    // Si en el cambiazo entra un IBAN o una dirección de criptomoneda, el
+    // objetivo es desviar un pago: eso ya no es una molestia, es fraude.
+    const account = ACCOUNT_PATTERNS.some(
+      (re) => re.test(before.replace(/\s/g, "")) || re.test(after.replace(/\s/g, ""))
+    );
+    if (account) {
+      if (swapAccountFlagged) return;
+      swapAccountFlagged = true;
+      post({
+        id: "clipswap:account",
+        weight: 70,
+        category: "scam",
+        titleKey: "fClipSwapAccountTitle",
+        detailKey: "fClipSwapAccountDetail",
+      });
+      return;
+    }
+    if (swapFlagged) return;
+    swapFlagged = true;
+    post({
+      id: "clipswap",
+      weight: 45,
+      category: "scam",
+      titleKey: "fClipSwapTitle",
+      detailKey: "fClipSwapDetail",
+    });
+  }
+
   // Vía moderna: navigator.clipboard.writeText().
   if (window.Clipboard && Clipboard.prototype.writeText) {
-    wrap(Clipboard.prototype, "writeText", inspectClipboard);
+    wrap(Clipboard.prototype, "writeText", (text) => {
+      inspectClipboard(text);
+      checkClipboardSwap(text);
+    });
   }
   // Vía clásica: el sitio secuestra el evento "copy" y escribe su propio texto.
   if (window.DataTransfer) {
     wrap(DataTransfer.prototype, "setData", (format, data) => {
-      if (/text/i.test(String(format))) inspectClipboard(data);
+      if (!/text/i.test(String(format))) return;
+      inspectClipboard(data);
+      checkClipboardSwap(data);
     });
   }
   // Vía heredada: execCommand("copy") sobre una selección o un textarea oculto.

@@ -75,6 +75,7 @@ positive spends the user's trust — the only thing this kind of tool really has
 | Phishing | Card theft / skimmer (card number to a third party, Luhn) | 90 |
 | Phishing | Form data exfiltration to a third party | 70 |
 | Scam | Scam / fake tech-support text | 45 |
+| Scam | Clipboard hijacking: what you copied is swapped (70 if an account or crypto address is involved) | 45–70 |
 | Scam | ClickFix: fake human check asking for `Win+R` / `Ctrl+V` | 45 |
 | Scam | System command placed in your clipboard (60 if padded to hide it) | 45–60 |
 | Scam | Browser locker (history flooding) | 45 |
@@ -231,6 +232,7 @@ herramienta así.
 | Phishing | Robo de tarjeta / skimmer (nº de tarjeta a un tercero, Luhn) | 90 |
 | Phishing | Exfiltración de datos del formulario a un tercero | 70 |
 | Scam | Texto de estafa / soporte técnico falso | 45 |
+| Scam | Secuestro del portapapeles: te cambian lo copiado (70 si hay IBAN o dirección de cripto) | 45–70 |
 | Scam | ClickFix: falsa verificación humana que pide `Win+R` / `Ctrl+V` | 45 |
 | Scam | Comando del sistema copiado a tu portapapeles (60 si va camuflado) | 45–60 |
 | Scam | Secuestro del navegador (inundación del historial) | 45 |
@@ -343,7 +345,7 @@ src/
                     domain, trackers, learn, community
 ui/
   popup.* panel.* options.*   Interfaces (comparten render.js e i18n.js)
-_locales/           7 idiomas (es, en, ca, fr, it, zh_CN, ja) · 168 claves
+_locales/           7 idiomas (es, en, ca, fr, it, zh_CN, ja) · 173 claves
 icons/              16 / 48 / 128 px
 test-lab/           Laboratorio de pruebas local (Node)
 server/             Sitio web (ES/EN) + backend PHP/MySQL de reputación
