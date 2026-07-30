@@ -21,6 +21,13 @@ Estado y pendientes del proyecto. La versión actual es **v0.6.0**.
 - Phishing: typosquatting, homógrafos, formularios inseguros, exfiltración,
   skimmer de tarjetas (Luhn).
 - Scam: texto de estafa, iframes ocultos, permisos al entrar, browser locker.
+- Señuelo de notificaciones: el «pulsa Permitir para ver el vídeo» que convierte
+  el permiso en un canal de avisos falsos que siguen llegando con la página
+  cerrada. Se exige que la web haya PEDIDO el permiso además de mostrar el
+  señuelo (40), porque el texto solo lo tiene cualquier artículo que explique la
+  estafa; y aparte, permiso + service worker recién registrado al entrar (25),
+  que es el par que monta el canal. Un service worker por su cuenta —cualquier
+  aplicación web— no dice nada.
 - Suplantación de marca con login: la página dice ser un banco u organismo (en
   el título, `og:site_name`, `h1` o el alt del logo) y pide contraseña desde un
   dominio que no es suyo. Mira el CONTENIDO, no el parecido del dominio, que es
@@ -80,7 +87,7 @@ Estado y pendientes del proyecto. La versión actual es **v0.6.0**.
 - Consulta con k-anonimato; reporte manual; UUID anónimo hasheado.
 
 ### Plataforma
-- i18n en 7 idiomas (es, en, ca, fr, it, zh_CN, ja), 203 claves con paridad.
+- i18n en 7 idiomas (es, en, ca, fr, it, zh_CN, ja), 208 claves con paridad.
 - Enlaces educativos por vector (OSI/INCIBE, OWASP/EFF/MDN).
 - Laboratorio local de pruebas manuales (`test-lab/`).
 - Licencia MIT, política de privacidad, guía de contribución, script de build.
@@ -123,21 +130,26 @@ Para no publicar antes de tiempo, la vara de medir es:
   k-anónima y moderación).
 - Capturas y ficha revisadas contra `store/SUBMISSION_CHECKLIST.md`.
 
-## 🎯 Detectores contra técnicas de 2025-2026
+## 🎯 Detectores contra técnicas de 2025-2026 — COMPLETO
 
-Del repaso al panorama de amenazas de julio de 2026. Ya están hechos (ver
-arriba): **ClickFix**, **marca + contraseña en dominio ajeno**, **secuestro del
-portapapeles**, **Web3 / drainers de cartera**, **Browser-in-the-Browser**,
-**HTML smuggling**, **prompt injection oculto** y **SVG con JavaScript**. Queda
-uno. Los pesos son propuestas de partida, a calibrar en el rodaje.
+Del repaso al panorama de amenazas de julio de 2026 salieron ocho huecos, y los
+ocho están cubiertos (ver la lista de detectores más arriba): **ClickFix**,
+**marca + contraseña en dominio ajeno**, **secuestro del portapapeles**,
+**Web3 / drainers de cartera**, **Browser-in-the-Browser**, **HTML smuggling**,
+**prompt injection oculto**, **SVG con JavaScript** y el **refuerzo del aviso de
+notificaciones**.
 
-1. **Reforzar el aviso de notificaciones** (15 → ~40) cuando la petición llega
-   con el señuelo del reproductor falso («pulsa Permitir para ver el vídeo») o
-   se registra un service worker en un dominio no confiable.
+Todos los pesos son de partida y están **pendientes de calibrar en el rodaje**:
+salvo el de la frase de recuperación (90) y los de firmas de cartera (70), la
+mayoría se han dejado por debajo del umbral de aviso a propósito, para que sumen
+con otras señales en lugar de gritar solos.
 
 Descartados a propósito: **AiTM/Evilginx** (la señal fiable es el fingerprint
 TLS, invisible desde el navegador; lo que lo frena son las passkeys) y
 **quishing** (el QR llega por papel o email, no por la página).
+
+Siguientes vectores a vigilar, sin trabajo hecho todavía: abuso de extensiones
+de navegador, phishing alojado en IPFS/dweb y las descargas por WebTransport.
 
 ## 💡 Ideas para próximas versiones (código)
 

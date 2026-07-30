@@ -128,6 +128,12 @@
     window.addEventListener("message", (e) => {
       if (e.source !== window || !e.data || e.data.__guardian !== true) return;
       add(e.data.finding);
+      // El permiso puede pedirse mucho después de nuestro escaneo del DOM, así
+      // que el señuelo se comprueba también en cuanto llega esa señal.
+      if (e.data.finding && e.data.finding.id === "perm-notif") {
+        notifPedido = true;
+        scanNotifBait();
+      }
     });
     // Pedir al probe lo que detectó antes de que existiéramos (corre en
     // document_start; nosotros en document_idle). El dedup por id evita
@@ -571,6 +577,39 @@
     });
   }
 
+  // --- 2g) Señuelo para que aceptes las notificaciones ----------------------
+  // «Haz clic en Permitir para ver el vídeo»: el reproductor falso que convierte
+  // el permiso de notificaciones en un canal de avisos fraudulentos (falsos
+  // virus, paquetes retenidos, sorteos) que siguen llegando con la página ya
+  // cerrada. Se exige que la web haya PEDIDO el permiso además de mostrar el
+  // señuelo, porque el texto por sí solo lo tiene cualquier artículo que explique
+  // esta estafa.
+  const ALLOW_BAIT = [
+    /(pulsa|haz clic|clica|dale)[^.]{0,20}«?permitir»?/i,
+    /permitir[^.]{0,25}para (continuar|ver|acceder|descargar|reproducir)/i,
+    /acepta[^.]{0,20}notificaciones[^.]{0,20}para (continuar|ver|acceder)/i,
+    /click[^.]{0,15}«?allow»?/i,
+    /press[^.]{0,10}allow/i,
+    /tap[^.]{0,10}allow/i,
+    /allow[^.]{0,25}to (continue|watch|view|access|download|play)/i,
+    /allow notifications to (continue|watch|view|access)/i,
+  ];
+  let notifPedido = false;
+  let baitAvisado = false;
+  function scanNotifBait() {
+    if (baitAvisado || !notifPedido) return;
+    const texto = (document.body?.innerText || "").slice(0, 20000);
+    if (!ALLOW_BAIT.some((re) => re.test(texto))) return;
+    baitAvisado = true;
+    add({
+      id: "notifbait",
+      weight: 40,
+      category: "scam",
+      title: t("fNotifBaitTitle"),
+      detail: t("fNotifBaitDetail"),
+    });
+  }
+
   // --- 2f) SVG con JavaScript dentro ----------------------------------------
   // Un SVG es un documento XML, no una imagen tonta: puede llevar <script>. Los
   // adjuntos SVG maliciosos se multiplicaron por cincuenta en un año, porque
@@ -811,6 +850,7 @@
     scanFakeWindow();
     scanSeedPhrase();
     scanSvgScript();
+    scanNotifBait();
     scanPromptInjection();
     scanScam();
     scanClickFix();

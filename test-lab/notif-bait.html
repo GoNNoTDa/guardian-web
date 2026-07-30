@@ -1,0 +1,64 @@
+<!DOCTYPE html>
+<html lang="es">
+<head><meta charset="UTF-8"><title>Prueba: señuelo de notificaciones</title></head>
+<body style="font: 15px/1.5 system-ui, sans-serif; max-width: 720px; margin: 40px auto;">
+  <h1>🔔 Prueba: señuelo para aceptar notificaciones</h1>
+  <p><b>Esperado:</b> permiso pedido al entrar (+15) + señuelo «pulsa Permitir»
+     (+40) + canal recién montado (+25) = 80 → banner naranja.</p>
+  <p style="background:#fdf6e3; border:1px solid #f0e0b0; border-radius:8px; padding:10px 14px;">
+     ⚠️ Esta página <b>pide de verdad el permiso de notificaciones</b> y registra
+     un service worker (es lo que se prueba). <b>Deniega el permiso</b> cuando
+     Chrome te lo pregunte: el aviso salta igual, porque lo que se detecta es la
+     petición, no tu respuesta. El service worker está vacío: no intercepta
+     nada, no guarda caché y no envía ninguna notificación. Para quitarlo luego:
+     candado de la barra de direcciones → Cookies y datos del sitio.</p>
+  <hr>
+
+  <h2>1) El señuelo: reproductor falso</h2>
+  <div style="border: 1px solid #ccc; border-radius: 8px; padding: 20px; background: #111; color: #fff;">
+    <p style="font-size: 18px;">▶ Vídeo — Reproducción bloqueada</p>
+    <p><b>Haz clic en «Permitir» para ver el vídeo.</b></p>
+    <p style="opacity:.8; font-size: 13px;">Es la frase de siempre: nada de lo
+       que hay detrás necesita permiso de notificaciones para funcionar.</p>
+  </div>
+
+  <h2>2) Qué está pasando por debajo</h2>
+  <ul>
+    <li>Se llama a <code>Notification.requestPermission()</code> nada más cargar.</li>
+    <li>Se registra <code>sw-demo.js</code>, un service worker vacío.</li>
+    <li>El texto de arriba te empuja a aceptar.</li>
+  </ul>
+  <p id="estado" style="font-family: monospace; font-size: 13px; color: #555;">Iniciando…</p>
+
+  <h2>Control</h2>
+  <p style="color:#555;"><a href="/clean.html">clean.html</a> no pide nada, y
+     una página que <b>solo</b> registre un service worker (como cualquier
+     aplicación web) tampoco debe disparar nada: la señal necesita las dos cosas.</p>
+
+  <p><a href="/index.html">← Volver al índice</a></p>
+
+  <script>
+    const estado = (m) => { document.getElementById("estado").textContent = m; };
+    const pasos = [];
+
+    // Petición nada más entrar, como hacen estas páginas.
+    if (window.Notification && Notification.requestPermission) {
+      try {
+        const r = Notification.requestPermission();
+        pasos.push("permiso de notificaciones solicitado");
+        if (r && r.then) r.then((v) => estado(pasos.join(" · ") + " · respuesta: " + v)).catch(() => {});
+      } catch {
+        pasos.push("no se pudo solicitar el permiso");
+      }
+    }
+
+    // Y el canal por el que llegarían los avisos después.
+    if (navigator.serviceWorker) {
+      navigator.serviceWorker.register("/sw-demo.js")
+        .then(() => { pasos.push("service worker registrado"); estado(pasos.join(" · ")); })
+        .catch((e) => { pasos.push("service worker no registrado: " + e.message); estado(pasos.join(" · ")); });
+    }
+    estado(pasos.join(" · ") || "sin cambios");
+  </script>
+</body>
+</html>

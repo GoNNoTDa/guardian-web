@@ -235,10 +235,14 @@
   }
 
   // --- Permisos intrusivos solicitados al cargar --------------------------
+  // Pedir notificaciones nada más entrar (15) es de mala educación; el problema
+  // gordo es para qué se usan después. El refuerzo vive un poco más abajo.
+  let notifAsked = false;
   if (window.Notification && Notification.requestPermission) {
     const orig = Notification.requestPermission.bind(Notification);
     Notification.requestPermission = function (...a) {
       if (early()) {
+        notifAsked = true;
         post({
           id: "perm-notif",
           weight: 15,
@@ -246,9 +250,36 @@
           titleKey: "fPermNotifTitle",
           detailKey: "fPermNotifDetail",
         });
+        checkNotifChannel();
       }
       return orig(...a);
     };
+  }
+
+  // Notificaciones al entrar + un service worker recién registrado: ese es el
+  // par que convierte el permiso en un canal para mandar avisos falsos de virus
+  // o de "paquete retenido" mucho después de cerrar la página. Un service worker
+  // por sí solo es lo más normal del mundo (lo tiene cualquier PWA), así que la
+  // señal solo aparece cuando se dan las dos cosas al llegar.
+  let swRegistered = false;
+  let channelFlagged = false;
+  function checkNotifChannel() {
+    if (channelFlagged || !notifAsked || !swRegistered) return;
+    channelFlagged = true;
+    post({
+      id: "notifbait:sw",
+      weight: 25,
+      category: "scam",
+      titleKey: "fNotifSwTitle",
+      detailKey: "fNotifSwDetail",
+    });
+  }
+  if (navigator.serviceWorker && typeof navigator.serviceWorker.register === "function") {
+    wrap(navigator.serviceWorker, "register", () => {
+      if (!early()) return;
+      swRegistered = true;
+      checkNotifChannel();
+    });
   }
   if (navigator.geolocation) {
     const orig = navigator.geolocation.getCurrentPosition.bind(navigator.geolocation);

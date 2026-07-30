@@ -79,6 +79,8 @@ positive spends the user's trust — the only thing this kind of tool really has
 | Scam | Clipboard hijacking: what you copied is swapped (70 if an account or crypto address is involved) | 45–70 |
 | Scam | ClickFix: fake human check asking for `Win+R` / `Ctrl+V` | 45 |
 | Scam | System command placed in your clipboard (60 if padded to hide it) | 45–60 |
+| Scam | Bait to accept notifications («click Allow to watch the video») | 40 |
+| Scam | Notification permission plus a service worker, both on arrival | 25 |
 | Scam | Browser locker (history flooding) | 45 |
 | Scam | Forced fullscreen on entry | 25 |
 | Scam | Hidden iframes (clickjacking) | 25 |
@@ -247,6 +249,8 @@ herramienta así.
 | Scam | Secuestro del portapapeles: te cambian lo copiado (70 si hay IBAN o dirección de cripto) | 45–70 |
 | Scam | ClickFix: falsa verificación humana que pide `Win+R` / `Ctrl+V` | 45 |
 | Scam | Comando del sistema copiado a tu portapapeles (60 si va camuflado) | 45–60 |
+| Scam | Señuelo para aceptar notificaciones («pulsa Permitir para ver el vídeo») | 40 |
+| Scam | Permiso de notificaciones y service worker, ambos al entrar | 25 |
 | Scam | Secuestro del navegador (inundación del historial) | 45 |
 | Scam | Pantalla completa forzada al entrar | 25 |
 | Scam | Iframes ocultos (clickjacking) | 25 |
@@ -367,7 +371,7 @@ src/
                     domain, trackers, learn, community
 ui/
   popup.* panel.* options.*   Interfaces (comparten render.js e i18n.js)
-_locales/           7 idiomas (es, en, ca, fr, it, zh_CN, ja) · 203 claves
+_locales/           7 idiomas (es, en, ca, fr, it, zh_CN, ja) · 208 claves
 icons/              16 / 48 / 128 px
 test-lab/           Laboratorio de pruebas local (Node)
 server/             Sitio web (ES/EN) + backend PHP/MySQL de reputación
