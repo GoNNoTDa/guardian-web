@@ -52,6 +52,14 @@ Estado y pendientes del proyecto. La versión actual es **v0.6.0**.
 - Malware/privacidad: cryptojacking, fingerprinting, terceros, rastreadores
   aprendidos (heurístico, sin listas).
 - Descargas peligrosas (doble extensión, ejecutables).
+- HTML smuggling: la página fabrica el fichero en memoria (`blob:`/`data:`) y lo
+  descarga sin que el usuario pida nada. Es el hueco que solo puede tapar una
+  extensión: al no haber petición de red, ningún proxy ni lista de reputación ve
+  ese fichero. Se respeta el gesto del usuario (activación transitoria del
+  navegador, con registro propio de respaldo), porque generar un PDF o un CSV en
+  el navegador y descargarlo al pulsar un botón es cosa de todos los días. Pesa
+  45 y suma con el análisis del nombre que ya hace el detector de descargas: con
+  doble extensión, 135 → rojo.
 - Guardián de resultados de búsqueda, en local, en 6 buscadores: Google (.com y
   .es), Bing, DuckDuckGo, Brave Search y Yahoo.
 
@@ -60,7 +68,7 @@ Estado y pendientes del proyecto. La versión actual es **v0.6.0**.
 - Consulta con k-anonimato; reporte manual; UUID anónimo hasheado.
 
 ### Plataforma
-- i18n en 7 idiomas (es, en, ca, fr, it, zh_CN, ja), 189 claves con paridad.
+- i18n en 7 idiomas (es, en, ca, fr, it, zh_CN, ja), 192 claves con paridad.
 - Enlaces educativos por vector (OSI/INCIBE, OWASP/EFF/MDN).
 - Laboratorio local de pruebas manuales (`test-lab/`).
 - Licencia MIT, política de privacidad, guía de contribución, script de build.
@@ -107,22 +115,18 @@ Para no publicar antes de tiempo, la vara de medir es:
 
 Del repaso al panorama de amenazas de julio de 2026. Ya están hechos (ver
 arriba): **ClickFix**, **marca + contraseña en dominio ajeno**, **secuestro del
-portapapeles**, **Web3 / drainers de cartera** y **Browser-in-the-Browser**. El
-resto sigue en pie, en orden de valor por línea de código. Los pesos son
-propuestas de partida, a calibrar en el rodaje.
+portapapeles**, **Web3 / drainers de cartera**, **Browser-in-the-Browser** y
+**HTML smuggling**. El resto sigue en pie, en orden de valor por línea de código.
+Los pesos son propuestas de partida, a calibrar en el rodaje.
 
-1. **HTML smuggling** (~50). Envolver `URL.createObjectURL` y detectar
-   `<a download>` con `blob:`/`data:` disparado por `.click()` sin gesto del
-   usuario. Es el hueco que solo una extensión puede tapar: sin petición de red,
-   ni proxy ni reputación de URL ven nada.
-2. **SVG con JavaScript** (~45, y ~70 si el documento principal es un SVG con
+1. **SVG con JavaScript** (~45, y ~70 si el documento principal es un SVG con
    formulario de login). Los adjuntos SVG maliciosos se multiplicaron por 50 en
    un año.
-3. **Prompt injection oculto** (~40). Texto invisible (`left:-9999px`,
+2. **Prompt injection oculto** (~40). Texto invisible (`left:-9999px`,
    `font-size:0`, color del fondo) con instrucciones dirigidas a un agente de
    IA. Novedad de 2026; útil para quien navegue con un agente o pegue páginas en
    un chatbot.
-4. **Reforzar el aviso de notificaciones** (15 → ~40) cuando la petición llega
+3. **Reforzar el aviso de notificaciones** (15 → ~40) cuando la petición llega
    con el señuelo del reproductor falso («pulsa Permitir para ver el vídeo») o
    se registra un service worker en un dominio no confiable.
 

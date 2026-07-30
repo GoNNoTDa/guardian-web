@@ -1,0 +1,96 @@
+<!DOCTYPE html>
+<html lang="es">
+<head><meta charset="UTF-8"><title>Prueba: HTML smuggling</title></head>
+<body style="font: 15px/1.5 system-ui, sans-serif; max-width: 720px; margin: 40px auto;">
+  <h1>📦 Prueba: HTML smuggling</h1>
+  <p><b>Esperado:</b> descarga que nadie ha pedido (+45). Por sí sola no llega al
+     umbral de aviso, así que se ve en el <b>panel lateral</b>. Si el nombre del
+     fichero es peligroso, suma con el detector de descargas y sí dispara banner.</p>
+  <p style="background:#fdf6e3; border:1px solid #f0e0b0; border-radius:8px; padding:10px 14px;">
+     ⚠️ <b>Esta página descarga ficheros de verdad</b> (es lo que se prueba). Son
+     <b>ficheros de texto</b> de dos líneas, inofensivos, fabricados aquí mismo:
+     no vienen de ninguna descarga real y no ejecutan nada. Puedes borrarlos
+     luego de tu carpeta de Descargas.</p>
+  <hr>
+
+  <h2>1) El ataque: descarga automática al abrir la página</h2>
+  <p>Un segundo y medio después de cargar, sin que toques nada, la página fabrica
+     un fichero en memoria y lo descarga. <b>Ningún antivirus de red lo ve</b>:
+     el fichero nunca ha viajado por la red, se ha creado dentro del navegador.</p>
+  <p id="auto" style="color:#b0281a; font-weight:600;">Esperando…</p>
+
+  <h2>2) Controles y variantes</h2>
+  <p>
+    <button id="legit">Descargar con tu clic (legítimo, no debe disparar)</button>
+  </p>
+  <p style="color:#555;">Generar un PDF, un CSV o un ZIP en el navegador y
+     descargarlo cuando el usuario lo pide es cosa de todos los días. Con tu clic
+     de por medio, no hay señal.</p>
+  <p>
+    <button id="diferido">Smuggling diferido (espera 6 s tras el clic)</button>
+  </p>
+  <p style="color:#555;">El navegador conserva unos cinco segundos de
+     «activación» tras un clic, así que el disparo se retrasa seis para que la
+     descarga quede claramente fuera de tu gesto.</p>
+  <p>
+    <button id="peligroso">Variante con nombre ejecutable (suma hasta ROJO)</button>
+  </p>
+  <p style="color:#555;">Descarga <code>factura.pdf.exe</code> — <b>texto plano
+     con ese nombre</b>. Suma el mecanismo (+45) y la doble extensión del
+     detector de descargas (+90) = 135 → banner <b>ROJO</b>. Chrome también te
+     avisará por su cuenta, que es justo lo que debe hacer.</p>
+
+  <p><a href="/index.html">← Volver al índice</a></p>
+
+  <script>
+    // Contenido inofensivo: dos líneas de texto. Lo que se prueba es el
+    // MECANISMO de entrega, no ningún payload.
+    const CONTENIDO =
+      "Fichero de prueba del laboratorio de Guardian Web.\n" +
+      "Texto inofensivo: aqui no hay nada que ejecutar.\n";
+
+    function descargar(nombre) {
+      const blob = new Blob([CONTENIDO], { type: "text/plain" });
+      const a = document.createElement("a");
+      a.href = URL.createObjectURL(blob);
+      a.download = nombre;
+      document.body.appendChild(a);
+      a.click();               // <- el clic programático que delata el mecanismo
+      a.remove();
+      setTimeout(() => URL.revokeObjectURL(a.href), 2000);
+    }
+
+    // 1) Sin ningún gesto previo del usuario: el caso real (SocGholish y
+    //    compañía descargan en cuanto abres la página).
+    setTimeout(() => {
+      descargar("informe-2026.pdf.txt");
+      document.getElementById("auto").textContent =
+        "Descargado «informe-2026.pdf.txt» sin que hicieras nada → debe saltar «Descarga que nadie ha pedido» (+45).";
+    }, 1500);
+
+    // 2) Con gesto: control de falso positivo.
+    document.getElementById("legit").onclick = () => descargar("mi-informe.txt");
+
+    // 3) Diferido, ya fuera de la activación del clic.
+    document.getElementById("diferido").onclick = (e) => {
+      const btn = e.target;
+      let quedan = 6;
+      btn.disabled = true;
+      const tic = setInterval(() => {
+        btn.textContent = "Descargará en " + --quedan + " s…";
+        if (quedan <= 0) {
+          clearInterval(tic);
+          descargar("adjunto-diferido.txt");
+          btn.textContent = "Descargado sin gesto → debe saltar (+45)";
+        }
+      }, 1000);
+    };
+
+    // 4) Nombre peligroso: el mecanismo suma con el detector de descargas.
+    document.getElementById("peligroso").onclick = () => {
+      setTimeout(() => descargar("factura.pdf.exe"), 6000);
+      document.getElementById("peligroso").textContent = "Descargará factura.pdf.exe en 6 s…";
+    };
+  </script>
+</body>
+</html>

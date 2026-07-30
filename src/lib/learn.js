@@ -34,6 +34,7 @@ const ES = {
   locker: "https://www.incibe.es/aprendeciberseguridad/ingenieria-social",
   fingerprint: "https://www.osi.es/es/tu-informacion-personal",
   downloads: "https://www.incibe.es/aprendeciberseguridad/malware",
+  smuggling: "https://www.incibe.es/aprendeciberseguridad/malware",
 };
 
 const INTL = {
@@ -64,6 +65,7 @@ const INTL = {
   locker: "https://owasp.org/www-community/attacks/Phishing",
   fingerprint: "https://coveryourtracks.eff.org/",
   downloads: "https://owasp.org/www-community/attacks/Malicious_File_Execution",
+  smuggling: "https://attack.mitre.org/techniques/T1027/006/",
 };
 
 export function learnUrl(detectorKey) {

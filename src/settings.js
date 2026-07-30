@@ -31,6 +31,7 @@ export const DETECTORS = [
   { key: "walletsign", group: "web3" },
   { key: "seedphrase", group: "web3" },
   { key: "downloads", group: "downloads" },
+  { key: "smuggling", group: "downloads" },
 ];
 
 export const DEFAULTS = {
@@ -99,6 +100,7 @@ const ID_TO_DETECTOR = {
   web3: "walletsign",
   seedphrase: "seedphrase",
   download: "downloads",
+  smuggling: "smuggling",
 };
 
 export function detectorOf(id) {

@@ -92,6 +92,7 @@ positive spends the user's trust — the only thing this kind of tool really has
 | Privacy | Excessive third-party domains | 15 |
 | Privacy | Heuristically learned trackers (seen on 3+ sites) | 15 |
 | Privacy | Permission prompts on entry (location/notifications) | 15–20 |
+| Downloads | File built in the browser and downloaded with no user gesture (HTML smuggling) | 45 |
 | Downloads | Deceptive double extension (`invoice.pdf.exe`) | 90 |
 | Downloads | Executable file (`.exe`, `.scr`, `.hta`…) | 45 |
 
@@ -255,6 +256,7 @@ herramienta así.
 | Privacidad | Exceso de dominios de terceros | 15 |
 | Privacidad | Rastreadores aprendidos (aparecen en 3+ sitios) | 15 |
 | Privacidad | Permisos pedidos al entrar (ubicación/notificaciones) | 15–20 |
+| Descargas | Fichero fabricado en el navegador y descargado sin gesto del usuario (HTML smuggling) | 45 |
 | Descargas | Doble extensión engañosa (`factura.pdf.exe`) | 90 |
 | Descargas | Archivo ejecutable (`.exe`, `.scr`, `.hta`…) | 45 |
 
@@ -357,7 +359,7 @@ src/
                     domain, trackers, learn, community
 ui/
   popup.* panel.* options.*   Interfaces (comparten render.js e i18n.js)
-_locales/           7 idiomas (es, en, ca, fr, it, zh_CN, ja) · 189 claves
+_locales/           7 idiomas (es, en, ca, fr, it, zh_CN, ja) · 192 claves
 icons/              16 / 48 / 128 px
 test-lab/           Laboratorio de pruebas local (Node)
 server/             Sitio web (ES/EN) + backend PHP/MySQL de reputación

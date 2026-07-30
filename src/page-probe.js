@@ -454,6 +454,48 @@
     if (el && typeof el.value === "string") inspectClipboard(el.value);
   });
 
+  // --- HTML smuggling: el fichero se fabrica dentro del navegador ----------
+  // El sitio construye el fichero en memoria (Blob o data:) y lo descarga solo,
+  // sin que el usuario pida nada. La clave es que NO HAY PETICIÓN DE RED: ni un
+  // proxy, ni Safe Browsing, ni el feed de URLhaus pueden ver ese fichero,
+  // porque nunca viaja por la red. Desde dentro del navegador sí se ve.
+  //
+  // Solo se avisa cuando la descarga NO viene de un gesto del usuario: generar
+  // un PDF o un CSV en el navegador y descargarlo al pulsar un botón es cosa de
+  // todos los días. Se consulta la activación transitoria del navegador y, como
+  // respaldo para quien no la tenga, un registro propio de gestos recientes.
+  let lastGesture = 0;
+  for (const ev of ["click", "keydown", "pointerdown", "touchstart"]) {
+    document.addEventListener(ev, () => {
+      lastGesture = performance.now();
+    }, true);
+  }
+  const conGesto = () => {
+    const activa = navigator.userActivation ? navigator.userActivation.isActive : false;
+    return activa || performance.now() - lastGesture < 1500;
+  };
+
+  let smugglingFlagged = false;
+  if (window.HTMLElement) {
+    wrap(HTMLElement.prototype, "click", function () {
+      if (smugglingFlagged || !this || this.tagName !== "A") return;
+      if (!this.hasAttribute("download")) return;
+      const href = String(this.getAttribute("href") || "");
+      if (!/^(blob:|data:)/i.test(href)) return;
+      if (conGesto()) return;
+      smugglingFlagged = true;
+      const nombre = String(this.getAttribute("download") || "").slice(0, 60);
+      post({
+        id: "smuggling",
+        weight: 45,
+        category: "malware",
+        titleKey: "fSmugglingTitle",
+        detailKey: "fSmugglingDetail",
+        params: [nombre || "?"],
+      });
+    });
+  }
+
   // --- Web3: firmas y permisos que vacían la cartera -----------------------
   // Un "drainer" no roba tu clave privada: te hace FIRMAR algo que le da
   // permiso para mover tus fondos cuando quiera. Son cuatro peticiones
