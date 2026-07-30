@@ -74,6 +74,8 @@ positive spends the user's trust — the only thing this kind of tool really has
 | Phishing | Card theft / skimmer (card number to a third party, Luhn) | 90 |
 | Phishing | Form data exfiltration to a third party | 70 |
 | Scam | Scam / fake tech-support text | 45 |
+| Scam | ClickFix: fake human check asking for `Win+R` / `Ctrl+V` | 45 |
+| Scam | System command placed in your clipboard (60 if padded to hide it) | 45–60 |
 | Scam | Browser locker (history flooding) | 45 |
 | Scam | Forced fullscreen on entry | 25 |
 | Scam | Hidden iframes (clickjacking) | 25 |
@@ -227,6 +229,8 @@ herramienta así.
 | Phishing | Robo de tarjeta / skimmer (nº de tarjeta a un tercero, Luhn) | 90 |
 | Phishing | Exfiltración de datos del formulario a un tercero | 70 |
 | Scam | Texto de estafa / soporte técnico falso | 45 |
+| Scam | ClickFix: falsa verificación humana que pide `Win+R` / `Ctrl+V` | 45 |
+| Scam | Comando del sistema copiado a tu portapapeles (60 si va camuflado) | 45–60 |
 | Scam | Secuestro del navegador (inundación del historial) | 45 |
 | Scam | Pantalla completa forzada al entrar | 25 |
 | Scam | Iframes ocultos (clickjacking) | 25 |

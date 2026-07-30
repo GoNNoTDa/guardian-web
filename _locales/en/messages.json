@@ -164,5 +164,12 @@
   "oCommunityUrl": { "message": "Community server" },
   "oCommunityDesc": { "message": "URL of the collaborative backend. Empty = disabled." },
   "oCommunityPlaceholder": { "message": "https://your-server/guardian" },
+  "det_clickfix": { "message": "ClickFix (fake CAPTCHA)" },
+  "fClickfixCmdTitle": { "message": "The site copied a command" },
+  "fClickfixCmdDetail": { "message": "This page placed a system command in your clipboard. If something asks you to paste and run it, that's an attack: don't do it." },
+  "fClickfixPadTitle": { "message": "Hidden command in your clipboard" },
+  "fClickfixPadDetail": { "message": "The page copied a command padded with spaces so you can't see what would actually run. This is the ClickFix scam: don't paste it anywhere." },
+  "fClickfixLureTitle": { "message": "Fake human verification" },
+  "fClickfixLureDetail": { "message": "It asks you to press keys (Win+R, Ctrl+V) to \"prove you're human\". No real check ever needs that: it wants you to run malware." },
   "oSupport": { "message": "💛 Support the project" }
 }

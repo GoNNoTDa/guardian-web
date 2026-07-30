@@ -164,5 +164,12 @@
   "oCommunityUrl": { "message": "Servidor de la comunitat" },
   "oCommunityDesc": { "message": "URL del backend col·laboratiu. Buit = desactivat." },
   "oCommunityPlaceholder": { "message": "https://el-teu-servidor/guardian" },
+  "det_clickfix": { "message": "ClickFix (CAPTCHA fals)" },
+  "fClickfixCmdTitle": { "message": "El web ha copiat una ordre" },
+  "fClickfixCmdDetail": { "message": "Aquesta pàgina ha posat al teu porta-retalls una ordre per al sistema. Si alguna cosa et demana enganxar-la i executar-la, és un atac: no ho facis." },
+  "fClickfixPadTitle": { "message": "Ordre oculta al porta-retalls" },
+  "fClickfixPadDetail": { "message": "La pàgina ha copiat una ordre camuflada amb espais perquè no vegis què s'executaria realment. És l'estafa ClickFix: no l'enganxis enlloc." },
+  "fClickfixLureTitle": { "message": "Falsa verificació humana" },
+  "fClickfixLureDetail": { "message": "Et demana prémer tecles (Win+R, Ctrl+V) per «demostrar que ets humà». Cap verificació real no ho necessita: vol que executis programari maliciós." },
   "oSupport": { "message": "💛 Dóna suport al projecte" }
 }

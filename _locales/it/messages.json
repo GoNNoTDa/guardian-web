@@ -164,5 +164,12 @@
   "oCommunityUrl": { "message": "Server della comunità" },
   "oCommunityDesc": { "message": "URL del backend collaborativo. Vuoto = disattivato." },
   "oCommunityPlaceholder": { "message": "https://il-tuo-server/guardian" },
+  "det_clickfix": { "message": "ClickFix (CAPTCHA falso)" },
+  "fClickfixCmdTitle": { "message": "Il sito ha copiato un comando" },
+  "fClickfixCmdDetail": { "message": "Questa pagina ha messo negli appunti un comando di sistema. Se qualcosa ti chiede di incollarlo ed eseguirlo, è un attacco: non farlo." },
+  "fClickfixPadTitle": { "message": "Comando nascosto negli appunti" },
+  "fClickfixPadDetail": { "message": "La pagina ha copiato un comando mascherato con spazi per non farti vedere cosa verrebbe davvero eseguito. È la truffa ClickFix: non incollarlo da nessuna parte." },
+  "fClickfixLureTitle": { "message": "Falsa verifica umana" },
+  "fClickfixLureDetail": { "message": "Ti chiede di premere dei tasti (Win+R, Ctrl+V) per «dimostrare che sei umano». Nessuna verifica reale lo richiede: vuole farti eseguire un malware." },
   "oSupport": { "message": "💛 Sostieni il progetto" }
 }

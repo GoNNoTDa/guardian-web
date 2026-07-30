@@ -164,5 +164,12 @@
   "oCommunityUrl": { "message": "社区服务器" },
   "oCommunityDesc": { "message": "协作后端的 URL。留空 = 停用。" },
   "oCommunityPlaceholder": { "message": "https://你的服务器/guardian" },
+  "det_clickfix": { "message": "ClickFix（虚假验证码）" },
+  "fClickfixCmdTitle": { "message": "该网站复制了一条命令" },
+  "fClickfixCmdDetail": { "message": "此页面已将一条系统命令放入你的剪贴板。如果有人要求你粘贴并运行它，那就是攻击：不要这样做。" },
+  "fClickfixPadTitle": { "message": "剪贴板中隐藏的命令" },
+  "fClickfixPadDetail": { "message": "该页面复制了用大量空格伪装的命令，让你看不到实际会执行什么。这是 ClickFix 骗局：不要粘贴到任何地方。" },
+  "fClickfixLureTitle": { "message": "虚假的人机验证" },
+  "fClickfixLureDetail": { "message": "它要求你按下按键（Win+R、Ctrl+V）来“证明你是真人”。真正的验证从不需要这样做：它想让你运行恶意软件。" },
   "oSupport": { "message": "💛 支持这个项目" }
 }

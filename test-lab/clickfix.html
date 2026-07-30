@@ -1,0 +1,80 @@
+<!DOCTYPE html>
+<html lang="es">
+<head><meta charset="UTF-8"><title>Prueba: ClickFix / CAPTCHA falso</title></head>
+<body style="font: 15px/1.5 system-ui, sans-serif; max-width: 700px; margin: 40px auto;">
+  <h1>🪤 Prueba: ClickFix (CAPTCHA falso)</h1>
+  <p><b>Esperado:</b> falsa verificación humana (+45) + comando oculto en el
+     portapapeles (+60) = 105 → banner <b>ROJO</b> y notificación de peligro.</p>
+  <p><b>Cómo probar:</b> pulsa uno de los botones de abajo. La señal del texto
+     salta al cargar; la del portapapeles, al copiar.</p>
+  <p style="background:#fdf6e3; border:1px solid #f0e0b0; border-radius:8px; padding:10px 14px;">
+     ⚠️ Esta página <b>sí escribe en tu portapapeles</b> (es lo que se está
+     probando), pero lo que copia es inofensivo y lo tienes a la vista:
+     un <code>Write-Host</code> que no descarga ni ejecuta nada.
+     <b>Aun así, no lo pegues en el diálogo Ejecutar</b>: la lección de esta
+     página es precisamente no hacer eso nunca.</p>
+  <hr>
+
+  <!-- Imitación del señuelo: CAPTCHA roto + instrucciones de teclas ---------->
+  <div style="border: 2px solid #ccc; padding: 16px; border-radius: 8px;">
+    <h2>Verificación de seguridad</h2>
+    <p style="border:1px solid #bbb; padding:10px; border-radius:6px; display:inline-block;">
+      <input type="checkbox" disabled> No soy un robot
+      <span style="color:#b0281a;"> — error de verificación</span>
+    </p>
+    <p>Para verificar que eres humano, completa la verificación manual:</p>
+    <ol>
+      <li>Pulsa <b>Win + R</b></li>
+      <li>Pulsa <b>Ctrl + V</b></li>
+      <li>Pulsa <b>Enter</b></li>
+    </ol>
+    <p>
+      <button id="pad">Copiar (con relleno de espacios, +60)</button>
+      <button id="plain">Copiar (comando a secas, +45)</button>
+      <button id="legacy">Copiar por execCommand (+45)</button>
+    </p>
+    <p id="out" style="color:#555;"></p>
+  </div>
+
+  <h3>Qué se está copiando</h3>
+  <pre style="background:#f2f2f2; padding:10px; border-radius:6px; white-space:pre-wrap;"
+       id="preview"></pre>
+
+  <p><a href="/index.html">← Volver al índice</a></p>
+
+  <script>
+    // Carga inofensiva: solo imprime un texto. Ninguna descarga, ninguna
+    // ejecución remota. Lo único "malicioso" es la FORMA, que es lo que el
+    // detector debe reconocer.
+    const HARMLESS = 'powershell -Command "Write-Host \'Prueba inofensiva de Guardian Web\'"';
+    // Los kits reales empujan el comando fuera de la vista con espacios; aquí
+    // se reproduce esa técnica (60 espacios) sin payload real.
+    const PADDED = "verification-id-9F2A" + " ".repeat(60) + HARMLESS;
+
+    document.getElementById("preview").textContent = HARMLESS;
+    const out = (msg) => { document.getElementById("out").textContent = msg; };
+
+    document.getElementById("pad").onclick = async () => {
+      await navigator.clipboard.writeText(PADDED);
+      out("Copiado con relleno. Debe saltar «Comando oculto en el portapapeles» (+60).");
+    };
+    document.getElementById("plain").onclick = async () => {
+      await navigator.clipboard.writeText(HARMLESS);
+      out("Copiado. Debe saltar «La web ha copiado un comando» (+45).");
+    };
+    // Vía heredada: textarea fuera de pantalla + execCommand("copy").
+    document.getElementById("legacy").onclick = () => {
+      const ta = document.createElement("textarea");
+      ta.value = HARMLESS;
+      ta.style.position = "fixed";
+      ta.style.left = "-9999px";
+      document.body.appendChild(ta);
+      ta.focus();
+      ta.select();
+      document.execCommand("copy");
+      ta.remove();
+      out("Copiado por execCommand. Debe saltar la misma señal (+45).");
+    };
+  </script>
+</body>
+</html>

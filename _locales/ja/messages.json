@@ -164,5 +164,12 @@
   "oCommunityUrl": { "message": "コミュニティサーバー" },
   "oCommunityDesc": { "message": "共同バックエンドの URL。空 = 無効。" },
   "oCommunityPlaceholder": { "message": "https://あなたのサーバー/guardian" },
+  "det_clickfix": { "message": "ClickFix（偽の CAPTCHA）" },
+  "fClickfixCmdTitle": { "message": "サイトがコマンドをコピーしました" },
+  "fClickfixCmdDetail": { "message": "このページはシステムコマンドをクリップボードに入れました。貼り付けて実行するよう促されたら、それは攻撃です。実行しないでください。" },
+  "fClickfixPadTitle": { "message": "クリップボードに隠されたコマンド" },
+  "fClickfixPadDetail": { "message": "実際に実行される内容が見えないよう、大量の空白で偽装したコマンドがコピーされました。ClickFix と呼ばれる詐欺です。どこにも貼り付けないでください。" },
+  "fClickfixLureTitle": { "message": "偽の人間確認" },
+  "fClickfixLureDetail": { "message": "「人間であることを証明する」ためにキー操作（Win+R、Ctrl+V）を求めています。本物の確認でそれが必要になることはありません。マルウェアを実行させるのが目的です。" },
   "oSupport": { "message": "💛 プロジェクトを支援する" }
 }

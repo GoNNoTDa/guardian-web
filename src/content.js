@@ -378,6 +378,39 @@
     }
   }
 
+  // --- 3b) ClickFix: la "verificación humana" que te hace ejecutar un comando
+  // Dos ingredientes que juntos no tienen explicación honesta: instrucciones
+  // para abrir el diálogo Ejecutar (o el Terminal) y el marco de una
+  // verificación anti-robot. Por separado valen poco —un tutorial legítimo
+  // menciona Win+R, y un artículo sobre esta misma estafa menciona las dos
+  // cosas—, así que el peso se queda deliberadamente por debajo del umbral de
+  // aviso: son las señales del portapapeles (page-probe) las que lo rematan.
+  const RUN_KEYS = [
+    /\b(win(dows)?|⊞)\s*\+\s*r\b/i,
+    /\bctrl\s*\+\s*v\b/i,
+    /⌘\s*\+\s*(espacio|space)/i,
+    /\btecla (de )?windows\b.{0,25}\+\s*r\b/i,
+  ];
+  const HUMAN_CHECK = [
+    /verific(a|ar|ación|ando)[^.]{0,40}(human|robot|persona)/i,
+    /(no soy|not a)( un)? robot/i,
+    /verify (that )?you('| a)?re (a )?human/i,
+    /human verification|verificación humana/i,
+    /captcha/i,
+  ];
+  function scanClickFix() {
+    const text = (document.body?.innerText || "").slice(0, 20000);
+    if (RUN_KEYS.some((re) => re.test(text)) && HUMAN_CHECK.some((re) => re.test(text))) {
+      add({
+        id: "clickfix:lure",
+        weight: 45,
+        category: "scam",
+        title: t("fClickfixLureTitle"),
+        detail: t("fClickfixLureDetail"),
+      });
+    }
+  }
+
   // --- 4) Iframes invisibles (posible clickjacking) --------------------------
   function scanIframes() {
     let hidden = 0;
@@ -401,6 +434,7 @@
     checkDomain();
     scanForms();
     scanScam();
+    scanClickFix();
     scanIframes();
   }
 

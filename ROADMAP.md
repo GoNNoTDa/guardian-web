@@ -21,6 +21,11 @@ Estado y pendientes del proyecto. La versión actual es **v0.6.0**.
 - Phishing: typosquatting, homógrafos, formularios inseguros, exfiltración,
   skimmer de tarjetas (Luhn).
 - Scam: texto de estafa, iframes ocultos, permisos al entrar, browser locker.
+- ClickFix / CAPTCHA falso: vigila lo que la web escribe en el portapapeles
+  (`writeText`, evento `copy` y `execCommand`) y reconoce el camuflaje con
+  espacios; el señuelo textual («verifica que eres humano» + `Win+R`/`Ctrl+V`)
+  se puntúa aparte y por debajo del umbral, para no marcar los artículos que
+  explican esta misma estafa.
 - Malware/privacidad: cryptojacking, fingerprinting, terceros, rastreadores
   aprendidos (heurístico, sin listas).
 - Descargas peligrosas (doble extensión, ejecutables).
@@ -74,6 +79,47 @@ Para no publicar antes de tiempo, la vara de medir es:
 - Backend de comunidad desplegado y probado de punta a punta (reporte, consulta
   k-anónima y moderación).
 - Capturas y ficha revisadas contra `store/SUBMISSION_CHECKLIST.md`.
+
+## 🎯 Detectores contra técnicas de 2025-2026
+
+Del repaso al panorama de amenazas de julio de 2026. ClickFix ya está hecho; el
+resto sigue en pie, en orden de valor por línea de código. Los pesos son
+propuestas de partida, a calibrar en el rodaje.
+
+1. **Marca + contraseña en dominio ajeno** (~60). El typosquatting actual mira
+   el dominio; esto mira el contenido: hay `input[type=password]`, el dominio no
+   es de confianza y el título/`h1`/`alt` del logo nombra a un banco o organismo
+   de la lista. Es el patrón exacto de las campañas que avisa INCIBE, y el
+   phishing bancario es el 40 % de los incidentes en España.
+2. **Secuestro del portapapeles** (~70). En el evento `copy`, comparar
+   `getSelection()` con lo que el sitio escribe: si difiere, te está cambiando el
+   IBAN o la dirección de la wallet. Reutiliza los ganchos de ClickFix.
+3. **Web3 / wallet drainers** (detector nuevo). Envolver `window.ethereum`:
+   `eth_sign` (~70), `setApprovalForAll`/`approve` con `MAX_UINT256` (~70),
+   `personal_sign` con `Permit`/`Permit2` (~50) y, sobre todo, petición de
+   **frase semilla** en un formulario (~90): eso no lo pide nadie legítimo.
+4. **Browser-in-the-Browser** (~70). Contenedor con aspecto de ventana (sombra,
+   cabecera, botones de cerrar) que pinta una URL `https://` de otra marca y
+   contiene un campo de contraseña. Ninguna web honesta dibuja una barra de
+   direcciones.
+5. **HTML smuggling** (~50). Envolver `URL.createObjectURL` y detectar
+   `<a download>` con `blob:`/`data:` disparado por `.click()` sin gesto del
+   usuario. Es el hueco que solo una extensión puede tapar: sin petición de red,
+   ni proxy ni reputación de URL ven nada.
+6. **SVG con JavaScript** (~45, y ~70 si el documento principal es un SVG con
+   formulario de login). Los adjuntos SVG maliciosos se multiplicaron por 50 en
+   un año.
+7. **Prompt injection oculto** (~40). Texto invisible (`left:-9999px`,
+   `font-size:0`, color del fondo) con instrucciones dirigidas a un agente de
+   IA. Novedad de 2026; útil para quien navegue con un agente o pegue páginas en
+   un chatbot.
+8. **Reforzar el aviso de notificaciones** (15 → ~40) cuando la petición llega
+   con el señuelo del reproductor falso («pulsa Permitir para ver el vídeo») o
+   se registra un service worker en un dominio no confiable.
+
+Descartados a propósito: **AiTM/Evilginx** (la señal fiable es el fingerprint
+TLS, invisible desde el navegador; lo que lo frena son las passkeys) y
+**quishing** (el QR llega por papel o email, no por la página).
 
 ## 💡 Ideas para próximas versiones (código)
 

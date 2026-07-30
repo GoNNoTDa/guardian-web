@@ -63,8 +63,9 @@ aparece en la interfaz como `fAlgoTitle`.
   del fichero que tocas, no traigas el tuyo.
 - Comentarios en español, explicando el **por qué** (sobre todo si un peso o un
   umbral tiene una razón detrás). Interfaz de usuario, siempre vía `_locales`.
-- Mensajes de commit en español, en imperativo y sin prefijos de tipo:
-  «Añadir detector de X», «Corregir falso positivo en Y».
+- Mensajes de commit **en inglés**, en imperativo y sin prefijos de tipo:
+  «Add detector for X», «Fix false positive in Y». (Los commits anteriores a
+  julio de 2026 están en español; el proyecto se estandariza en inglés.)
 
 ## Antes de abrir el PR
 

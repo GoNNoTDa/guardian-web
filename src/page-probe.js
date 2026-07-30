@@ -307,6 +307,73 @@
     restoreLocker.push(restoreFs);
   }
 
+  // --- ClickFix / CAPTCHA falso: comandos colados en el portapapeles -------
+  // La estafa dominante de 2025-2026: una "verificación humana" que no
+  // funciona pide pulsar Win+R y Ctrl+V, y la página ha dejado ya en el
+  // portapapeles una línea de PowerShell que descarga un infostealer.
+  //
+  // Aquí solo se mira QUÉ escribe la web en el portapapeles y se emite una
+  // señal booleana: el contenido no se guarda, no se copia a ningún sitio y no
+  // viaja en el hallazgo. Tampoco se altera lo que la página copia.
+  //
+  // Los kits rellenan el comando con cientos de espacios para que en el
+  // diálogo Ejecutar solo se vea un texto inocuo ("verification-id-9F2A") y el
+  // comando real quede fuera de la vista, a la derecha. Ese relleno no tiene
+  // ningún uso legítimo, así que pesa más que el comando por sí solo.
+  const CMD_PATTERNS = [
+    /\b(powershell|pwsh)(\.exe)?\b/i,
+    /\b(mshta|certutil|bitsadmin|rundll32|regsvr32|wscript|cscript|msiexec|schtasks|forfiles)(\.exe)?\b/i,
+    /\bcmd(\.exe)?\s*\/[ck]\b/i,
+    /\b(iex|invoke-expression|invoke-webrequest|downloadstring|frombase64string)\b/i,
+    /\s-(enc|encodedcommand|nop|noprofile|windowstyle)\b/i,
+    /\b(curl|wget)\b[^|]{0,200}\|\s*(ba)?sh\b/i,
+    /\bosascript\s+-e\b/i,
+  ];
+  const CMD_PADDING = /[ \t ]{40,}/;
+  let clipFlagged = false;
+  function inspectClipboard(text) {
+    if (clipFlagged || typeof text !== "string" || text.length < 12) return;
+    if (!CMD_PATTERNS.some((re) => re.test(text))) return;
+    clipFlagged = true;
+    // Relleno + comando: inequívoco, se está ocultando lo que se ejecutará.
+    post(
+      CMD_PADDING.test(text)
+        ? {
+            id: "clickfix:pad",
+            weight: 60,
+            category: "scam",
+            titleKey: "fClickfixPadTitle",
+            detailKey: "fClickfixPadDetail",
+          }
+        : {
+            id: "clickfix:cmd",
+            weight: 45,
+            category: "scam",
+            titleKey: "fClickfixCmdTitle",
+            detailKey: "fClickfixCmdDetail",
+          }
+    );
+  }
+
+  // Vía moderna: navigator.clipboard.writeText().
+  if (window.Clipboard && Clipboard.prototype.writeText) {
+    wrap(Clipboard.prototype, "writeText", inspectClipboard);
+  }
+  // Vía clásica: el sitio secuestra el evento "copy" y escribe su propio texto.
+  if (window.DataTransfer) {
+    wrap(DataTransfer.prototype, "setData", (format, data) => {
+      if (/text/i.test(String(format))) inspectClipboard(data);
+    });
+  }
+  // Vía heredada: execCommand("copy") sobre una selección o un textarea oculto.
+  wrap(document, "execCommand", (cmd) => {
+    if (!/^(copy|cut)$/i.test(String(cmd))) return;
+    const sel = String(window.getSelection() || "");
+    if (sel) inspectClipboard(sel);
+    const el = document.activeElement;
+    if (el && typeof el.value === "string") inspectClipboard(el.value);
+  });
+
   // Envuelve un método conservando su comportamiento; onCall es un espía.
   // Devuelve una función que RESTAURA el original (espías de un solo uso).
   function wrap(obj, name, onCall) {

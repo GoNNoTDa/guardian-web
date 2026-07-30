@@ -164,5 +164,12 @@
   "oCommunityUrl": { "message": "Servidor de la comunidad" },
   "oCommunityDesc": { "message": "URL del backend colaborativo. Vacío = desactivado." },
   "oCommunityPlaceholder": { "message": "https://tu-servidor/guardian" },
+  "det_clickfix": { "message": "ClickFix (CAPTCHA falso)" },
+  "fClickfixCmdTitle": { "message": "La web ha copiado un comando" },
+  "fClickfixCmdDetail": { "message": "Esta página ha puesto en tu portapapeles una orden para el sistema. Si algo te pide pegarla y ejecutarla, es un ataque: no lo hagas." },
+  "fClickfixPadTitle": { "message": "Comando oculto en el portapapeles" },
+  "fClickfixPadDetail": { "message": "La página ha copiado un comando camuflado con espacios para que no veas lo que realmente se ejecutaría. Es la estafa ClickFix: no lo pegues en ningún sitio." },
+  "fClickfixLureTitle": { "message": "Falsa verificación humana" },
+  "fClickfixLureDetail": { "message": "Te pide pulsar teclas (Win+R, Ctrl+V) para «demostrar que eres humano». Ninguna verificación real necesita eso: busca que ejecutes malware." },
   "oSupport": { "message": "💛 Apoyar el proyecto" }
 }
