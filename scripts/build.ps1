@@ -8,11 +8,9 @@ $root = Split-Path $PSScriptRoot -Parent
 $manifest = Get-Content (Join-Path $root "manifest.json") -Raw | ConvertFrom-Json
 $version = $manifest.version
 
-$dist = Join-Path $root "dist"
-New-Item -ItemType Directory -Force $dist | Out-Null
-$zip = Join-Path $dist "guardian-web-v$version.zip"
-if (Test-Path $zip) { Remove-Item $zip -Force }
-
+# Se valida ANTES de tocar el zip anterior: si falta algo, más vale quedarse con
+# el paquete que ya había que destruirlo y no poder construir el nuevo.
+#
 # _locales es OBLIGATORIO: el manifest declara default_locale y usa nombres
 # __MSG_*__, así que un paquete sin los catálogos lo rechaza la Store.
 $necesarios = @("manifest.json", "src", "ui", "icons", "_locales")
@@ -21,6 +19,12 @@ $items = $necesarios | ForEach-Object {
   if (-not (Test-Path $ruta)) { throw "Falta '$_': el paquete quedaria incompleto." }
   $ruta
 }
+
+$dist = Join-Path $root "dist"
+New-Item -ItemType Directory -Force $dist | Out-Null
+$zip = Join-Path $dist "guardian-web-v$version.zip"
+if (Test-Path $zip) { Remove-Item $zip -Force }
+
 Compress-Archive -Path $items -DestinationPath $zip
 
 # Comprobación del paquete ya creado: que estén las piezas y los 7 catálogos de
