@@ -2,7 +2,7 @@
 
 **The security extension that protects you _without_ spying on you.**
 
-![version](https://img.shields.io/badge/version-0.6.0-2e7d32)
+![version](https://img.shields.io/badge/version-0.7.0-2e7d32)
 ![license](https://img.shields.io/badge/license-MIT-blue)
 ![manifest](https://img.shields.io/badge/Manifest-V3-4285f4)
 ![i18n](https://img.shields.io/badge/i18n-7%20languages-6a1b9a)

@@ -1,6 +1,6 @@
 # Hoja de ruta — Guardián Web
 
-Estado y pendientes del proyecto. La versión actual es **v0.6.0**.
+Estado y pendientes del proyecto. La versión actual es **v0.7.0**.
 
 ## ✅ Hecho
 
