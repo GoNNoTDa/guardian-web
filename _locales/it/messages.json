@@ -166,7 +166,7 @@
   "det_skimmer": { "message": "Furto di carta (skimmer)" },
   "det_locker": { "message": "Dirottamento del browser" },
   "oSearchGuard": { "message": "Guardia dei risultati di ricerca" },
-  "oSearchGuardDesc": { "message": "Segnala su Google/Bing i link con domini sospetti (analisi locale)." },
+  "oSearchGuardDesc": { "message": "Segnala nei risultati di ricerca i link con domini sospetti (analisi locale)." },
   "bLearn": { "message": "Scopri di più" },
   "uLearn": { "message": "Scopri di più" },
   "fCommunityTitle": { "message": "Segnalato dalla comunità" },

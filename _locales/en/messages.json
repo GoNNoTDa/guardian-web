@@ -166,7 +166,7 @@
   "det_skimmer": { "message": "Card theft (skimmer)" },
   "det_locker": { "message": "Browser hijack" },
   "oSearchGuard": { "message": "Search results guard" },
-  "oSearchGuardDesc": { "message": "Flags links with suspicious domains on Google/Bing (local analysis)." },
+  "oSearchGuardDesc": { "message": "Flags links with suspicious domains in search results (local analysis)." },
   "bLearn": { "message": "Learn about this" },
   "uLearn": { "message": "Learn about this" },
   "fCommunityTitle": { "message": "Reported by the community" },

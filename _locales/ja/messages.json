@@ -166,7 +166,7 @@
   "det_skimmer": { "message": "カード窃取（スキマー）" },
   "det_locker": { "message": "ブラウザの乗っ取り" },
   "oSearchGuard": { "message": "検索結果ガード" },
-  "oSearchGuardDesc": { "message": "Google/Bing で疑わしいドメインのリンクに印を付けます（ローカル分析）。" },
+  "oSearchGuardDesc": { "message": "検索結果で疑わしいドメインのリンクに印を付けます（ローカル分析）。" },
   "bLearn": { "message": "これについて学ぶ" },
   "uLearn": { "message": "これについて学ぶ" },
   "fCommunityTitle": { "message": "コミュニティによる報告" },
