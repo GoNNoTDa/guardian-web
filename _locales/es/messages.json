@@ -161,7 +161,7 @@
   "fLockerFsDetail": { "message": "Intenta ponerse a pantalla completa nada más entrar para ocultar el navegador." },
   "det_rawip": { "message": "Sitio servido desde IP" },
   "det_weirdport": { "message": "Puerto no estándar" },
-  "det_domainage": { "message": "Dominio recién registrado" },
+  "det_domainage": { "message": "Dominio recién registrado (consulta rdap.org)" },
   "det_trackerlearn": { "message": "Rastreadores aprendidos" },
   "det_skimmer": { "message": "Robo de tarjeta (skimmer)" },
   "det_locker": { "message": "Secuestro del navegador" },

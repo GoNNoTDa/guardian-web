@@ -161,7 +161,7 @@
   "fLockerFsDetail": { "message": "Intenta posar-se a pantalla completa només entrar per amagar el navegador." },
   "det_rawip": { "message": "Lloc servit des d'IP" },
   "det_weirdport": { "message": "Port no estàndard" },
-  "det_domainage": { "message": "Domini registrat fa poc" },
+  "det_domainage": { "message": "Domini registrat fa poc (consulta rdap.org)" },
   "det_trackerlearn": { "message": "Rastrejadors apresos" },
   "det_skimmer": { "message": "Robatori de targeta (skimmer)" },
   "det_locker": { "message": "Segrest del navegador" },

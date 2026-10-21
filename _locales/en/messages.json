@@ -161,7 +161,7 @@
   "fLockerFsDetail": { "message": "The page tries to go fullscreen on entry to hide the browser." },
   "det_rawip": { "message": "Site served from IP" },
   "det_weirdport": { "message": "Non-standard port" },
-  "det_domainage": { "message": "Newly registered domain" },
+  "det_domainage": { "message": "Newly registered domain (queries rdap.org)" },
   "det_trackerlearn": { "message": "Learned trackers" },
   "det_skimmer": { "message": "Card theft (skimmer)" },
   "det_locker": { "message": "Browser hijack" },

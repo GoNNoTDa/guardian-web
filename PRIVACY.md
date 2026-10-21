@@ -1,6 +1,6 @@
 # Política de privacidad — Guardián Web
 
-*Última actualización: julio de 2026*
+*Última actualización: octubre de 2026*
 
 Guardián Web es una extensión **defensiva**: analiza el comportamiento de las
 páginas que visitas para avisarte de riesgos. Está diseñada bajo el principio
@@ -19,23 +19,36 @@ de mínima recogida de datos.
 | Texto que la web escribe en el portapapeles (detectores ClickFix y de secuestro del portapapeles) | Solo memoria de la propia página; se compara con lo que tenías seleccionado | **No. Nunca se almacena ni se transmite** |
 | Peticiones de firma de tu cartera de criptomonedas (detector Web3) | Solo memoria de la propia página; se mira el tipo de petición | **No. Nunca se almacenan ni se transmiten** |
 
-## Consultas a servicios externos (opcionales)
+## Qué sale de tu equipo
 
-Si configuras claves de API y NO activas el modo local:
+Recién instalada, sin claves de API y sin tocar las opciones, la extensión hace
+**solo dos tipos de petición**, y ninguna lleva el dominio que visitas:
 
-- **Google Safe Browsing**: se envía la URL de cada página que visitas a
-  Google para comprobar si está clasificada como amenaza.
-- **URLhaus (abuse.ch)**: se envía el dominio de cada página que visitas.
-- **Feed de URLhaus**: se descarga periódicamente una lista pública; esta
-  descarga no incluye ningún dato tuyo.
+- **Feed de URLhaus** (`urlhaus.abuse.ch`): cada 12 horas se descarga una lista
+  pública de dominios maliciosos. La petición no incluye ningún dato tuyo; la
+  comparación con los sitios que visitas se hace en tu equipo.
+- **Consulta a la comunidad** (`sec.fourmartech.es`): en cada navegación a un
+  sitio que no está en la lista de confianza se envía un **prefijo de 4
+  caracteres del hash** del dominio, nunca el dominio. Ver la sección siguiente.
+
+Solo si tú lo activas:
+
+- **Google Safe Browsing** (si pones tu clave): se envía la URL de cada página
+  que visitas a Google para comprobar si está clasificada como amenaza.
+- **URLhaus** (si pones tu clave): se envía el dominio de cada página que
+  visitas a abuse.ch.
+- **Edad del dominio** (detector desactivado por defecto): se envía a
+  `rdap.org` el dominio registrable de cada sitio que no está en la lista de
+  confianza, para saber cuándo se registró.
 
 **Modo local**: en las opciones puedes activar el modo local, que desactiva
-toda comunicación con servicios externos. La extensión sigue funcionando con
-sus heurísticas locales.
+toda comunicación con servicios externos, incluidas las dos peticiones por
+defecto. La extensión sigue funcionando con sus heurísticas locales.
 
-## Reputación de la comunidad (opcional)
+## Reputación de la comunidad
 
-Si configuras un servidor de comunidad en las opciones:
+Viene activada con el servidor oficial; puedes cambiarlo o vaciarlo en las
+opciones:
 
 - **Reportar es siempre manual.** Solo se envía un sitio cuando pulsas
   "Reportar este sitio". Nada se envía de forma automática al navegar.
@@ -47,11 +60,19 @@ Si configuras un servidor de comunidad en las opciones:
 - **Identidad anónima.** Se usa un identificador aleatorio de instalación
   (UUID) solo para evitar reportes duplicados y limitar abusos. Se guarda
   hasheado en el servidor; no se almacena email, cuenta ni dirección IP.
+- **Freno contra reportes falsos.** Como cualquiera puede inventarse UUIDs, al
+  reportar el servidor guarda también un hash con clave secreta de la **red**
+  desde la que llega el reporte (la IP truncada: los tres primeros bloques en
+  IPv4, los tres primeros grupos en IPv6). La IP completa no se guarda nunca.
+  Sirve para limitar cuántos reportes salen de una misma red y para que un
+  dominio solo se valide cuando lo reportan redes distintas. Las consultas no
+  guardan nada de esto.
 - El servidor oficial de la comunidad es `https://sec.fourmartech.es`. Puedes
   cambiarlo o vaciarlo en las opciones; vacío = función desactivada. En modo
   local tampoco se realiza ninguna consulta.
 - **Qué guarda ese servidor**, y nada más: el dominio reportado, la categoría
-  del reporte, la fecha y el UUID de instalación hasheado. No guarda URLs
+  del reporte, la fecha, el UUID de instalación hasheado y el hash de la red
+  descrito arriba. No guarda URLs
   completas, ni rutas, ni parámetros, ni tu historial, ni ningún dato personal.
 - **Puedes autoalojarlo.** El backend está en `server/` (PHP + MySQL, esquema en
   `schema.sql`) bajo la misma licencia MIT: monta tu propia instancia, apúntala
@@ -90,9 +111,10 @@ extensión guarda vive en tu navegador y está bajo tu control:
   a ti.
 - No descarga ni ejecuta código remoto: todo el JavaScript que se ejecuta es el
   que viene en el paquete de la extensión.
-- **No envía nada a ningún servidor con la configuración por defecto y sin
-  claves de API.** Recién instalada y sin configurar, Guardián Web funciona
-  íntegramente en tu equipo.
+- **No envía tu navegación a ningún servidor con la configuración por
+  defecto.** Recién instalada, solo descarga el feed público y hace la
+  consulta k-anónima a la comunidad, que no revela qué dominio visitas. Con el
+  modo local activo no hace ninguna petición.
 
 ## Permisos que solicita y por qué
 

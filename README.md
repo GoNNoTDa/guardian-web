@@ -61,7 +61,7 @@ positive spends the user's trust — the only thing this kind of tool really has
 | Reputation | URLhaus (malware domain) | 70–100 |
 | Reputation | Community-reported domain (k-anonymous lookup) | 85 |
 | Reputation | Domain in the local URLhaus malware feed (auto-updated every 12 h, works offline) | 90 |
-| Reputation | Newly registered domain (RDAP, <30 days) | 40 |
+| Reputation | Newly registered domain (RDAP, <30 days; opt-in, off by default) | 40 |
 | Reputation | Raw-IP hosting (excludes localhost/private) | 35 |
 | Reputation | Non-standard port | 15 |
 | Reputation | Suspicious redirect chain | 20 |
@@ -132,10 +132,13 @@ thresholds, which detectors are active, the community server and the trust list.
 
 ### Privacy
 
-With reputation APIs enabled, the URL of each page you visit is checked against
-Google Safe Browsing and/or URLhaus. If you prefer that **nothing** leaves your
-device, enable **local mode**: the extension keeps working with local
-heuristics only. Form data watched by the exfiltration detector is **never
+Out of the box, only two requests leave your device, and neither reveals what
+you visit: the download of URLhaus's public malware feed and the k-anonymous
+community lookup (only a hash prefix is sent). Your URLs or domains are sent
+only if you turn it on: Google Safe Browsing or URLhaus with your own keys, or
+the domain-age detector (rdap.org), which is off by default. If you prefer that
+**nothing** leaves your device, enable **local mode**: the extension keeps
+working with local heuristics only. Form data watched by the exfiltration detector is **never
 stored or sent** — it's compared in memory inside the page itself. Community
 lookups use k-anonymity (only a hash prefix is sent). See `PRIVACY.md`.
 
@@ -147,8 +150,9 @@ lookups use k-anonymity (only a hash prefix is sent). See `PRIVACY.md`.
 ### FAQ
 
 **Does it work without any API key?** Yes. Without keys it runs on local
-heuristics only, which is most of the detectors — and nothing leaves your
-device. Keys only add the reputation layer.
+heuristics, which is most of the detectors, plus the local malware feed and the
+k-anonymous community lookup — your browsing never leaves your device. Keys
+only add the reputation layer.
 
 **Why does it need access to all sites?** Because the dangerous site is, by
 definition, the one nobody has on a list yet. An allowlist of "sites to protect"
@@ -231,7 +235,7 @@ herramienta así.
 | Reputación | URLhaus (dominio con malware) | 70–100 |
 | Reputación | Dominio reportado por la comunidad (consulta k-anónima) | 85 |
 | Reputación | Dominio en el feed local de malware de URLhaus (cada 12 h, offline) | 90 |
-| Reputación | Dominio recién registrado (RDAP, <30 días) | 40 |
+| Reputación | Dominio recién registrado (RDAP, <30 días; opcional, apagado por defecto) | 40 |
 | Reputación | Sitio servido desde IP pelada (excluye localhost/privadas) | 35 |
 | Reputación | Puerto no estándar | 15 |
 | Reputación | Cadena de redirecciones sospechosa | 20 |
@@ -304,10 +308,13 @@ confianza.
 
 ### Privacidad
 
-Con las APIs de reputación activas, la URL de cada página que visitas se
-consulta contra Google Safe Browsing y/o URLhaus. Si prefieres que **nada**
-salga de tu equipo, activa el **modo local**: la extensión seguirá funcionando
-solo con las heurísticas locales. Los datos de formularios que vigila el
+Recién instalada, solo salen de tu equipo dos peticiones, y ninguna revela qué
+visitas: la descarga del feed público de malware de URLhaus y la consulta
+k-anónima a la comunidad (solo se envía un prefijo de hash). Tus URLs o
+dominios solo se envían si tú lo activas: Google Safe Browsing o URLhaus con
+tus claves, o el detector de edad de dominio (rdap.org), apagado por defecto.
+Si prefieres que **nada** salga de tu equipo, activa el **modo local**: la
+extensión seguirá funcionando solo con las heurísticas locales. Los datos de formularios que vigila el
 detector de exfiltración **nunca se almacenan ni se envían**: se comparan en
 memoria dentro de la propia página. Las consultas de comunidad usan k-anonimato
 (solo se envía un prefijo de hash). Ver `PRIVACY.md`.
@@ -319,8 +326,9 @@ En `test-lab/` hay un laboratorio local e inofensivo: `node server.js` y abre
 
 ### Preguntas frecuentes
 
-**¿Funciona sin claves de API?** Sí. Sin claves funciona solo con heurísticas
-locales, que son la mayoría de los detectores, y nada sale de tu equipo. Las
+**¿Funciona sin claves de API?** Sí. Sin claves funciona con las heurísticas
+locales, que son la mayoría de los detectores, más el feed local de malware y
+la consulta k-anónima a la comunidad: tu navegación no sale de tu equipo. Las
 claves únicamente añaden la capa de reputación.
 
 **¿Por qué necesita acceso a todos los sitios?** Porque el sitio peligroso es,

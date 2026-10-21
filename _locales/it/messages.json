@@ -161,7 +161,7 @@
   "fLockerFsDetail": { "message": "La pagina tenta di andare a schermo intero appena entri per nascondere il browser." },
   "det_rawip": { "message": "Sito servito da IP" },
   "det_weirdport": { "message": "Porta non standard" },
-  "det_domainage": { "message": "Dominio registrato di recente" },
+  "det_domainage": { "message": "Dominio registrato di recente (interroga rdap.org)" },
   "det_trackerlearn": { "message": "Tracker appresi" },
   "det_skimmer": { "message": "Furto di carta (skimmer)" },
   "det_locker": { "message": "Dirottamento del browser" },

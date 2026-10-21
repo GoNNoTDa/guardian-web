@@ -161,7 +161,7 @@
   "fLockerFsDetail": { "message": "La page tente de passer en plein écran dès l'entrée pour masquer le navigateur." },
   "det_rawip": { "message": "Site servi depuis une IP" },
   "det_weirdport": { "message": "Port non standard" },
-  "det_domainage": { "message": "Domaine récemment enregistré" },
+  "det_domainage": { "message": "Domaine récemment enregistré (interroge rdap.org)" },
   "det_trackerlearn": { "message": "Traqueurs appris" },
   "det_skimmer": { "message": "Vol de carte (skimmer)" },
   "det_locker": { "message": "Détournement du navigateur" },

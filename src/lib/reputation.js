@@ -71,9 +71,11 @@ async function checkGoogleSafeBrowsing(url, apiKey) {
   return null;
 }
 
+// Sin clave no se consulta: la API de URLhaus exige Auth-Key, así que la
+// petición no daría señal y solo serviría para enviar el dominio a abuse.ch.
 async function checkURLhaus(host, authKey) {
-  const headers = { "Content-Type": "application/x-www-form-urlencoded" };
-  if (authKey) headers["Auth-Key"] = authKey;
+  if (!authKey) return null;
+  const headers = { "Content-Type": "application/x-www-form-urlencoded", "Auth-Key": authKey };
 
   try {
     const res = await fetch(URLHAUS_ENDPOINT, {
