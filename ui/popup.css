@@ -74,7 +74,7 @@ button:focus-visible {
   gap: 8px;
   padding: 10px 10px 10px 14px;
 }
-.mark { width: 18px; height: 18px; fill: var(--pine); flex: none; }
+.mark { width: 20px; height: 20px; flex: none; }
 .brand { flex: 1; font-weight: 650; letter-spacing: -0.01em; }
 .icon {
   display: grid;
