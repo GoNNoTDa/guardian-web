@@ -70,3 +70,29 @@ function installHash(string $id): string
 {
     return hash('sha256', $id . '|' . cfg()['pepper']);
 }
+
+// Red de origen del cliente, truncada: /24 en IPv4 y /48 en IPv6 (lo que suele
+// tener asignado una casa o una oficina). El installId lo inventa el cliente,
+// así que por sí solo no frena a quien se fabrique cien; la red sí cuesta
+// cambiarla. Devuelve '' si REMOTE_ADDR no es una IP.
+function clientNetwork(): string
+{
+    $bin = @inet_pton((string) ($_SERVER['REMOTE_ADDR'] ?? ''));
+    if ($bin === false) {
+        return '';
+    }
+    // IPv4 mapeada en IPv6 (::ffff:a.b.c.d): se trata como IPv4.
+    if (strlen($bin) === 16 && substr($bin, 0, 12) === str_repeat("\0", 10) . "\xff\xff") {
+        $bin = substr($bin, 12);
+    }
+    $bin = strlen($bin) === 4
+        ? substr($bin, 0, 3) . "\0"
+        : substr($bin, 0, 6) . str_repeat("\0", 10);
+    return inet_ntop($bin);
+}
+
+// Hash con clave de la red: la BD nunca guarda la IP, ni siquiera truncada.
+function networkHash(string $net): string
+{
+    return hash_hmac('sha256', 'net|' . $net, cfg()['pepper']);
+}

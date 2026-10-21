@@ -36,7 +36,7 @@
       <a href="/privacidad.html">Español</a>
     </div>
     <h1>Privacy Policy</h1>
-    <p class="date">Last updated: July 2026</p>
+    <p class="date">Last updated: October 2026</p>
 
     <p class="lead">Guardián Web is a <strong>defensive</strong> extension designed around the principle of minimal data collection. Here's exactly what it does with your information.</p>
 
@@ -51,12 +51,16 @@
       <tr><td>Signature requests from your crypto wallet</td><td>Only in the page's own memory</td><td class="no">Never stored or sent</td></tr>
     </table>
 
-    <h2>Queries to external services (optional)</h2>
-    <p class="lead">Except in <strong>local mode</strong>, the extension may make these queries, all for your security:</p>
+    <h2>What leaves your device</h2>
+    <p class="lead">Freshly installed and with no API keys, the extension makes only these two requests, and neither carries the domain you visit:</p>
     <ul>
       <li><strong>Community reputation</strong> (<code>sec.fourmartech.es</code>): while browsing, only a <strong>hash prefix</strong> of the domain is sent (k-anonymity). The server never knows which specific site you're visiting.</li>
-      <li><strong>Google Safe Browsing / URLhaus</strong>: only if you configure your own API keys.</li>
       <li><strong>URLhaus malware feed</strong>: periodic download of a public list; it includes no data about you.</li>
+    </ul>
+    <p class="lead">Only if you turn them on:</p>
+    <ul>
+      <li><strong>Google Safe Browsing / URLhaus</strong>: with your own API keys, the URL (Google) or the domain (URLhaus) of each page you visit is sent.</li>
+      <li><strong>Domain age</strong> (detector off by default): the domain of each unknown site is sent to <code>rdap.org</code> to find out when it was registered.</li>
     </ul>
     <p class="lead"><strong>Local mode</strong>, which you can enable in the options, disables all these queries: nothing leaves your device.</p>
 
@@ -64,7 +68,7 @@
     <ul>
       <li>Sent only <strong>when you manually click</strong> "Report this site." Nothing automatic.</li>
       <li>An <strong>anonymous, random</strong> installation identifier is used, stored hashed on the server.</li>
-      <li>No email, account or IP address is stored: a report contains only the domain, the category and the date.</li>
+      <li>No email, account or IP address is stored: a report contains the domain, the category, the date and a keyed hash of the source <strong>network</strong> (the truncated IP), used only to stop fake reports: limiting how many come from one network and validating a domain only when distinct networks report it.</li>
     </ul>
 
     <h2>What Guardián Web does NOT do</h2>
@@ -74,7 +78,7 @@
       <li class="no">Does not inject ads or alter content (except the warning banner).</li>
       <li class="no">Does not create accounts: there is no email, name or profile tied to you.</li>
       <li class="no">Does not download or run remote code: only the code shipped in the package runs.</li>
-      <li class="no">Freshly installed and with no API keys, it sends nothing to any server.</li>
+      <li class="no">With the default settings it sends your browsing to no server; in local mode it makes no requests at all.</li>
     </ul>
 
     <h2>Permissions it does NOT request</h2>

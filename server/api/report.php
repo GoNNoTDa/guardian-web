@@ -25,13 +25,25 @@ $score = max(0, min(1000, $score));
 $c    = cfg();
 $pdo  = db();
 $ih   = installHash($install);
+$net  = clientNetwork();
+if ($net === '') {
+    jsonOut(['error' => 'invalid_input'], 400);
+}
+$nh = networkHash($net);
 
-// Rate-limiting por instalación (24 h).
+// Rate-limiting por instalación y por red (24 h). El de red es el que de
+// verdad frena: inventarse installIds es gratis.
 $rl = $pdo->prepare(
-    'SELECT COUNT(*) FROM reports WHERE install_hash = ? AND created_at >= DATE_SUB(NOW(), INTERVAL 1 DAY)'
+    'SELECT
+       SUM(install_hash = ?) AS by_install,
+       SUM(net_hash = ?)     AS by_network
+     FROM reports
+     WHERE created_at >= DATE_SUB(NOW(), INTERVAL 1 DAY) AND (install_hash = ? OR net_hash = ?)'
 );
-$rl->execute([$ih]);
-if ((int) $rl->fetchColumn() >= $c['rate_limit_per_day']) {
+$rl->execute([$ih, $nh, $ih, $nh]);
+$used = $rl->fetch();
+if ((int) $used['by_install'] >= $c['rate_limit_per_day']
+    || (int) $used['by_network'] >= ($c['rate_limit_per_network_day'] ?? 30)) {
     jsonOut(['error' => 'rate_limited'], 429);
 }
 
@@ -53,22 +65,34 @@ try {
 
     // Reporte único por (dominio, instalación).
     $ins = $pdo->prepare(
-        'INSERT IGNORE INTO reports (domain_id, install_hash, score, detectors_json, created_at)
-         VALUES (?, ?, ?, ?, NOW())'
+        'INSERT IGNORE INTO reports (domain_id, install_hash, net_hash, score, detectors_json, created_at)
+         VALUES (?, ?, ?, ?, ?, NOW())'
     );
-    $ins->execute([$did, $ih, $score, $detJson]);
+    $ins->execute([$did, $ih, $nh, $score, $detJson]);
     $isNew = $ins->rowCount() > 0;
 
     if ($isNew) {
-        $agg = $pdo->prepare('SELECT COUNT(*) c, COALESCE(SUM(score), 0) s FROM reports WHERE domain_id = ?');
+        $agg = $pdo->prepare(
+            // Los reportes anteriores a la migración no tienen red: cada uno
+            // cuenta como una red propia, igual que contaban antes.
+            'SELECT COUNT(*) c, COUNT(DISTINCT COALESCE(net_hash, CONCAT(\'legacy:\', id))) n,
+                    COALESCE(SUM(score), 0) s
+             FROM reports WHERE domain_id = ?'
+        );
         $agg->execute([$did]);
-        $a      = $agg->fetch();
-        $count  = (int) $a['c'];
-        $status = $count >= $c['validation_threshold'] ? 'validated' : 'pending';
-        // No pisar un 'rejected' puesto a mano por un moderador.
+        $a        = $agg->fetch();
+        $networks = (int) $a['n'];
+        // Se valida por REDES distintas, no por instalaciones: cien UUIDs desde
+        // la misma conexión cuentan como uno. Con auto_validate = false solo
+        // valida un moderador.
+        $promote = ($c['auto_validate'] ?? true) && $networks >= $c['validation_threshold'];
+        // Solo se sube de 'pending' a 'validated': nunca se pisa lo que haya
+        // decidido a mano un moderador (ni un 'rejected' ni un 'validated').
         $pdo->prepare(
-            'UPDATE domains SET report_count = ?, score_sum = ?, status = IF(status = \'rejected\', \'rejected\', ?) WHERE id = ?'
-        )->execute([$count, (int) $a['s'], $status, $did]);
+            'UPDATE domains SET report_count = ?, network_count = ?, score_sum = ?,
+               status = IF(status = \'pending\' AND ?, \'validated\', status)
+             WHERE id = ?'
+        )->execute([(int) $a['c'], $networks, (int) $a['s'], $promote ? 1 : 0, $did]);
     }
 
     $pdo->commit();
