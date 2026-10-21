@@ -25,10 +25,22 @@ async function load() {
   await renderWhitelist();
 }
 
+// Los detectores se agrupan bajo el nombre de su grupo, en el orden en que
+// aparecen en DETECTORS.
 function renderDetectors(state) {
   const box = $("detectors");
   box.textContent = "";
+  const groups = new Map();
   for (const d of DETECTORS) {
+    if (!groups.has(d.group)) {
+      const fs = document.createElement("fieldset");
+      fs.className = "det-group";
+      const legend = document.createElement("legend");
+      legend.textContent = t(`grp_${d.group}`);
+      fs.appendChild(legend);
+      groups.set(d.group, fs);
+      box.appendChild(fs);
+    }
     const label = document.createElement("label");
     label.className = "det";
     const cb = document.createElement("input");
@@ -37,11 +49,8 @@ function renderDetectors(state) {
     cb.checked = state[d.key] !== false;
     const txt = document.createElement("span");
     txt.textContent = t(`det_${d.key}`);
-    const g = document.createElement("span");
-    g.className = "g";
-    g.textContent = t(`grp_${d.group}`);
-    label.append(cb, txt, g);
-    box.appendChild(label);
+    label.append(cb, txt);
+    groups.get(d.group).appendChild(label);
   }
 }
 

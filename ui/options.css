@@ -1,112 +1,223 @@
+/* Página de opciones. Misma paleta que el popup (popup.css). */
+:root {
+  --paper: #f5f7f6;
+  --surface: #ffffff;
+  --ink: #17231d;
+  --ink-2: #44544c;
+  --ink-3: #5f6e67;
+  --line: #dde5e1;
+  --pine: #17663b;
+  --pine-strong: #10512e;
+  --pine-soft: #e2f0e7;
+  --red: #a8201a;
+  --red-soft: #fae6e4;
+  --blue: #245499;
+  --blue-soft: #e5edf9;
+  --knob: #ffffff;
+  color-scheme: light dark;
+}
+@media (prefers-color-scheme: dark) {
+  :root {
+    --paper: #0e1512;
+    --surface: #15201b;
+    --ink: #e4ece7;
+    --ink-2: #b4c2bb;
+    --ink-3: #93a39b;
+    --line: #26332d;
+    --pine: #5fcf8e;
+    --pine-strong: #7ddca4;
+    --pine-soft: #183224;
+    --red: #ff9b90;
+    --red-soft: #3a1714;
+    --blue: #9cc0f5;
+    --blue-soft: #16253b;
+    --knob: #0e1512;
+  }
+}
+
 * { box-sizing: border-box; }
+[hidden] { display: none !important; }
 body {
   margin: 0;
-  font: 14px/1.5 system-ui, sans-serif;
-  color: #1a1a1a;
-  background: #f4f5f7;
+  font: 14px/1.5 system-ui, -apple-system, "Segoe UI", sans-serif;
+  color: var(--ink);
+  background: var(--paper);
 }
-.wrap { max-width: 720px; margin: 0 auto; padding: 24px 20px 60px; }
-header { display: flex; align-items: center; gap: 14px; margin-bottom: 8px; }
-.shield { font-size: 34px; }
-h1 { font-size: 22px; margin: 0; }
-.sub { margin: 2px 0 0; color: #777; }
-.muted { color: #999; font-weight: 400; font-size: 12px; }
+.wrap { max-width: 680px; margin: 0 auto; padding: 40px 20px 0; }
+
+header { display: flex; align-items: center; gap: 14px; margin-bottom: 28px; }
+.mark { width: 36px; height: 36px; fill: var(--pine); flex: none; }
+h1 { font-size: 24px; line-height: 1.2; margin: 0; letter-spacing: -0.015em; }
+.sub { margin: 2px 0 0; color: var(--ink-2); }
+.muted { color: var(--ink-3); font-weight: 400; font-size: 13px; }
 
 section {
-  background: #fff;
-  border: 1px solid #e5e5e5;
-  border-radius: 12px;
-  padding: 16px 18px;
-  margin-top: 16px;
+  background: var(--surface);
+  border: 1px solid var(--line);
+  border-radius: 14px;
+  padding: 18px 20px 8px;
+  margin-top: 14px;
 }
-h2 { font-size: 15px; margin: 0 0 12px; }
+h2 { font-size: 16px; margin: 0 0 6px; letter-spacing: -0.01em; }
 
 .row {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  gap: 16px;
-  padding: 10px 0;
-  border-top: 1px solid #f0f0f0;
+  gap: 20px;
+  padding: 12px 0;
+  border-top: 1px solid var(--line);
 }
-.row:first-of-type { border-top: none; }
-.row span { display: flex; flex-direction: column; }
+h2 + .row { border-top: 0; }
+.row > span { display: flex; flex-direction: column; }
 .row b { font-weight: 600; }
-.row small { color: #777; font-size: 12px; }
+.row small { color: var(--ink-2); font-size: 13px; }
 
-.switch input { width: 20px; height: 20px; flex: none; cursor: pointer; }
+/* Interruptores: el checkbox nativo, dibujado como interruptor. Sigue siendo
+   un checkbox para el teclado y los lectores de pantalla. */
+.switch input,
+.det input {
+  appearance: none;
+  flex: none;
+  position: relative;
+  width: 38px;
+  height: 22px;
+  margin: 0;
+  border-radius: 11px;
+  background: var(--line);
+  cursor: pointer;
+  transition: background 0.15s;
+}
+.switch input::after,
+.det input::after {
+  content: "";
+  position: absolute;
+  top: 3px;
+  left: 3px;
+  width: 16px;
+  height: 16px;
+  border-radius: 50%;
+  background: var(--knob);
+  box-shadow: 0 1px 2px rgb(0 0 0 / 0.25);
+  transition: transform 0.15s;
+}
+.switch input:checked,
+.det input:checked { background: var(--pine); }
+.switch input:checked::after,
+.det input:checked::after { transform: translateX(16px); }
+input:focus-visible,
+button:focus-visible,
+a:focus-visible {
+  outline: 2px solid var(--pine);
+  outline-offset: 2px;
+}
+
 .field input {
-  width: 230px;
+  width: 240px;
   padding: 8px 10px;
-  border: 1px solid #ccc;
+  border: 1px solid var(--line);
   border-radius: 8px;
+  background: var(--paper);
+  color: var(--ink);
   font: inherit;
 }
-.field input[type="number"] { width: 90px; }
+.field input:focus { border-color: var(--pine); outline: none; box-shadow: 0 0 0 3px var(--pine-soft); }
+.field input[type="number"] { width: 90px; font-variant-numeric: tabular-nums; }
 
 .note {
-  margin: 10px 0 0;
-  padding: 8px 10px;
-  background: #e7f0fb;
-  color: #1d5aa8;
+  margin: 4px 0 12px;
+  padding: 9px 12px;
+  background: var(--blue-soft);
+  color: var(--blue);
   border-radius: 8px;
   font-size: 13px;
 }
 
-/* Detectores en rejilla con grupos */
-#detectors { display: grid; grid-template-columns: 1fr 1fr; gap: 6px 24px; }
+/* Detectores agrupados por categoría. */
+#detectors {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+  gap: 4px 28px;
+  padding-bottom: 10px;
+}
+.det-group { margin: 0; padding: 16px 0 0; border: 0; min-width: 0; }
+.det-group legend {
+  padding: 0;
+  font-size: 13px;
+  font-weight: 650;
+  color: var(--ink-2);
+}
+.det-group legend::first-letter { text-transform: uppercase; }
 .det {
   display: flex;
   align-items: center;
-  gap: 8px;
-  padding: 6px 0;
-  border-top: 1px solid #f4f4f4;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 7px 0;
+  border-top: 1px solid var(--line);
+  cursor: pointer;
 }
-.det input { width: 17px; height: 17px; cursor: pointer; }
-.det .g { margin-left: auto; font-size: 10px; color: #aaa; text-transform: uppercase; }
+.det-group legend + .det { border-top: 0; }
+.det span { order: -1; }
 
-#whitelist { list-style: none; margin: 0; padding: 0; }
+#whitelist { list-style: none; margin: 0; padding: 0 0 8px; }
 #whitelist li {
   display: flex;
   align-items: center;
   justify-content: space-between;
   padding: 8px 0;
-  border-top: 1px solid #f0f0f0;
+  border-top: 1px solid var(--line);
+  font-family: ui-monospace, "Cascadia Mono", "SF Mono", Menlo, Consolas, monospace;
 }
-#whitelist li:first-child { border-top: none; }
+#whitelist li:first-child { border-top: 0; }
 #whitelist button {
-  font: inherit;
-  font-size: 12px;
-  color: #b0281a;
+  font: 600 12px system-ui, sans-serif;
+  color: var(--red);
   background: none;
-  border: 1px solid #e5c3bd;
-  border-radius: 6px;
-  padding: 3px 10px;
+  border: 1px solid var(--line);
+  border-radius: 7px;
+  padding: 4px 10px;
   cursor: pointer;
 }
-#whitelist button:hover { background: #fbe9e7; }
+#whitelist button:hover { background: var(--red-soft); }
+#whitelistEmpty { margin: 0 0 12px; }
 
+/* Barra de guardado fija abajo: los ajustes se aplican al pulsar Guardar. */
 .actions {
   position: sticky;
   bottom: 0;
   display: flex;
   align-items: center;
   gap: 12px;
-  margin-top: 20px;
-  padding: 14px 0 0;
+  margin: 24px -20px 0;
+  padding: 14px 20px;
+  background: color-mix(in srgb, var(--paper) 88%, transparent);
+  backdrop-filter: blur(8px);
+  border-top: 1px solid var(--line);
 }
 button {
   font: inherit;
+  font-weight: 600;
   padding: 9px 16px;
-  border: 1px solid #ccc;
-  border-radius: 8px;
-  background: #fff;
+  border: 1px solid var(--line);
+  border-radius: 9px;
+  background: var(--surface);
+  color: var(--ink);
   cursor: pointer;
 }
-button:hover { background: #f0f0f0; }
-button.primary { background: #1e7e45; color: #fff; border-color: #1e7e45; }
-button.primary:hover { background: #196a3a; }
-.saved { color: #1e7e45; font-weight: 600; }
-.support { text-align: center; margin: 18px 0 0; }
-.support a { color: #1e7e45; text-decoration: none; font-weight: 600; }
+button:hover { background: var(--paper); }
+button.primary { background: var(--pine); color: var(--knob); border-color: var(--pine); }
+button.primary:hover { background: var(--pine-strong); }
+.saved { color: var(--pine); font-weight: 600; }
+.support { text-align: center; margin: 20px 0 32px; }
+.support a { color: var(--pine); text-decoration: none; font-weight: 600; }
 .support a:hover { text-decoration: underline; }
+
+@media (max-width: 560px) {
+  .row { flex-direction: column; align-items: stretch; gap: 8px; }
+  .switch { flex-direction: row; align-items: center; }
+  .field input { width: 100%; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .switch input, .det input, .switch input::after, .det input::after { transition: none; }
+}

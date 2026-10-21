@@ -5,28 +5,46 @@
     <link rel="stylesheet" href="popup.css" />
   </head>
   <body class="panel">
-    <header>
-      <span id="shield">🛡️</span>
-      <div>
-        <h1>Guardián Web</h1>
-        <span id="host"></span>
-      </div>
-      <button id="openOptions" data-i18n-title="uOptionsTip">⚙️</button>
-      <button id="trustBtn" hidden></button>
+    <header class="top">
+      <svg class="mark" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 2.5 4 5.6v6.1c0 4.9 3.4 8.7 8 9.8 4.6-1.1 8-4.9 8-9.8V5.6L12 2.5Z" /></svg>
+      <span class="brand">Guardián Web</span>
+      <button id="openOptions" class="icon" data-i18n-title="uOptionsTip">
+        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 7h10M18 7h2M4 17h2M10 17h10" /><circle cx="16" cy="7" r="2" /><circle cx="8" cy="17" r="2" /></svg>
+      </button>
     </header>
 
-    <div id="status" class="safe" data-i18n="uAnalyzing">Analizando…</div>
-    <ul id="reasons"></ul>
-    <footer id="empty" data-i18n="uEmpty">No se han detectado señales de riesgo en esta pestaña.</footer>
-    <div class="report-row"><button id="reportBtn" hidden data-i18n="uReport">Reportar este sitio</button></div>
+    <main>
+      <p id="host" class="host"></p>
+
+      <div id="status" class="verdict safe">
+        <p id="statusText" class="verdict-text" data-i18n="uAnalyzing">Analizando…</p>
+        <p id="statusNote" class="verdict-note" hidden></p>
+        <div id="meter" class="meter" hidden>
+          <div class="track">
+            <span id="meterFill" class="fill"></span>
+            <span id="tickWarn" class="tick warn"></span>
+            <span id="tickDanger" class="tick danger"></span>
+          </div>
+          <span id="score" class="score"></span>
+        </div>
+      </div>
+
+      <ul id="reasons"></ul>
+      <p id="empty" class="empty" data-i18n="uEmpty">No se han detectado señales de riesgo en esta pestaña.</p>
+
+      <div class="site-actions">
+        <button id="trustBtn" hidden></button>
+        <button id="reportBtn" hidden data-i18n="uReport">Reportar este sitio</button>
+      </div>
+    </main>
 
     <section id="historySection">
       <div class="section-head">
         <h2 data-i18n="uHistoryTitle">Historial de avisos</h2>
-        <button id="clearHistory" data-i18n="uClear">Borrar</button>
+        <button id="clearHistory" class="quiet" data-i18n="uClear">Borrar</button>
       </div>
       <ul id="history"></ul>
-      <p id="historyEmpty" data-i18n="uHistoryEmpty">Todavía no hay sitios marcados.</p>
+      <p id="historyEmpty" class="empty" data-i18n="uHistoryEmpty">Todavía no hay sitios marcados.</p>
     </section>
 
     <script type="module" src="panel.js"></script>
