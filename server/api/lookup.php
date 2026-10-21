@@ -17,7 +17,7 @@ $prefix = substr($prefix, 0, 4);
 
 $pdo  = db();
 $stmt = $pdo->prepare(
-    "SELECT domain_hash, report_count, score_sum, detectors_json
+    "SELECT domain_hash, report_count, network_count, score_sum, detectors_json
      FROM domains
      WHERE hash_prefix = ? AND status = 'validated'
      LIMIT 500"
@@ -29,7 +29,7 @@ foreach ($stmt as $r) {
     $count = (int) $r['report_count'];
     $matches[] = [
         'h'     => $r['domain_hash'],                                   // hash completo (no el dominio en claro)
-        'n'     => $count,                                              // nº de reportes
+        'n'     => (int) $r['network_count'],                           // nº de redes distintas que lo reportan
         'score' => $count > 0 ? intdiv((int) $r['score_sum'], $count) : 0,
         'd'     => json_decode($r['detectors_json'] ?: '[]'),           // detectores agregados
     ];

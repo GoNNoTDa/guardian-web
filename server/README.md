@@ -1,7 +1,7 @@
 # Guardián Web — Backend de reputación colaborativa
 
 API en PHP + MySQL que recoge reportes de usuarios y publica una lista de
-dominios **validados por la comunidad** (X reportes de instalaciones distintas).
+dominios **validados por la comunidad** (X reportes desde redes distintas).
 La extensión la consulta con **k-anonimato**: envía solo un prefijo del hash del
 dominio, así el servidor nunca sabe qué sitio exacto visitas.
 
@@ -13,7 +13,9 @@ dominio, así el servidor nunca sabe qué sitio exacto visitas.
   dominios validados de ese "cubo"; la extensión compara el hash completo en
   local. El servidor no puede saber qué dominio miraste.
 - El UUID de instalación se guarda **hasheado con pepper**, nunca en claro.
-- No se almacena IP, email ni ningún dato personal.
+- No se almacena IP, email ni ningún dato personal. Al reportar se guarda un
+  **HMAC de la red** de origen (IPv4 /24, IPv6 /48) con el `pepper`: nunca la
+  IP, ni siquiera truncada. Sirve para el freno anti-abuso (ver abajo).
 
 ## Instalación
 
@@ -26,6 +28,10 @@ Servidor oficial de este proyecto: **https://sec.fourmartech.es**
    ```
 2. Copia `config.example.php` a `config.php` y rellena credenciales, `pepper`
    (cadena larga aleatoria) y `admin_token`. **`config.php` no se sube al repo.**
+   Si la base ya existía con el esquema anterior, aplica también la migración:
+   ```
+   mysql -u USUARIO -p BASE < migrations/2026-10-network-hash.sql
+   ```
 3. Sube el contenido de esta carpeta a la **raíz web** del dominio, con PHP 7.4+
    (idealmente 8.x). Comprueba que `.htaccess` está activo (AllowOverride).
 
@@ -34,8 +40,9 @@ Servidor oficial de este proyecto: **https://sec.fourmartech.es**
 ```
 sec.fourmartech.es/
 ├── config.php            ← lo creas tú (con tus tokens); NO público
-├── .htaccess             ← deniega config.php, lib/ y schema.sql
+├── .htaccess             ← deniega config.php, lib/, migrations/ y los .sql
 ├── schema.sql            ← solo para cargar en MySQL; no se sirve
+├── migrations/           ← ALTER TABLE para bases ya creadas; no se sirve
 ├── lib/  (db.php, helpers.php)
 ├── api/
 │   ├── report.php        → POST  https://sec.fourmartech.es/api/report.php
@@ -82,6 +89,16 @@ Un dominio marcado `rejected` no vuelve a validarse automáticamente.
 
 ## Ajuste anti-abuso
 
-En `config.php`: `validation_threshold` (reportes para validar) y
-`rate_limit_per_day` (reportes por instalación al día). Súbelos si detectas
-campañas de reportes falsos.
+El `installId` lo genera la extensión, así que inventarse cien es gratis. Por
+eso el freno real es la **red** de origen:
+
+- `validation_threshold`: nº de **redes distintas** que deben reportar un
+  dominio para validarlo. Cien UUIDs desde la misma conexión cuentan como uno.
+- `auto_validate`: con `false` nada se valida solo y cada dominio lo aprueba un
+  moderador. Recomendable mientras la comunidad sea pequeña.
+- `rate_limit_per_day` / `rate_limit_per_network_day`: reportes al día por
+  instalación y por red.
+
+Nada de esto para a quien controle muchas redes (una botnet o un servicio de
+proxies residenciales): para eso está la moderación. Revisa en `/admin` los
+dominios recién validados, sobre todo si son conocidos.

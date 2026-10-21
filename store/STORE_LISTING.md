@@ -135,9 +135,13 @@ Sé explícito aquí: es lo que más mira el revisor.
 ## Declaraciones de privacidad (formulario obligatorio del dashboard)
 
 - **¿Recopila datos de uso?** No.
-- **¿Recopila información personal?** No (sin cuenta, sin email, sin IP almacenada).
-- **¿Recopila historial de navegación?** No se almacena ni se transmite. Las
-  consultas de reputación opcionales usan k-anonimato o el modo local.
+- **¿Recopila información personal?** No (sin cuenta, sin email, sin IP
+  almacenada; al reportar solo se guarda un hash con clave de la red truncada,
+  como freno anti-abuso).
+- **¿Recopila historial de navegación?** No con la configuración por defecto:
+  la consulta a la comunidad es k-anónima. Solo se transmite la URL o el
+  dominio si el usuario activa Safe Browsing o URLhaus con sus claves, o el
+  detector de edad de dominio (rdap.org), que viene apagado.
 - **Datos manejados y finalidad:**
   - Ajustes, historial de avisos y lista de confianza → almacenamiento **local**.
   - Reporte a la comunidad → **solo cuando el usuario lo pulsa**; identificador

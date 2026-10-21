@@ -27,7 +27,7 @@ if (($_SERVER['REQUEST_METHOD'] ?? '') === 'POST') {
 }
 
 $rows = $pdo->query(
-    'SELECT id, domain, report_count, status, last_reported FROM domains ORDER BY last_reported DESC LIMIT 300'
+    'SELECT id, domain, report_count, network_count, status, last_reported FROM domains ORDER BY last_reported DESC LIMIT 300'
 )->fetchAll();
 
 function h($s) { return htmlspecialchars((string) $s, ENT_QUOTES, 'UTF-8'); }
@@ -51,13 +51,14 @@ $t = h($token);
 </head>
 <body>
   <h1>🛡️ Moderación — Guardián Web</h1>
-  <p>Umbral de validación automática: <b><?= (int) $c['validation_threshold'] ?></b> reportes.</p>
+  <p>Validación automática: <b><?= ($c['auto_validate'] ?? true) ? (int) $c['validation_threshold'] . ' redes distintas' : 'desactivada (solo a mano)' ?></b>.</p>
   <table>
-    <tr><th>Dominio</th><th>Reportes</th><th>Estado</th><th>Último</th><th>Acciones</th></tr>
+    <tr><th>Dominio</th><th>Reportes</th><th>Redes</th><th>Estado</th><th>Último</th><th>Acciones</th></tr>
     <?php foreach ($rows as $r): ?>
       <tr>
         <td><?= h($r['domain']) ?></td>
         <td><?= (int) $r['report_count'] ?></td>
+        <td><?= (int) $r['network_count'] ?></td>
         <td class="<?= h($r['status']) ?>"><?= h($r['status']) ?></td>
         <td><?= h($r['last_reported']) ?></td>
         <td>

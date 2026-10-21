@@ -44,7 +44,12 @@ export const DEFAULTS = {
   communityUrl: "https://sec.fourmartech.es", // backend colaborativo (vacío = desactivado)
   thresholds: { warning: 50, danger: 100 },
   apiKeys: { googleSafeBrowsing: "", urlhaus: "" },
-  detectors: Object.fromEntries(DETECTORS.map((d) => [d.key, true])),
+  detectors: {
+    ...Object.fromEntries(DETECTORS.map((d) => [d.key, true])),
+    // La edad de dominio pregunta a rdap.org por cada sitio desconocido: eso
+    // es enviar tu navegación a un tercero, así que es opcional (opt-in).
+    domainage: false,
+  },
 };
 
 export function mergeDefaults(s) {

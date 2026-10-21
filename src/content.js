@@ -60,21 +60,58 @@
     }
   };
 
+  // Señales que puede emitir el page-probe. El canal postMessage con el mundo
+  // MAIN lo puede imitar cualquier script de la página, así que de ahí solo se
+  // acepta el id (y un parámetro de texto): el peso, la categoría y los textos
+  // salen SIEMPRE de esta tabla. Un id desconocido se descarta, lo que impide
+  // inventarse señales con peso negativo o adelantarse a los ids de otros
+  // detectores para anularlos.
+  const PROBE_FINDINGS = {
+    "fp-canvas": { weight: 20, category: "privacy", key: "fCanvas" },
+    "fp-mining": { weight: 40, category: "malware", key: "fWasm" },
+    "perm-notif": { weight: 15, category: "scam", key: "fPermNotif" },
+    "perm-geo": { weight: 20, category: "privacy", key: "fPermGeo" },
+    "notifbait:sw": { weight: 25, category: "scam", key: "fNotifSw" },
+    "locker:history": { weight: 45, category: "scam", key: "fLockerHistory" },
+    "locker:fullscreen": { weight: 25, category: "scam", key: "fLockerFs" },
+    "clickfix:pad": { weight: 60, category: "scam", key: "fClickfixPad" },
+    "clickfix:cmd": { weight: 45, category: "scam", key: "fClickfixCmd" },
+    "clipswap:account": { weight: 70, category: "scam", key: "fClipSwapAccount" },
+    clipswap: { weight: 45, category: "scam", key: "fClipSwap" },
+    smuggling: { weight: 45, category: "malware", key: "fSmuggling", param: true },
+    "web3:ethsign": { weight: 70, category: "phishing", key: "fWeb3Sign" },
+    "web3:approvalall": { weight: 70, category: "phishing", key: "fWeb3ApprovalAll" },
+    "web3:unlimited": { weight: 70, category: "phishing", key: "fWeb3Unlimited" },
+    "web3:permit": { weight: 50, category: "phishing", key: "fWeb3Permit" },
+    // Llevan el host de destino en el id ("exfil:evil.com").
+    exfil: { weight: 70, category: "privacy", key: "fExfil", param: true, perHost: true },
+    skimmer: { weight: 90, category: "malware", key: "fSkimmer", param: true, perHost: true },
+  };
+
+  function fromProbe(raw) {
+    if (!raw || typeof raw.id !== "string") return null;
+    const base = raw.id.split(":")[0];
+    const spec = PROBE_FINDINGS[raw.id] || (PROBE_FINDINGS[base]?.perHost ? PROBE_FINDINGS[base] : null);
+    if (!spec) return null;
+    const params = [];
+    if (spec.param) {
+      const p = Array.isArray(raw.params) ? String(raw.params[0] ?? "").slice(0, 100) : "";
+      if (!p) return null;
+      params.push(p);
+    }
+    return {
+      id: spec.perHost ? `${base}:${params[0]}` : raw.id,
+      weight: spec.weight,
+      category: spec.category,
+      title: t(`${spec.key}Title`, params),
+      detail: t(`${spec.key}Detail`, params),
+    };
+  }
+
   const seen = new Set();
   function add(f) {
     if (!f || seen.has(f.id) || !alive()) return;
     seen.add(f.id);
-    // Las señales del page-probe (mundo MAIN, sin chrome.i18n) llegan como
-    // claves de mensaje; se traducen aquí antes de reenviarlas.
-    if (f.titleKey) {
-      f = {
-        id: f.id,
-        weight: f.weight,
-        category: f.category,
-        title: t(f.titleKey, f.params || []),
-        detail: t(f.detailKey, f.params || []),
-      };
-    }
     try {
       chrome.runtime.sendMessage({ type: "findings", findings: [f] }).catch(() => {});
     } catch {
@@ -127,10 +164,12 @@
     // Señales del page-probe (mundo MAIN).
     window.addEventListener("message", (e) => {
       if (e.source !== window || !e.data || e.data.__guardian !== true) return;
-      add(e.data.finding);
+      const f = fromProbe(e.data.finding);
+      if (!f) return;
+      add(f);
       // El permiso puede pedirse mucho después de nuestro escaneo del DOM, así
       // que el señuelo se comprueba también en cuanto llega esa señal.
-      if (e.data.finding && e.data.finding.id === "perm-notif") {
+      if (f.id === "perm-notif") {
         notifPedido = true;
         scanNotifBait();
       }
@@ -858,68 +897,120 @@
   }
 
   // --- Banner de aviso (Shadow DOM para aislar estilos) -----------------------
+  // El banner vive en el DOM de la página, que es justo quien NO debe poder
+  // tocarlo. Por eso:
+  //   - el shadow root es "closed": el JS de la página no llega a sus botones;
+  //   - los botones solo atienden clics reales (isTrusted), no el .click() de
+  //     un script;
+  //   - no se busca por id: una página que crease antes un elemento con ese id
+  //     impediría que se pintara;
+  //   - si alguien lo arranca del DOM sin pulsar Cerrar, se vuelve a poner.
+  // Aun así, una página siempre puede taparlo con algo encima: el icono de la
+  // barra y la notificación del sistema quedan fuera de su alcance.
+  let banner = null;
+  let bannerClosed = false;
   function renderBanner(verdict) {
-    if (document.getElementById("__guardian_banner")) return;
+    if (banner || bannerClosed) return;
+    // Un div y no un elemento propio: si la página registrase antes ese nombre
+    // con customElements, podría secuestrar el elemento al insertarlo.
     const wrap = document.createElement("div");
-    wrap.id = "__guardian_banner";
-    const shadow = wrap.attachShadow({ mode: "open" });
+    wrap.style.cssText = "all: initial !important; display: block !important;";
+    const shadow = wrap.attachShadow({ mode: "closed" });
+    banner = wrap;
     const danger = verdict.level === "danger";
     const top = verdict.reasons[0];
 
+    // Estilos cerrados en el shadow root: ni heredan ni dejan heredar nada de
+    // la página. Colores sólidos (blanco sobre rojo/ámbar oscuro) que cumplen
+    // contraste AA sobre cualquier web.
     shadow.innerHTML = `
       <style>
+        :host { all: initial; }
         .bar { position: fixed; top: 0; left: 0; right: 0; z-index: 2147483647;
-          font: 14px/1.4 system-ui, sans-serif; color: #fff; padding: 12px 16px;
-          display: flex; align-items: center; gap: 12px;
-          background: ${danger ? "#c0392b" : "#e67e22"};
-          box-shadow: 0 2px 10px rgba(0,0,0,.3); }
-        .ico { font-size: 20px; }
-        .txt { flex: 1; }
-        .txt b { font-size: 15px; }
-        .txt small { opacity: .9; }
-        button { background: rgba(255,255,255,.2); color: #fff; border: 1px solid rgba(255,255,255,.5);
-          border-radius: 6px; padding: 6px 12px; cursor: pointer; font: inherit; }
-        button:hover { background: rgba(255,255,255,.35); }
-        ul { margin: 8px 0 0; padding-left: 18px; display: none; }
+          font: 14px/1.45 system-ui, -apple-system, "Segoe UI", sans-serif; color: #fff;
+          background: ${danger ? "#a8201a" : "#8f4a07"};
+          border-bottom: 3px solid ${danger ? "#ff8a7d" : "#f6b25e"};
+          box-shadow: 0 6px 24px rgb(0 0 0 / .28); }
+        .head { display: flex; align-items: center; gap: 14px; max-width: 1120px;
+          margin: 0 auto; padding: 12px 16px; }
+        svg { width: 26px; height: 26px; flex: none; fill: #fff; }
+        .txt { flex: 1; min-width: 0; }
+        .txt b { display: block; font-size: 15px; font-weight: 650; }
+        .txt span { opacity: .92; }
+        .btns { display: flex; gap: 8px; flex-wrap: wrap; justify-content: flex-end; }
+        button { font: 600 13px/1 system-ui, -apple-system, "Segoe UI", sans-serif;
+          color: #fff; background: transparent; border: 1px solid rgb(255 255 255 / .55);
+          border-radius: 8px; padding: 8px 12px; cursor: pointer; }
+        button:hover { background: rgb(255 255 255 / .16); }
+        button:focus-visible { outline: 2px solid #fff; outline-offset: 2px; }
+        button.close { background: #fff; color: ${danger ? "#a8201a" : "#8f4a07"}; border-color: #fff; }
+        button.close:hover { background: rgb(255 255 255 / .9); }
+        ul { display: none; list-style: none; max-width: 1120px; margin: 0 auto;
+          padding: 0 16px 14px 56px; max-height: 50vh; overflow: auto; }
         .bar.open ul { display: block; }
-        li a { color: #fff; font-weight: 600; white-space: nowrap; }
-        .head { display: flex; align-items: center; gap: 12px; }
-        .body { width: 100%; }
+        li { padding: 8px 0; border-top: 1px solid rgb(255 255 255 / .22); }
+        li b { font-weight: 650; }
+        li p { margin: 2px 0 0; opacity: .92; }
+        li a { color: #fff; font-weight: 600; }
+        @media (max-width: 640px) {
+          .head { flex-wrap: wrap; }
+          .btns { width: 100%; justify-content: flex-start; }
+          ul { padding-left: 16px; }
+        }
       </style>
-      <div class="bar">
-        <div class="body">
-          <div class="head">
-            <span class="ico">${danger ? "🛑" : "⚠️"}</span>
-            <span class="txt">
-              <b>${escapeHtml(danger ? t("bDangerTitle") : t("bWarnTitle"))}</b><br>
-              <small>${top ? escapeHtml(top.title) : escapeHtml(t("fDefaultReason"))} ${escapeHtml(t("bRisk", [String(verdict.score)]))}</small>
-            </span>
-            <button class="details">${escapeHtml(t("bDetails"))}</button>
+      <div class="bar" role="alert">
+        <div class="head">
+          <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 2.5 4 5.6v6.1c0 4.9 3.4 8.7 8 9.8 4.6-1.1 8-4.9 8-9.8V5.6L12 2.5Zm-1 5h2v6h-2v-6Zm0 8h2v2h-2v-2Z" /></svg>
+          <div class="txt">
+            <b>${escapeHtml(danger ? t("bDangerTitle") : t("bWarnTitle"))}</b>
+            <span>${top ? escapeHtml(top.title) : escapeHtml(t("fDefaultReason"))} ${escapeHtml(t("bRisk", [String(verdict.score)]))}</span>
+          </div>
+          <div class="btns">
+            <button class="details" aria-expanded="false">${escapeHtml(t("bDetails"))}</button>
             <button class="trust" title="${escapeHtml(t("bTrustTip"))}">${escapeHtml(t("bTrust"))}</button>
             <button class="close">${escapeHtml(t("bClose"))}</button>
           </div>
-          <ul>${verdict.reasons
-            .map(
-              (r) =>
-                `<li><b>${escapeHtml(r.title)}</b> — ${escapeHtml(r.detail)}${
-                  r.learn
-                    ? ` <a href="${escapeHtml(r.learn)}" target="_blank" rel="noopener noreferrer">${escapeHtml(t("bLearn"))}</a>`
-                    : ""
-                }</li>`
-            )
-            .join("")}</ul>
         </div>
+        <ul>${verdict.reasons
+          .map(
+            (r) =>
+              `<li><b>${escapeHtml(r.title)}</b><p>${escapeHtml(r.detail)}${
+                r.learn
+                  ? ` <a href="${escapeHtml(r.learn)}" target="_blank" rel="noopener noreferrer">${escapeHtml(t("bLearn"))}</a>`
+                  : ""
+              }</p></li>`
+          )
+          .join("")}</ul>
       </div>`;
 
     const bar = shadow.querySelector(".bar");
-    shadow.querySelector(".details").addEventListener("click", () => bar.classList.toggle("open"));
-    shadow.querySelector(".close").addEventListener("click", () => wrap.remove());
-    shadow.querySelector(".trust").addEventListener("click", () => {
+    const onRealClick = (sel, fn) =>
+      shadow.querySelector(sel).addEventListener("click", (e) => {
+        if (e.isTrusted) fn();
+      });
+    const close = () => {
+      bannerClosed = true;
+      keeper.disconnect();
+      wrap.remove();
+    };
+    onRealClick(".details", () => {
+      const open = bar.classList.toggle("open");
+      shadow.querySelector(".details").setAttribute("aria-expanded", String(open));
+    });
+    onRealClick(".close", close);
+    onRealClick(".trust", () => {
       chrome.runtime
         .sendMessage({ type: "trust-host", host: location.hostname })
         .catch(() => {})
-        .finally(() => wrap.remove());
+        .finally(close);
     });
+
+    // Reinsertar si la página lo quita (con un tope, por si se empeña en bucle).
+    let reinserts = 0;
+    const keeper = new MutationObserver(() => {
+      if (!wrap.isConnected && reinserts++ < 5) document.documentElement.appendChild(wrap);
+    });
+    keeper.observe(document.documentElement, { childList: true });
     document.documentElement.appendChild(wrap);
   }
 

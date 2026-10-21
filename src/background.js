@@ -600,11 +600,49 @@ async function rateHost(host) {
 }
 
 // --- Mensajería -----------------------------------------------------------------
+// Lo que llega de un content script corre en una pestaña cualquiera, así que
+// se trata como dato no fiable: peso acotado a [0, 100] (un peso negativo
+// anularía el resto de señales) y nunca "confirmado", que es solo para las
+// APIs de reputación consultadas desde aquí.
+function sanitizeFinding(f) {
+  if (!f || typeof f.id !== "string" || !f.id) return null;
+  const weight = Math.min(100, Math.max(0, Number(f.weight) || 0));
+  return {
+    id: f.id.slice(0, 200),
+    weight,
+    category: String(f.category || "other").slice(0, 20),
+    title: String(f.title || "").slice(0, 200),
+    detail: String(f.detail || "").slice(0, 500),
+  };
+}
+
+// Popup, panel lateral y opciones: páginas de la propia extensión.
+function fromExtensionPage(sender) {
+  return sender.id === chrome.runtime.id && String(sender.url || "").startsWith(chrome.runtime.getURL(""));
+}
+
+function hostOfTab(sender) {
+  try {
+    return new URL(sender.tab.url).hostname;
+  } catch {
+    return "";
+  }
+}
+
 chrome.runtime.onMessage.addListener((msg, sender, sendResponse) => {
-  if (msg?.type === "findings" && sender.tab) {
-    addFindings(sender.tab.id, msg.findings);
+  if (sender.id !== chrome.runtime.id) return;
+  const ext = fromExtensionPage(sender);
+
+  if (msg?.type === "findings" && sender.tab && Array.isArray(msg.findings)) {
+    addFindings(sender.tab.id, msg.findings.map(sanitizeFinding).filter(Boolean));
     return;
   }
+
+  // Acciones que solo pueden pedir el popup, el panel o las opciones.
+  if (!ext && ["getState", "untrust-host", "clear-history", "report-site"].includes(msg?.type)) return;
+
+  // Desde una pestaña, "confiar" solo vale para el sitio de esa misma pestaña.
+  if (msg?.type === "trust-host" && !ext && msg.host !== hostOfTab(sender)) return;
 
   // Guardián de resultados de búsqueda: evaluar una lista de hosts en local.
   if (msg?.type === "rate-hosts" && Array.isArray(msg.hosts)) {
@@ -624,7 +662,9 @@ chrome.runtime.onMessage.addListener((msg, sender, sendResponse) => {
   if (msg?.type === "getState") {
     (async () => {
       const st = await getState(msg.tabId);
+      const cfg = await ensureSettings();
       sendResponse({
+        thresholds: cfg.thresholds,
         level: st.level,
         score: st.score,
         findings: [...st.findings.values()],

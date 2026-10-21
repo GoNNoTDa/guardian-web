@@ -161,7 +161,7 @@
   "fLockerFsDetail": { "message": "页面一进入就尝试全屏以隐藏浏览器。" },
   "det_rawip": { "message": "通过 IP 提供的站点" },
   "det_weirdport": { "message": "非标准端口" },
-  "det_domainage": { "message": "新注册的域名" },
+  "det_domainage": { "message": "新注册的域名（查询 rdap.org）" },
   "det_trackerlearn": { "message": "已学习的追踪器" },
   "det_skimmer": { "message": "银行卡盗取（skimmer）" },
   "det_locker": { "message": "浏览器劫持" },

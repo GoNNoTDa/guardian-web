@@ -40,6 +40,10 @@ background; si está en el **HTML o el dominio**, en `content.js`; si hay que ve
 
 1. Emite el hallazgo en la capa que le corresponda, con un `id` estable, su
    `weight`, su `category` y textos vía `t()` — **nunca texto literal**.
+   En `page-probe.js` es distinto: ese canal lo puede falsificar la propia
+   página, así que el probe solo emite `{ id, params }` y el peso, la categoría
+   y las claves de texto se declaran en `PROBE_FINDINGS` (`content.js`). Un id
+   que no esté en esa tabla se descarta.
 2. Registra la clave del detector en `DETECTORS` (`src/settings.js`) con su
    grupo, para que aparezca en la página de opciones y se pueda desactivar.
 3. Mapea el `id` a esa clave en `ID_TO_DETECTOR`. Si el `id` lleva sufijo

@@ -153,8 +153,10 @@ de navegador, phishing alojado en IPFS/dweb y las descargas por WebTransport.
 
 ## 💡 Ideas para próximas versiones (código)
 
-- **Calibración del RDAP**: decidir si la edad de dominio queda activada por
-  defecto; medir su tasa de falsos positivos en el rodaje.
+- **Calibración del RDAP**: desde octubre de 2026 la edad de dominio va apagada por
+  defecto (envía el dominio a rdap.org). Queda medir su tasa de falsos
+  positivos en el rodaje y valorar una vía sin terceros (p. ej. un servidor
+  RDAP propio con caché, o un prefijo k-anónimo como el de la comunidad).
 - **Página interna de "conoce el vector"**: explicaciones propias dentro de la
   extensión en el idioma del usuario, en lugar de (o además de) enlazar fuera.
 - **Contador de aprendizaje**: "has visto N intentos de phishing este mes"

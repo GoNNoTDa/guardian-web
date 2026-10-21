@@ -35,7 +35,7 @@
       <a href="/privacy.en.html" style="text-decoration:none; font-weight:600;">English</a>
     </div>
     <h1>Política de privacidad</h1>
-    <p class="date">Última actualización: julio de 2026</p>
+    <p class="date">Última actualización: octubre de 2026</p>
 
     <p class="lead">Guardián Web es una extensión <strong>defensiva</strong> diseñada bajo el principio de mínima recogida de datos. Esto es, en concreto, qué hace con la información.</p>
 
@@ -50,12 +50,16 @@
       <tr><td>Peticiones de firma de tu cartera cripto</td><td>Solo memoria de la propia página</td><td class="no">Nunca se almacenan ni se envían</td></tr>
     </table>
 
-    <h2>Consultas a servicios externos (opcionales)</h2>
-    <p class="lead">Salvo en <strong>modo local</strong>, la extensión puede hacer estas consultas, todas orientadas a tu seguridad:</p>
+    <h2>Qué sale de tu equipo</h2>
+    <p class="lead">Recién instalada y sin claves de API, la extensión hace solo estas dos peticiones, y ninguna lleva el dominio que visitas:</p>
     <ul>
       <li><strong>Reputación de la comunidad</strong> (<code>sec.fourmartech.es</code>): al navegar se envía únicamente un <strong>prefijo del hash</strong> del dominio (k-anonimato). El servidor nunca sabe qué web concreta visitas.</li>
-      <li><strong>Google Safe Browsing / URLhaus</strong>: solo si el usuario configura sus propias claves de API.</li>
       <li><strong>Feed de malware de URLhaus</strong>: descarga periódica de una lista pública; no incluye ningún dato tuyo.</li>
+    </ul>
+    <p class="lead">Solo si tú lo activas:</p>
+    <ul>
+      <li><strong>Google Safe Browsing / URLhaus</strong>: con tus propias claves de API, se envía la URL (Google) o el dominio (URLhaus) de cada página que visitas.</li>
+      <li><strong>Edad del dominio</strong> (detector desactivado por defecto): se envía a <code>rdap.org</code> el dominio de cada sitio desconocido para saber cuándo se registró.</li>
     </ul>
     <p class="lead">El <strong>modo local</strong>, activable en las opciones, desactiva todas estas consultas: nada sale de tu equipo.</p>
 
@@ -63,7 +67,7 @@
     <ul>
       <li>Solo se envían <strong>cuando pulsas manualmente</strong> «Reportar este sitio». Nada automático.</li>
       <li>Se usa un identificador de instalación <strong>anónimo y aleatorio</strong>, guardado hasheado en el servidor.</li>
-      <li>No se guarda email, cuenta ni dirección IP: el reporte solo contiene el dominio, la categoría y la fecha.</li>
+      <li>No se guarda email, cuenta ni dirección IP: el reporte contiene el dominio, la categoría, la fecha y un hash con clave secreta de la <strong>red</strong> de origen (la IP truncada), que solo sirve para frenar reportes falsos: limitar cuántos llegan de una misma red y validar un dominio únicamente cuando lo reportan redes distintas.</li>
     </ul>
 
     <h2>Lo que Guardián Web NO hace</h2>
@@ -73,7 +77,7 @@
       <li class="no">No inyecta publicidad ni altera el contenido (salvo el banner de aviso).</li>
       <li class="no">No crea cuentas: no hay email, nombre ni perfil que asociar a ti.</li>
       <li class="no">No descarga ni ejecuta código remoto: solo corre el código del propio paquete.</li>
-      <li class="no">Recién instalada y sin claves de API, no envía nada a ningún servidor.</li>
+      <li class="no">Con la configuración por defecto no envía tu navegación a ningún servidor; en modo local no hace ninguna petición.</li>
     </ul>
 
     <h2>Permisos que NO pide</h2>

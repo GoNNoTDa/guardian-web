@@ -6,8 +6,10 @@ DirectoryIndex index.html
   Require all denied
 </FilesMatch>
 
-RedirectMatch 403 ^/.*/lib/.*$
-RedirectMatch 403 ^/.*/schema\.sql$
+# (.*/)? para que también cubra /lib/ y /schema.sql en la raíz del dominio.
+RedirectMatch 403 ^/(.*/)?lib/
+RedirectMatch 403 ^/(.*/)?migrations/
+RedirectMatch 403 \.sql$
 
 # Páginas de error HTTP con la estética de Guardián Web.
 ErrorDocument 400 /error.php

@@ -7,10 +7,14 @@ Respuestas para el formulario de prácticas de privacidad de la Web Store.
 Marca **únicamente** lo siguiente y desmarca el resto:
 
 - **Actividad de navegación web**: SÍ, condicional.
-  - Aclaración: solo si el usuario activa las consultas de reputación (no es el
-    modo por defecto si no hay claves de API). En ese caso, la URL/el dominio
-    visitado se envía a Google Safe Browsing y/o URLhaus para comprobar si es
-    maliciosa. El usuario puede desactivarlo por completo con el "modo local".
+  - Aclaración: solo si el usuario lo activa, nunca con la configuración por
+    defecto. Pasa en tres casos: si pone su clave de Google Safe Browsing (se
+    envía la URL visitada), su clave de URLhaus (se envía el dominio) o si
+    enciende el detector de edad de dominio, desactivado por defecto (se envía
+    el dominio a rdap.org). El "modo local" lo corta todo.
+  - Por defecto solo salen dos peticiones que no revelan qué visitas: la
+    descarga del feed público de URLhaus y la consulta k-anónima a la
+    comunidad, que envía un prefijo de 4 caracteres del hash del dominio.
 
 Todo lo demás (información personal identificable, datos de salud, financieros,
 de autenticación, mensajes personales, ubicación, actividad fuera de esta
