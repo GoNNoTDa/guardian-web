@@ -2,6 +2,11 @@
 // ver desde fuera, envolviendo APIs de la propia página. Solo OBSERVA; nunca
 // altera el resultado de las funciones originales. Comunica hallazgos al
 // content script mediante window.postMessage.
+//
+// Solo se envía el id de la señal (y, si hace falta, un parámetro): el peso,
+// la categoría y los textos viven en PROBE_FINDINGS (content.js). Este canal
+// lo puede imitar la propia página, así que nada de lo que viaja por él puede
+// decidir cuánto pesa una señal.
 
 (() => {
   // Búfer: este script corre en document_start, pero el content script que
@@ -84,22 +89,8 @@
         const isCard = watchedCards.has(v);
         post(
           isCard
-            ? {
-                id: `skimmer:${host}`,
-                weight: 90,
-                category: "malware",
-                titleKey: "fSkimmerTitle",
-                detailKey: "fSkimmerDetail",
-                params: [host],
-              }
-            : {
-                id: `exfil:${host}`,
-                weight: 70,
-                category: "privacy",
-                titleKey: "fExfilTitle",
-                detailKey: "fExfilDetail",
-                params: [host],
-              }
+            ? { id: `skimmer:${host}`, params: [host] }
+            : { id: `exfil:${host}`, params: [host] }
         );
         disarmExfil(); // señal disparada: fuera de la pila de llamadas
         return;
@@ -180,15 +171,7 @@
   const flagCanvas = () => {
     if (!canvasFlagged && ++canvasReads >= 3) {
       canvasFlagged = true;
-      // Sin chrome.i18n en el mundo MAIN: se envían claves y el content
-      // script las traduce al idioma del navegador.
-      post({
-        id: "fp-canvas",
-        weight: 20,
-        category: "privacy",
-        titleKey: "fCanvasTitle",
-        detailKey: "fCanvasDetail",
-      });
+      post({ id: "fp-canvas" });
       restoreCanvas.forEach((r) => r());
       restoreCanvas = [];
     }
@@ -206,13 +189,7 @@
   const mineCheck = () => {
     if (!mineFlagged && wasm >= 1 && workers >= 4) {
       mineFlagged = true;
-      post({
-        id: "fp-mining",
-        weight: 40,
-        category: "malware",
-        titleKey: "fWasmTitle",
-        detailKey: "fWasmDetail",
-      });
+      post({ id: "fp-mining" });
       restoreMining.forEach((r) => r());
       restoreMining = [];
     }
@@ -243,13 +220,7 @@
     Notification.requestPermission = function (...a) {
       if (early()) {
         notifAsked = true;
-        post({
-          id: "perm-notif",
-          weight: 15,
-          category: "scam",
-          titleKey: "fPermNotifTitle",
-          detailKey: "fPermNotifDetail",
-        });
+        post({ id: "perm-notif" });
         checkNotifChannel();
       }
       return orig(...a);
@@ -266,13 +237,7 @@
   function checkNotifChannel() {
     if (channelFlagged || !notifAsked || !swRegistered) return;
     channelFlagged = true;
-    post({
-      id: "notifbait:sw",
-      weight: 25,
-      category: "scam",
-      titleKey: "fNotifSwTitle",
-      detailKey: "fNotifSwDetail",
-    });
+    post({ id: "notifbait:sw" });
   }
   if (navigator.serviceWorker && typeof navigator.serviceWorker.register === "function") {
     wrap(navigator.serviceWorker, "register", () => {
@@ -285,13 +250,7 @@
     const orig = navigator.geolocation.getCurrentPosition.bind(navigator.geolocation);
     navigator.geolocation.getCurrentPosition = function (...a) {
       if (early()) {
-        post({
-          id: "perm-geo",
-          weight: 20,
-          category: "privacy",
-          titleKey: "fPermGeoTitle",
-          detailKey: "fPermGeoDetail",
-        });
+        post({ id: "perm-geo" });
       }
       return orig(...a);
     };
@@ -309,13 +268,7 @@
     pushCount++;
     if (pushCount >= 10 && performance.now() - start < 5000) {
       lockerFlagged = true;
-      post({
-        id: "locker:history",
-        weight: 45,
-        category: "scam",
-        titleKey: "fLockerHistoryTitle",
-        detailKey: "fLockerHistoryDetail",
-      });
+      post({ id: "locker:history" });
       restoreLocker.forEach((r) => r());
     }
   });
@@ -326,13 +279,7 @@
   if (window.Element && Element.prototype.requestFullscreen) {
     const restoreFs = wrap(Element.prototype, "requestFullscreen", () => {
       if (early()) {
-        post({
-          id: "locker:fullscreen",
-          weight: 25,
-          category: "scam",
-          titleKey: "fLockerFsTitle",
-          detailKey: "fLockerFsDetail",
-        });
+        post({ id: "locker:fullscreen" });
       }
     });
     restoreLocker.push(restoreFs);
@@ -369,20 +316,8 @@
     // Relleno + comando: inequívoco, se está ocultando lo que se ejecutará.
     post(
       CMD_PADDING.test(text)
-        ? {
-            id: "clickfix:pad",
-            weight: 60,
-            category: "scam",
-            titleKey: "fClickfixPadTitle",
-            detailKey: "fClickfixPadDetail",
-          }
-        : {
-            id: "clickfix:cmd",
-            weight: 45,
-            category: "scam",
-            titleKey: "fClickfixCmdTitle",
-            detailKey: "fClickfixCmdDetail",
-          }
+        ? { id: "clickfix:pad" }
+        : { id: "clickfix:cmd" }
     );
   }
 
@@ -441,24 +376,12 @@
     if (account) {
       if (swapAccountFlagged) return;
       swapAccountFlagged = true;
-      post({
-        id: "clipswap:account",
-        weight: 70,
-        category: "scam",
-        titleKey: "fClipSwapAccountTitle",
-        detailKey: "fClipSwapAccountDetail",
-      });
+      post({ id: "clipswap:account" });
       return;
     }
     if (swapFlagged) return;
     swapFlagged = true;
-    post({
-      id: "clipswap",
-      weight: 45,
-      category: "scam",
-      titleKey: "fClipSwapTitle",
-      detailKey: "fClipSwapDetail",
-    });
+    post({ id: "clipswap" });
   }
 
   // Vía moderna: navigator.clipboard.writeText().
@@ -516,14 +439,7 @@
       if (conGesto()) return;
       smugglingFlagged = true;
       const nombre = String(this.getAttribute("download") || "").slice(0, 60);
-      post({
-        id: "smuggling",
-        weight: 45,
-        category: "malware",
-        titleKey: "fSmugglingTitle",
-        detailKey: "fSmugglingDetail",
-        params: [nombre || "?"],
-      });
+      post({ id: "smuggling", params: [nombre || "?"] });
     });
   }
 
@@ -554,16 +470,16 @@
     if (!req || typeof req !== "object") return;
     const method = String(req.method || "");
     const params = Array.isArray(req.params) ? req.params : [];
-    const flag = (id, weight, titleKey, detailKey) => {
+    const flag = (id) => {
       if (web3Seen.has(id)) return;
       web3Seen.add(id);
-      post({ id, weight, category: "phishing", titleKey, detailKey });
+      post({ id });
     };
 
     // eth_sign: firma a ciegas de datos arbitrarios. Obsoleta y desaconsejada
     // por las propias carteras; en la práctica es señal de drainer.
     if (method === "eth_sign") {
-      return flag("web3:ethsign", 70, "fWeb3SignTitle", "fWeb3SignDetail");
+      return flag("web3:ethsign");
     }
 
     if (method === "eth_sendTransaction") {
@@ -572,11 +488,11 @@
       const arg2 = data.slice(72, 136); // segundo argumento, 32 bytes
       // setApprovalForAll(operador, true): entrega la colección completa.
       if (selector === SEL_APPROVAL_ALL && /^0*1$/.test(arg2)) {
-        return flag("web3:approvalall", 70, "fWeb3ApprovalAllTitle", "fWeb3ApprovalAllDetail");
+        return flag("web3:approvalall");
       }
       // approve(gastador, cantidad prácticamente infinita).
       if (selector === SEL_APPROVE && /^f{56,64}$/.test(arg2)) {
-        return flag("web3:unlimited", 70, "fWeb3UnlimitedTitle", "fWeb3UnlimitedDetail");
+        return flag("web3:unlimited");
       }
     }
 
@@ -597,7 +513,7 @@
         .join(" ")
         .slice(0, 8192);
       if (/\bpermit2?\b/i.test(raw)) {
-        return flag("web3:permit", 50, "fWeb3PermitTitle", "fWeb3PermitDetail");
+        return flag("web3:permit");
       }
     }
   }
