@@ -121,7 +121,10 @@ those domains, and sends nothing anywhere. Toggle it off in the options.
 
 1. Open `chrome://extensions`.
 2. Enable **Developer mode** (top right).
-3. Click **Load unpacked** and select this folder.
+3. Run `node scripts/sync-unpacked.mjs`, click **Load unpacked** and select
+   `dist/extension` (only the extension's files, without the server or the
+   test lab). After each change, run the script again and press ↻ on the
+   extension's card.
 4. Pin the icon to see the per-tab risk badge.
 
 ### Configuration
@@ -296,7 +299,10 @@ envía nada a ninguna parte. Se puede desactivar en las opciones.
 
 1. Abre `chrome://extensions`.
 2. Activa el **Modo de desarrollador** (arriba a la derecha).
-3. Pulsa **Cargar descomprimida** y selecciona esta carpeta.
+3. Ejecuta `node scripts/sync-unpacked.mjs`, pulsa **Cargar descomprimida** y
+   selecciona `dist/extension` (solo los ficheros de la extensión, sin el
+   servidor ni el laboratorio). Tras cada cambio, vuelve a ejecutar el script
+   y pulsa ↻ en la tarjeta de la extensión.
 4. Fija el icono para ver el badge de riesgo por pestaña.
 
 ### Configuración
