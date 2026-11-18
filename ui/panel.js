@@ -2,7 +2,7 @@
 // actualiza en vivo al cambiar de pestaña, al navegar y cuando el background
 // registra nuevas señales (via chrome.storage.onChanged).
 
-import { getActiveTab, renderState, renderHistory, wireActions } from "./render.js";
+import { getActiveTab, renderState, renderHistory, renderStats, wireActions } from "./render.js";
 import { localizePage } from "./i18n.js";
 
 localizePage();
@@ -14,6 +14,7 @@ function refresh() {
   pending = setTimeout(async () => {
     renderState(await getActiveTab());
     renderHistory();
+    renderStats();
   }, 250);
 }
 
@@ -30,5 +31,5 @@ chrome.tabs.onUpdated.addListener((tabId, info, tab) => {
 
 // Nuevas señales (estado por pestaña en session) o cambios de historial/whitelist.
 chrome.storage.onChanged.addListener((changes, area) => {
-  if (area === "session" || changes.history || changes.whitelist) refresh();
+  if (area === "session" || changes.history || changes.whitelist || changes.stats) refresh();
 });

@@ -1,52 +1,19 @@
 // Content script (mundo aislado): capa de DOM.
-// - Detecta typosquatting, homógrafos (punycode/confusables/leet), formularios
-//   inseguros, texto de scam e iframes ocultos.
+// - Detecta formularios inseguros, marcas suplantadas con login, ventanas de
+//   navegador falsas, texto de scam, iframes ocultos, SVG con código…
 // - Recibe las señales del page-probe (mundo MAIN) y las reenvía al background.
-// - Pinta el banner de aviso cuando el background emite un veredicto.
+// - Pinta el banner de aviso cuando el background emite un veredicto, y lo
+//   actualiza si el riesgo sube.
 //
 // v0.2: al arrancar pregunta al background el estado de confianza (A1):
 // si el usuario ha marcado el sitio como fiable no hace NADA; si es un dominio
 // de confianza embebido, no ejecuta heurísticas (solo muestra avisos
-// confirmados por reputación). Marcas españolas ampliadas + homógrafos (A4).
+// confirmados por reputación).
+// v0.8: el análisis del NOMBRE del dominio (homógrafos, typosquatting) se ha
+// ido al service worker (lib/lookalike.js): no necesita el DOM y así avisa
+// antes. Los escaneos del DOM se espacian en páginas que mutan sin parar.
 
 (() => {
-  // Objetivos de suplantación (marcas muy atacadas por phishing).
-  const BRANDS = [
-    // Globales
-    "google.com", "youtube.com", "facebook.com", "instagram.com", "whatsapp.com",
-    "microsoft.com", "outlook.com", "office.com", "apple.com", "icloud.com",
-    "amazon.com", "amazon.es", "paypal.com", "netflix.com", "ebay.com",
-    "booking.com", "linkedin.com", "telegram.org", "binance.com", "coinbase.com",
-    "github.com", "dropbox.com",
-    // Banca España
-    "bbva.es", "santander.com", "bancosantander.es", "caixabank.es",
-    "bancsabadell.com", "bankinter.com", "unicajabanco.es", "abanca.com",
-    "ing.es", "openbank.es", "evobanco.com", "kutxabank.es", "ibercaja.es",
-    "cajamar.es", "bizum.es", "ruralvia.com",
-    // Administración España
-    "agenciatributaria.gob.es", "sede.agenciatributaria.gob.es", "seg-social.es",
-    "sepe.es", "dgt.es", "correos.es", "clave.gob.es",
-    // Telecos / energía / comercio
-    "movistar.es", "vodafone.es", "orange.es", "iberdrola.es", "endesa.com",
-    "elcorteingles.es", "wallapop.com", "vinted.es", "renfe.com",
-  ];
-
-  // Dominios legítimos que se parecen a alguna marca (evita falsos positivos:
-  // p. ej. ine.es está a distancia 1 de ing.es).
-  const ALSO_LEGIT = [
-    "ine.es", "boe.es", "abc.es", "as.com", "x.com", "ing.com", "orange.com",
-    "orange.fr", "vodafone.com", "correos.cl", "renfe.es",
-  ];
-
-  // Caracteres visualmente idénticos o casi (cirílico/griego/leet) -> latino.
-  const CONFUSABLES = {
-    "а": "a", "е": "e", "о": "o", "р": "p", "с": "c", "х": "x", "у": "y",
-    "і": "i", "ј": "j", "ѕ": "s", "ԁ": "d", "һ": "h", "ԛ": "q", "ԝ": "w",
-    "ν": "v", "ο": "o", "α": "a", "ε": "e", "ι": "i", "κ": "k", "ρ": "p",
-    "τ": "t", "υ": "u", "ℓ": "l",
-    "0": "o", "1": "l", "3": "e", "5": "s",
-  };
-
   // Si la extensión se recarga/actualiza, este script queda "huérfano": las
   // APIs chrome.* desaparecen bajo sus pies. alive() lo detecta para apagarse
   // con elegancia en vez de lanzar TypeErrors en páginas SPA que mutan mucho.
@@ -144,22 +111,43 @@
 
     runScans();
 
-    // Reescaneo ante contenido dinámico (una pasada con retardo).
-    let scheduled = false;
+    // Reescaneo ante contenido dinámico. Las primeras pasadas van seguidas,
+    // porque la página se está montando; después se espacian: una SPA que muta
+    // sin parar (un chat, un feed) no puede tenernos leyendo todo su texto y
+    // sus estilos cada segundo y medio. En segundo plano no se escanea: se
+    // apunta y se hace una pasada al volver.
+    let timer = null;
+    let passes = 0;
+    let owed = false;
+    const idle = (fn) =>
+      typeof requestIdleCallback === "function" ? requestIdleCallback(fn, { timeout: 2000 }) : setTimeout(fn, 0);
+    const pass = () => {
+      if (!alive()) return;
+      if (document.hidden) {
+        owed = true;
+        return;
+      }
+      owed = false;
+      passes++;
+      idle(runScans);
+    };
     const mo = new MutationObserver(() => {
       // Script huérfano (extensión recargada): desconectar y no hacer nada más.
       if (!alive()) {
         mo.disconnect();
         return;
       }
-      if (scheduled) return;
-      scheduled = true;
-      setTimeout(() => {
-        if (alive()) runScans();
-        scheduled = false;
-      }, 1500);
+      if (timer) return;
+      const delay = passes < 4 ? 1500 : passes < 10 ? 4000 : 10000;
+      timer = setTimeout(() => {
+        timer = null;
+        pass();
+      }, delay);
     });
     mo.observe(document.documentElement, { childList: true, subtree: true });
+    document.addEventListener("visibilitychange", () => {
+      if (!document.hidden && owed) pass();
+    });
 
     // Señales del page-probe (mundo MAIN).
     window.addEventListener("message", (e) => {
@@ -238,133 +226,19 @@
   }
 
   // --- Utilidades de dominio -------------------------------------------------
-  function levenshtein(a, b) {
-    const m = a.length, n = b.length;
-    const d = Array.from({ length: m + 1 }, (_, i) => [i, ...Array(n).fill(0)]);
-    for (let j = 0; j <= n; j++) d[0][j] = j;
-    for (let i = 1; i <= m; i++) {
-      for (let j = 1; j <= n; j++) {
-        const cost = a[i - 1] === b[j - 1] ? 0 : 1;
-        d[i][j] = Math.min(d[i - 1][j] + 1, d[i][j - 1] + 1, d[i - 1][j - 1] + cost);
-      }
-    }
-    return d[m][n];
-  }
-
-  // Decodificador punycode (RFC 3492) para etiquetas "xn--".
-  function punyDecode(input) {
-    try {
-      const output = [];
-      let n = 128, i = 0, bias = 72;
-      let basic = input.lastIndexOf("-");
-      if (basic < 0) basic = 0;
-      for (let j = 0; j < basic; j++) output.push(input.charCodeAt(j));
-      let index = basic > 0 ? basic + 1 : 0;
-      while (index < input.length) {
-        const oldi = i;
-        for (let w = 1, k = 36; ; k += 36) {
-          const c = input.charCodeAt(index++);
-          const digit = c - 48 < 10 ? c - 22 : c - 65 < 26 ? c - 65 : c - 97 < 26 ? c - 97 : 36;
-          i += digit * w;
-          const t = k <= bias ? 1 : k >= bias + 26 ? 26 : k - bias;
-          if (digit < t) break;
-          w *= 36 - t;
-        }
-        const out = output.length + 1;
-        bias = adapt(i - oldi, out, oldi === 0);
-        n += Math.floor(i / out);
-        i %= out;
-        output.splice(i++, 0, n);
-      }
-      return String.fromCodePoint(...output);
-    } catch {
-      return input; // etiqueta corrupta: se deja tal cual
-    }
-  }
-  function adapt(delta, numPoints, firstTime) {
-    delta = firstTime ? Math.floor(delta / 700) : delta >> 1;
-    delta += Math.floor(delta / numPoints);
-    let k = 0;
-    while (delta > 455) {
-      delta = Math.floor(delta / 35);
-      k += 36;
-    }
-    return k + Math.floor((36 * delta) / (delta + 38));
-  }
-
-  function normalizeConfusables(s) {
-    return s.split("").map((c) => CONFUSABLES[c] || c).join("");
-  }
-
-  // Nombre registrable aproximado: penúltima etiqueta, saltando sufijos
-  // compuestos tipo .gob.es / .com.mx (etiquetas de <=3 caracteres).
+  // Nombre registrable: la etiqueta anterior al TLD, o al sufijo de segundo
+  // nivel bajo un TLD de país (.gob.es, .co.uk). Misma regla que
+  // lib/domain.js; aquí no se puede importar (los content scripts no son
+  // módulos), así que hay un test que comprueba que las dos coinciden.
+  const SECOND_LEVEL = new Set([
+    "co", "com", "gob", "gov", "org", "net", "edu", "ac", "nom", "or", "ne", "go", "mil", "gv",
+  ]);
   function sld(h) {
     const parts = h.split(".");
-    let i = parts.length - 2;
-    while (i > 0 && parts[i].length <= 3) i--;
-    return parts[Math.max(i, 0)];
-  }
-
-  // --- 1) Suplantación de dominio: homógrafos + typosquatting ---------------
-  function checkDomain() {
-    const rawHost = location.hostname.replace(/^www\./, "").toLowerCase();
-
-    // ¿Es directamente un dominio legítimo conocido?
-    for (const b of [...BRANDS, ...ALSO_LEGIT]) {
-      if (rawHost === b || rawHost.endsWith("." + b)) return;
-    }
-
-    // Decodificar punycode y normalizar caracteres confundibles.
-    const uniHost = rawHost
-      .split(".")
-      .map((l) => (l.startsWith("xn--") ? punyDecode(l.slice(4)) : l))
-      .join(".");
-    const normHost = normalizeConfusables(uniHost);
-
-    // Homógrafo: tras normalizar, coincide EXACTAMENTE con una marca.
-    if (normHost !== rawHost) {
-      for (const b of BRANDS) {
-        if (normHost === b || normHost.endsWith("." + b)) {
-          add({
-            id: `homograph:${b}`,
-            weight: 80,
-            category: "phishing",
-            title: t("fHomoTitle"),
-            detail: t("fHomoDetail", [rawHost, b]),
-          });
-          return;
-        }
-      }
-    }
-
-    // Typosquatting clásico por distancia de edición.
-    for (const b of BRANDS) {
-      if (b.length < 6) continue; // marcas muy cortas: demasiado falso positivo
-      // Misma marca con otra terminación (p. ej. agenciatributaria.com):
-      // señal real pero más débil, porque a veces es la propia empresa.
-      if (sld(rawHost) === sld(b)) {
-        add({
-          id: `other-tld:${b}`,
-          weight: 30,
-          category: "phishing",
-          title: t("fOtherTldTitle"),
-          detail: t("fOtherTldDetail", [rawHost, b]),
-        });
-        return;
-      }
-      const maxDist = b.length >= 10 ? 2 : 1;
-      const dist = levenshtein(rawHost, b);
-      if (dist > 0 && dist <= maxDist && Math.abs(rawHost.length - b.length) <= maxDist) {
-        add({
-          id: `typo:${b}`,
-          weight: 60,
-          category: "phishing",
-          title: t("fTypoTitle"),
-          detail: t("fTypoDetail", [rawHost, b]),
-        });
-        return;
-      }
-    }
+    if (parts.length <= 2) return parts[0];
+    const tld = parts[parts.length - 1];
+    const keep = tld.length === 2 && SECOND_LEVEL.has(parts[parts.length - 2]) ? 3 : 2;
+    return parts[parts.length - keep];
   }
 
   // --- 2) Formularios con contraseña: sin cifrar o enviados a otro dominio --
@@ -484,7 +358,9 @@
     return parts.join(" · ").slice(0, 2000);
   }
 
+  let brandFormDone = false;
   function scanBrandForm() {
+    if (brandFormDone) return;
     // Debe haber un campo de contraseña VISIBLE: un registro colapsado o un
     // login escondido en el pie no son una pantalla de credenciales.
     const pwd = [...document.querySelectorAll('input[type="password"]')].find(
@@ -499,6 +375,7 @@
       if (!b.re.test(head)) continue;
       if (b.slds.includes(hostSld)) continue; // es su web de verdad
       if (b.strict && !BRAND_CONTEXT.test(head)) continue;
+      brandFormDone = true;
       add({
         id: `brandform:${b.label}`,
         weight: 60,
@@ -523,7 +400,9 @@
   //      la supuesta barra de direcciones está en su parte superior
   const URL_ONLY = /\bhttps?:\/\/([a-z0-9-]+(?:\.[a-z0-9-]+)+)/i;
   const WINDOW_BUTTONS = /[✕✖×⨯🗙⊗]|[–—]\s*□|□\s*[✕✖×]/;
+  let fakeWindowDone = false;
   function scanFakeWindow() {
+    if (fakeWindowDone) return;
     const pageHost = location.hostname.replace(/^www\./, "").toLowerCase();
     const candidatos = [];
     const anotar = (el, texto) => {
@@ -560,6 +439,7 @@
           WINDOW_BUTTONS.test(marco.textContent.slice(0, 400)) ||
           !!marco.querySelector('[aria-label*="close" i], [class*="titlebar" i], [class*="window-controls" i]');
         if (!((sombra && esquinas) || botones)) continue;
+        fakeWindowDone = true;
         add({
           id: `fakewindow:${host}`,
           weight: 70,
@@ -581,7 +461,8 @@
   // recuperación» es de lo más normal y no tiene nada que ver.
   const SEED_RE =
     /(frase (de )?(recuperaci[óo]n|semilla|secreta)|frase semilla|palabras de recuperaci[óo]n|seed phrase|recovery phrase|secret phrase|mnemonic|1[28][ -]?(palabras|words)|24[ -]?(palabras|words))/i;
-  function scanSeedPhrase() {
+  function scanSeedPhrase(pageText) {
+    if (seen.has("seedphrase")) return;
     const fields = [...document.querySelectorAll("input, textarea")].filter(
       (el) => !/^(hidden|checkbox|radio|submit|button|file|range|color|image|reset)$/i.test(el.type || "")
     );
@@ -604,7 +485,7 @@
 
     // Camino 2: la rejilla de 12/24 casillas que imita la pantalla de
     // restauración de una cartera, con el vocabulario en la página.
-    const rejilla = fields.length >= 12 && SEED_RE.test((document.body?.innerText || "").slice(0, 20000));
+    const rejilla = fields.length >= 12 && SEED_RE.test(pageText());
 
     if (!campoDirecto && !rejilla) return;
     add({
@@ -635,9 +516,9 @@
   ];
   let notifPedido = false;
   let baitAvisado = false;
-  function scanNotifBait() {
+  function scanNotifBait(pageText = readPageText) {
     if (baitAvisado || !notifPedido) return;
-    const texto = (document.body?.innerText || "").slice(0, 20000);
+    const texto = pageText();
     if (!ALLOW_BAIT.some((re) => re.test(texto))) return;
     baitAvisado = true;
     add({
@@ -758,6 +639,7 @@
   }
 
   function scanPromptInjection() {
+    if (seen.has("promptinject")) return;
     const sospechosos = [];
     const anotar = (texto, via) => {
       if (sospechosos.length) return;
@@ -817,8 +699,9 @@
     /call .{0,25}(microsoft|apple|support|technician)/i,
     /ha (ganado|sido seleccionad).{0,30}(premio|iphone|tarjeta|regalo)/i,
   ];
-  function scanScam() {
-    const text = (document.body?.innerText || "").slice(0, 20000);
+  function scanScam(pageText) {
+    if (seen.has("scam-text")) return;
+    const text = pageText();
     if (SCAM_PATTERNS.some((re) => re.test(text))) {
       add({
         id: "scam-text",
@@ -850,8 +733,9 @@
     /human verification|verificación humana/i,
     /captcha/i,
   ];
-  function scanClickFix() {
-    const text = (document.body?.innerText || "").slice(0, 20000);
+  function scanClickFix(pageText) {
+    if (seen.has("clickfix:lure")) return;
+    const text = pageText();
     if (RUN_KEYS.some((re) => re.test(text)) && HUMAN_CHECK.some((re) => re.test(text))) {
       add({
         id: "clickfix:lure",
@@ -865,6 +749,7 @@
 
   // --- 4) Iframes invisibles (posible clickjacking) --------------------------
   function scanIframes() {
+    if (seen.has("hidden-iframes")) return;
     let hidden = 0;
     document.querySelectorAll("iframe").forEach((f) => {
       const s = getComputedStyle(f);
@@ -882,18 +767,26 @@
     }
   }
 
+  // El texto visible de la página. innerText obliga al navegador a recalcular
+  // el layout, así que se lee una sola vez por pasada y lo comparten los cuatro
+  // escaneos que lo necesitan (antes cada uno lo pedía por su cuenta).
+  const readPageText = () => (document.body?.innerText || "").slice(0, 20000);
+
+  const SCANS = [
+    scanForms, scanBrandForm, scanFakeWindow, scanSeedPhrase, scanSvgScript,
+    scanNotifBait, scanPromptInjection, scanScam, scanClickFix, scanIframes,
+  ];
   function runScans() {
-    checkDomain();
-    scanForms();
-    scanBrandForm();
-    scanFakeWindow();
-    scanSeedPhrase();
-    scanSvgScript();
-    scanNotifBait();
-    scanPromptInjection();
-    scanScam();
-    scanClickFix();
-    scanIframes();
+    if (!alive()) return;
+    let text = null;
+    const pageText = () => (text === null ? (text = readPageText()) : text);
+    for (const scan of SCANS) {
+      try {
+        scan(pageText);
+      } catch {
+        /* un detector que falla en una página rara no se lleva a los demás */
+      }
+    }
   }
 
   // --- Banner de aviso (Shadow DOM para aislar estilos) -----------------------
@@ -907,18 +800,58 @@
   //   - si alguien lo arranca del DOM sin pulsar Cerrar, se vuelve a poner.
   // Aun así, una página siempre puede taparlo con algo encima: el icono de la
   // barra y la notificación del sistema quedan fuera de su alcance.
-  let banner = null;
-  let bannerClosed = false;
+  //
+  // El banner no es de un solo uso: el background reenvía el veredicto con cada
+  // señal nueva y aquí se repinta. Si el usuario lo cerró en naranja y el riesgo
+  // sube a rojo, vuelve a salir; cerrarlo en rojo lo calla del todo.
+  const RANK = { safe: 0, warning: 1, danger: 2 };
+  let banner = null; // { wrap, shadow, keeper }
+  let bannerSig = "";
+  let bannerOpen = false;
+  let closedRank = 0;
+
   function renderBanner(verdict) {
-    if (banner || bannerClosed) return;
+    if (!verdict || !Array.isArray(verdict.reasons)) return;
+    const rank = RANK[verdict.level] || 0;
+    if (!rank || rank <= closedRank) return;
+    const sig = `${verdict.level}|${verdict.score}|${verdict.reasons.map((r) => r.id).join(",")}`;
+    if (banner && sig === bannerSig) return;
+    bannerSig = sig;
+    if (!banner) banner = mountBanner();
+    paintBanner(verdict, rank);
+  }
+
+  function mountBanner() {
     // Un div y no un elemento propio: si la página registrase antes ese nombre
     // con customElements, podría secuestrar el elemento al insertarlo.
     const wrap = document.createElement("div");
     wrap.style.cssText = "all: initial !important; display: block !important;";
     const shadow = wrap.attachShadow({ mode: "closed" });
-    banner = wrap;
+    // Reinsertar si la página lo quita (con un tope, por si se empeña en bucle).
+    let reinserts = 0;
+    const keeper = new MutationObserver(() => {
+      if (!wrap.isConnected && reinserts++ < 5) document.documentElement.appendChild(wrap);
+    });
+    keeper.observe(document.documentElement, { childList: true });
+    document.documentElement.appendChild(wrap);
+    return { wrap, shadow, keeper };
+  }
+
+  function closeBanner(rank) {
+    closedRank = Math.max(closedRank, rank);
+    if (!banner) return;
+    banner.keeper.disconnect();
+    banner.wrap.remove();
+    banner = null;
+  }
+
+  function paintBanner(verdict, rank) {
+    const { shadow } = banner;
     const danger = verdict.level === "danger";
     const top = verdict.reasons[0];
+    // Consejo según el tipo de amenaza principal: qué hacer, no solo qué pasa.
+    const advKey = top && top.group ? `adv_${top.group}` : "";
+    const advice = advKey && t(advKey) !== advKey ? t(advKey) : "";
 
     // Estilos cerrados en el shadow root: ni heredan ni dejan heredar nada de
     // la página. Colores sólidos (blanco sobre rojo/ámbar oscuro) que cumplen
@@ -937,6 +870,7 @@
         .txt { flex: 1; min-width: 0; }
         .txt b { display: block; font-size: 15px; font-weight: 650; }
         .txt span { opacity: .92; }
+        .txt .adv { display: block; margin-top: 3px; opacity: 1; font-weight: 600; }
         .btns { display: flex; gap: 8px; flex-wrap: wrap; justify-content: flex-end; }
         button { font: 600 13px/1 system-ui, -apple-system, "Segoe UI", sans-serif;
           color: #fff; background: transparent; border: 1px solid rgb(255 255 255 / .55);
@@ -958,15 +892,16 @@
           ul { padding-left: 16px; }
         }
       </style>
-      <div class="bar" role="alert">
+      <div class="bar${bannerOpen ? " open" : ""}" role="alert">
         <div class="head">
           <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 2.5 4 5.6v6.1c0 4.9 3.4 8.7 8 9.8 4.6-1.1 8-4.9 8-9.8V5.6L12 2.5Zm-1 5h2v6h-2v-6Zm0 8h2v2h-2v-2Z" /></svg>
           <div class="txt">
             <b>${escapeHtml(danger ? t("bDangerTitle") : t("bWarnTitle"))}</b>
             <span>${top ? escapeHtml(top.title) : escapeHtml(t("fDefaultReason"))} ${escapeHtml(t("bRisk", [String(verdict.score)]))}</span>
+            ${advice ? `<span class="adv">${escapeHtml(advice)}</span>` : ""}
           </div>
           <div class="btns">
-            <button class="details" aria-expanded="false">${escapeHtml(t("bDetails"))}</button>
+            <button class="details" aria-expanded="${bannerOpen}">${escapeHtml(t("bDetails"))}</button>
             <button class="trust" title="${escapeHtml(t("bTrustTip"))}">${escapeHtml(t("bTrust"))}</button>
             <button class="close">${escapeHtml(t("bClose"))}</button>
           </div>
@@ -988,30 +923,17 @@
       shadow.querySelector(sel).addEventListener("click", (e) => {
         if (e.isTrusted) fn();
       });
-    const close = () => {
-      bannerClosed = true;
-      keeper.disconnect();
-      wrap.remove();
-    };
     onRealClick(".details", () => {
-      const open = bar.classList.toggle("open");
-      shadow.querySelector(".details").setAttribute("aria-expanded", String(open));
+      bannerOpen = bar.classList.toggle("open");
+      shadow.querySelector(".details").setAttribute("aria-expanded", String(bannerOpen));
     });
-    onRealClick(".close", close);
+    onRealClick(".close", () => closeBanner(rank));
     onRealClick(".trust", () => {
       chrome.runtime
         .sendMessage({ type: "trust-host", host: location.hostname })
         .catch(() => {})
-        .finally(close);
+        .finally(() => closeBanner(RANK.danger));
     });
-
-    // Reinsertar si la página lo quita (con un tope, por si se empeña en bucle).
-    let reinserts = 0;
-    const keeper = new MutationObserver(() => {
-      if (!wrap.isConnected && reinserts++ < 5) document.documentElement.appendChild(wrap);
-    });
-    keeper.observe(document.documentElement, { childList: true });
-    document.documentElement.appendChild(wrap);
   }
 
   function escapeHtml(s) {

@@ -1,7 +1,7 @@
 // Página de opciones (B1). Lee y escribe los ajustes en chrome.storage.local
 // vía el módulo settings.js. También gestiona la whitelist del usuario.
 
-import { getSettings, saveSettings, DEFAULTS, DETECTORS } from "../src/settings.js";
+import { getSettings, saveSettings, DEFAULTS, DETECTORS, exportBundle, sanitizeImport } from "../src/settings.js";
 import { t, localizePage } from "./i18n.js";
 
 const $ = (id) => document.getElementById(id);
@@ -109,6 +109,48 @@ function flashSaved() {
   el.hidden = false;
   setTimeout(() => (el.hidden = true), 1800);
 }
+
+// --- Copia de los ajustes -----------------------------------------------------
+function backupMsg(key, ok) {
+  const el = $("backupMsg");
+  el.textContent = t(key);
+  el.classList.toggle("error", !ok);
+  el.hidden = false;
+  setTimeout(() => (el.hidden = true), 4000);
+}
+
+$("exportBtn").addEventListener("click", async () => {
+  const { whitelist = [] } = await chrome.storage.local.get("whitelist");
+  const bundle = exportBundle(await getSettings(), whitelist, chrome.runtime.getManifest().version);
+  const url = URL.createObjectURL(new Blob([JSON.stringify(bundle, null, 2)], { type: "application/json" }));
+  const a = document.createElement("a");
+  a.href = url;
+  a.download = `guardian-web-${new Date().toISOString().slice(0, 10)}.json`;
+  a.click();
+  setTimeout(() => URL.revokeObjectURL(url), 1000);
+});
+
+$("importBtn").addEventListener("click", () => $("importFile").click());
+$("importFile").addEventListener("change", async (e) => {
+  const file = e.target.files[0];
+  e.target.value = ""; // permitir reimportar el mismo fichero
+  if (!file) return;
+  let clean = null;
+  try {
+    if (file.size > 1024 * 1024) throw new Error("demasiado grande");
+    clean = sanitizeImport(JSON.parse(await file.text()), await getSettings());
+  } catch {
+    clean = null;
+  }
+  if (!clean) {
+    backupMsg("oImportErr", false);
+    return;
+  }
+  await saveSettings(clean.settings);
+  await chrome.storage.local.set({ whitelist: clean.whitelist });
+  await load();
+  backupMsg("oImportOk", true);
+});
 
 $("localMode").addEventListener("change", toggleLocalNote);
 

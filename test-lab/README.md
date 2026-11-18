@@ -31,11 +31,21 @@ notificación, o solo entrada en el panel).
 | Cadena de redirecciones | /go | 20 |
 | Homógrafo (leet/confusables) | homograph.html + fichero hosts | 80 |
 | Typosquatting | homograph.html + fichero hosts | 60 |
+| Marca como subdominio | homograph.html + fichero hosts | 60 |
+| Marca + gancho | homograph.html + fichero hosts | 45 |
+| Exfiltración por píxel / WebSocket | exfil-encoded.html | 70 |
 | Falsos positivos (control) | clean.html | 0 |
 
 Sin cubrir en local (requieren mundo real): Google Safe Browsing / URLhaus
 (usar <https://testsafebrowsing.appspot.com>), dominio de minado conocido en la
 blocklist, TLD de riesgo.
+
+## En automático
+
+`node scripts/e2e.mjs` (desde la raíz del repo) abre un Chrome con la extensión
+cargada, recorre todas estas páginas y comprueba las señales de cada una. Los
+dominios falsos de `homograph.html` los resuelve a `127.0.0.1` él solo, sin
+tocar el fichero `hosts`. Con `--headed` se ve el navegador.
 
 ## Notas
 

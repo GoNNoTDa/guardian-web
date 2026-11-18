@@ -1,7 +1,8 @@
 // Lógica de renderizado compartida entre el popup y el panel lateral.
 
 import { t } from "./i18n.js";
-import { detectorOf } from "../src/settings.js";
+import { detectorOf, GROUPS } from "../src/settings.js";
+import { registrable } from "../src/lib/domain.js";
 
 const LEVEL_KEY = {
   safe: "uStatusSafe",
@@ -16,27 +17,16 @@ let currentHost = "";
 let isWhitelisted = false;
 let lastTab = null;
 
-// Sufijos de segundo nivel habituales (co.uk, gob.es, com.mx...): con ellos el
-// dominio registrable abarca tres etiquetas en vez de dos.
-const SECOND_LEVEL = new Set(["co", "com", "gob", "gov", "org", "net", "edu", "ac", "nom", "or", "ne"]);
-
 // Pinta el host con el dominio registrable en negrita y los subdominios
 // atenuados, como la barra de direcciones: lo que hay que comprobar es la parte
 // destacada ("bbva.es.verificar-cuenta.top" se lee entonces como lo que es).
 function renderHost(el, host) {
   el.textContent = "";
-  const labels = host.split(".");
-  let keep = 2;
-  if (labels.length > 2 && SECOND_LEVEL.has(labels[labels.length - 2])) keep = 3;
-  if (/^[\d.]+$/.test(host) || host.includes(":") || labels.length <= keep) {
-    const b = document.createElement("b");
-    b.textContent = host;
-    el.appendChild(b);
-    return;
-  }
+  const reg = registrable(host);
   const b = document.createElement("b");
-  b.textContent = labels.slice(-keep).join(".");
-  el.append(labels.slice(0, -keep).join(".") + ".", b);
+  b.textContent = reg || host;
+  if (reg && reg !== host && host.endsWith("." + reg)) el.append(host.slice(0, -reg.length));
+  el.appendChild(b);
 }
 
 // Medidor: la puntuación situada entre las marcas de los umbrales naranja y
@@ -67,6 +57,7 @@ export function renderState(tab) {
   const statusText = document.getElementById("statusText");
   const statusNote = document.getElementById("statusNote");
   const meterEl = document.getElementById("meter");
+  const adviceEl = document.getElementById("advice");
   const reasonsEl = document.getElementById("reasons");
   const emptyEl = document.getElementById("empty");
   const trustBtn = document.getElementById("trustBtn");
@@ -74,6 +65,7 @@ export function renderState(tab) {
   chrome.runtime.sendMessage({ type: "getState", tabId: tab.id }, (st) => {
     statusNote.hidden = true;
     meterEl.hidden = true;
+    if (adviceEl) adviceEl.hidden = true;
     if (chrome.runtime.lastError || !st) {
       statusEl.className = "verdict safe";
       statusText.textContent = t("uNoData");
@@ -130,8 +122,20 @@ export function renderState(tab) {
     }
     emptyEl.hidden = true;
 
+    st.findings.sort((a, b) => (b.weight || 0) - (a.weight || 0));
+
+    // Qué hacer, según la amenaza principal. Solo cuando hay aviso: con una
+    // señal suelta de 15 puntos, un consejo alarma más de lo que ayuda.
+    const advKey = `adv_${st.findings[0].group}`;
+    if (adviceEl && st.level !== "safe" && t(advKey) !== advKey) {
+      adviceEl.textContent = "";
+      const b = document.createElement("b");
+      b.textContent = t("uAdvice");
+      adviceEl.append(b, " ", t(advKey));
+      adviceEl.hidden = false;
+    }
+
     st.findings
-      .sort((a, b) => (b.weight || 0) - (a.weight || 0))
       .forEach((f) => {
         const li = document.createElement("li");
         if (f.weight >= 60) li.className = "heavy";
@@ -192,6 +196,26 @@ export async function renderHistory() {
     li.append(dot, hostDiv, date);
     listEl.appendChild(li);
   });
+}
+
+// Resumen del mes: cuántas veces ha avisado y de qué. Es la parte "aprende"
+// del proyecto: ver que los intentos existen, y de qué tipo son los tuyos.
+export async function renderStats() {
+  const el = document.getElementById("stats");
+  if (!el) return;
+  const { stats = {} } = await chrome.storage.local.get("stats");
+  const d = new Date();
+  const month = stats[`${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}`] || {};
+  const parts = GROUPS.filter((g) => month[g] > 0).sort((a, b) => month[b] - month[a]);
+  const total = parts.reduce((n, g) => n + month[g], 0);
+  el.hidden = total === 0;
+  if (!total) return;
+  el.textContent = "";
+  const b = document.createElement("b");
+  b.textContent = t(total === 1 ? "uStatsOne" : "uStatsMany", [String(total)]);
+  const small = document.createElement("small");
+  small.textContent = parts.map((g) => `${t(`grp_${g}`)} ${month[g]}`).join(" · ");
+  el.append(b, small);
 }
 
 // Conecta el botón de confianza y el borrado de historial (una sola vez).

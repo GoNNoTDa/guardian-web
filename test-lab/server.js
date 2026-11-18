@@ -8,7 +8,9 @@ const http = require("http");
 const fs = require("fs");
 const path = require("path");
 
-const PORT = 8000;
+// El puerto se puede cambiar con PORT (lo usa scripts/e2e.mjs para no chocar
+// con un laboratorio que ya tengas abierto en el 8000).
+const PORT = parseInt(process.env.PORT, 10) || 8000;
 const ROOT = __dirname;
 
 const MIME = {

@@ -262,3 +262,23 @@ body.panel #history { max-height: none; }
 @media (prefers-reduced-motion: reduce) {
   .fill { transition: none; }
 }
+
+/* --- Consejo y resumen del mes ------------------------------------------- */
+.advice {
+  margin-top: 10px;
+  padding: 9px 11px;
+  border-left: 3px solid var(--ink-3);
+  border-radius: 0 8px 8px 0;
+  background: var(--paper);
+  color: var(--ink-2);
+}
+.advice b { color: var(--ink); font-weight: 650; }
+.stats {
+  margin: 10px 8px 0;
+  padding: 10px 14px;
+  border: 1px solid var(--line);
+  border-radius: 12px;
+  background: var(--surface);
+}
+.stats b { display: block; font-weight: 650; }
+.stats small { color: var(--ink-3); }

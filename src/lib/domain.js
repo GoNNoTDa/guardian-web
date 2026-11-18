@@ -37,17 +37,26 @@ export function weirdPort(urlStr) {
   return null;
 }
 
-// Dominio registrable aproximado (saltando sufijos compuestos cortos como
-// .co.uk / .gob.es): coge la última etiqueta larga y su TLD.
+// Sufijos de segundo nivel habituales bajo un TLD de país (co.uk, gob.es,
+// com.mx…): con ellos el dominio registrable abarca tres etiquetas.
+const SECOND_LEVEL = new Set([
+  "co", "com", "gob", "gov", "org", "net", "edu", "ac", "nom", "or", "ne", "go", "mil", "gv",
+]);
+
+// Dominio registrable aproximado, sin lista de sufijos públicos (pesa cientos
+// de KB y habría que actualizarla): dos etiquetas, o tres si la penúltima es
+// un sufijo de segundo nivel bajo un TLD de país.
+//
+// Antes se decidía por la LONGITUD de la penúltima etiqueta (≤3 → sufijo), y
+// eso convertía "www.ing.es" o "app.dgt.es" en su propio dominio registrable.
 export function registrable(host) {
-  const parts = host.split(".");
-  if (parts.length <= 2) return host;
-  const tail = parts.slice(-2);
-  // Si el penúltimo trozo es un sufijo corto (co, com, gob, org...), coge uno más.
-  if (parts[parts.length - 2].length <= 3 && parts.length >= 3) {
-    return parts.slice(-3).join(".");
-  }
-  return tail.join(".");
+  const h = String(host || "").toLowerCase().replace(/\.$/, "");
+  if (isRawIp(h)) return h;
+  const parts = h.split(".");
+  if (parts.length <= 2) return h;
+  const tld = parts[parts.length - 1];
+  const keep = tld.length === 2 && SECOND_LEVEL.has(parts[parts.length - 2]) ? 3 : 2;
+  return parts.slice(-keep).join(".");
 }
 
 // Edad del dominio en días vía RDAP (rdap.org agrega los registros). null si

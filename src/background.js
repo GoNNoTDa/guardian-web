@@ -9,16 +9,21 @@
 //   historial (B2), panel lateral y notificaciones.
 // v0.3: ajustes configurables (B1), modo local (C5), exfiltración (A2, en el
 //   page-probe) y descargas peligrosas (A3).
+// v0.8: los dominios que suplantan a una marca se analizan aquí, al confirmar
+//   la navegación (antes estaban en content.js y llegaban con el DOM); el
+//   banner se actualiza cuando el riesgo sube; contador mensual de avisos.
 
 import { checkReputation } from "./lib/reputation.js";
 import { computeVerdict } from "./lib/scoring.js";
 import { MINING_HOSTS, isSuspiciousTld } from "./lib/blocklists.js";
 import { isTrusted, hostMatches } from "./lib/trusted.js";
-import { getSettings, detectorOf } from "./settings.js";
+import { getSettings, detectorOf, groupOf } from "./settings.js";
 import { learnUrl } from "./lib/learn.js";
 import { lookupHost, reportSite } from "./lib/community.js";
 import { ensureFeedAlarm, updateFeed, getFeedSet, invalidateFeedCache, FEED_ALARM } from "./lib/blockfeed.js";
 import { isRawIp, weirdPort, domainAgeDays, isLocalOrPrivate } from "./lib/domain.js";
+import { analyzeHost } from "./lib/lookalike.js";
+import { analyzeDownload } from "./lib/downloads.js";
 import { noteThirdParty, isKnownTracker } from "./lib/trackers.js";
 
 // i18n: los textos de señales y notificaciones se resuelven aquí, en el
@@ -108,8 +113,13 @@ async function getWhitelist() {
 }
 
 // --- Señales y veredicto ------------------------------------------------------
+// Navegaciones recién confirmadas cuyo estado aún se está preparando.
+const settling = new Map();
+
 async function addFindings(tabId, findings) {
   if (!findings || !findings.length) return;
+  const wait = settling.get(tabId);
+  if (wait) await wait;
   const cfg = await ensureSettings();
   const st = await getState(tabId);
   if (st.whitelisted) return; // el usuario confía: silencio total
@@ -123,6 +133,8 @@ async function addFindings(tabId, findings) {
     if (st.trusted && !f.confirmed) continue;
     // Enlace educativo por vector (objetivo divulgativo): cada aviso enseña.
     f.learn = learnUrl(detectorOf(f.id));
+    // Grupo del detector: de él sale el consejo («qué hacer») del aviso.
+    f.group = groupOf(detectorOf(f.id));
     st.findings.set(f.id, f);
     changed = true;
   }
@@ -139,12 +151,15 @@ async function recompute(tabId, st, cfg) {
     if (!st.historyKey) {
       st.historyTs = Date.now();
       st.historyKey = `${tabId}:${st.historyTs}`;
+      // Primera vez que esta página merece aviso: cuenta para el resumen del mes.
+      bumpStats(verdict.reasons[0]?.group);
     }
     await logHistory(st, verdict);
-    if (!st.shown) {
-      st.shown = true;
-      chrome.tabs.sendMessage(tabId, { type: "show-warning", verdict }).catch(() => {});
-    }
+    // Se reenvía con cada señal nueva, no solo la primera vez: el banner se
+    // repinta con los motivos al día y pasa de naranja a rojo si el riesgo
+    // sube. Antes se quedaba en «sospechoso» aunque la puntuación se triplicase.
+    st.shown = true;
+    chrome.tabs.sendMessage(tabId, { type: "show-warning", verdict }).catch(() => {});
     const shouldNotify =
       cfg.notifications &&
       ((verdict.level === "danger" && st.notifiedLevel !== "danger") ||
@@ -198,7 +213,41 @@ function updateBadge(tabId, verdict) {
 }
 
 // --- Historial (B2) -----------------------------------------------------------
-async function logHistory(st, verdict) {
+// Leer-modificar-escribir sobre storage no es atómico: dos pestañas que avisan
+// a la vez se pisaban y una de las dos entradas se perdía. Todas las
+// escrituras de historial y estadísticas pasan por esta cola.
+let storeQueue = Promise.resolve();
+function queued(fn) {
+  storeQueue = storeQueue.then(fn, fn);
+  return storeQueue;
+}
+
+// Resumen mensual: cuántos avisos y de qué tipo. Solo contadores por grupo de
+// detector; no guarda sitios ni direcciones (eso es el historial, que el
+// usuario puede borrar aparte). Se conservan los últimos 12 meses.
+function bumpStats(group) {
+  const g = group || "net";
+  return queued(async () => {
+    try {
+      const { stats = {} } = await chrome.storage.local.get("stats");
+      const d = new Date();
+      const month = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}`;
+      const m = stats[month] || {};
+      m[g] = (m[g] || 0) + 1;
+      stats[month] = m;
+      const months = Object.keys(stats).sort();
+      while (months.length > 12) delete stats[months.shift()];
+      await chrome.storage.local.set({ stats });
+    } catch {
+      /* sin contador no se rompe nada */
+    }
+  });
+}
+
+function logHistory(st, verdict) {
+  return queued(() => writeHistory(st, verdict));
+}
+async function writeHistory(st, verdict) {
   try {
     const { history = [] } = await chrome.storage.local.get("history");
     const entry = {
@@ -237,7 +286,10 @@ async function getDomainAgeCached(host) {
 }
 
 // Registra en el historial un evento sin pestaña asociada (p. ej. descargas).
-async function logStandalone(entry) {
+function logStandalone(entry) {
+  return queued(() => writeStandalone(entry));
+}
+async function writeStandalone(entry) {
   try {
     const { history = [] } = await chrome.storage.local.get("history");
     history.unshift(entry);
@@ -246,6 +298,25 @@ async function logStandalone(entry) {
   } catch {
     /* no crítico */
   }
+}
+
+// Convierte el resultado de analyzeHost en un hallazgo con sus textos.
+const LOOKALIKE = {
+  homograph: { id: "homograph", key: "fHomo" },
+  typo: { id: "typo", key: "fTypo" },
+  othertld: { id: "other-tld", key: "fOtherTld" },
+  brandsub: { id: "brand-sub", key: "fBrandSub" },
+  combo: { id: "combo", key: "fCombo" },
+};
+function lookalikeFinding(look) {
+  const spec = LOOKALIKE[look.kind];
+  return {
+    id: `${spec.id}:${look.brand}`,
+    weight: look.weight,
+    category: "phishing",
+    title: t(`${spec.key}Title`),
+    detail: t(`${spec.key}Detail`, [look.host, look.brand, look.reg]),
+  };
 }
 
 // --- Navegación: reinicia estado, whitelist, reputación -----------------------
@@ -258,14 +329,33 @@ chrome.webNavigation.onCommitted.addListener(async (d) => {
     return;
   }
 
-  const cfg = await ensureSettings();
+  // El estado nuevo se instala YA, antes de cualquier await. Las primeras
+  // peticiones de la página llegan a los pocos milisegundos del commit; si el
+  // estado se cambiaba después de leer ajustes y whitelist (como antes), esas
+  // peticiones se apuntaban a la página anterior y se perdían: los rastreadores
+  // y dominios de minado cargados desde el propio HTML no contaban.
   const st = freshState(d.url);
-  const wl = await getWhitelist();
-  st.whitelisted = wl.some((w) => hostMatches(host, w));
   st.trusted = isTrusted(host);
   cache.set(d.tabId, st);
-  persist(d.tabId, st);
   updateBadge(d.tabId, { level: "safe" });
+
+  // Mientras no se sepa si el sitio está en la lista de confianza del usuario,
+  // las señales esperan (ver addFindings): no vaya a avisar de un sitio que el
+  // usuario pidió silenciar.
+  let settle;
+  const settled = new Promise((r) => (settle = r));
+  settling.set(d.tabId, settled);
+  let cfg;
+  try {
+    cfg = await ensureSettings();
+    const wl = await getWhitelist();
+    st.whitelisted = wl.some((w) => hostMatches(host, w));
+  } finally {
+    if (settling.get(d.tabId) === settled) settling.delete(d.tabId);
+    settle();
+  }
+  if (cache.get(d.tabId) !== st) return; // otra navegación se ha adelantado
+  persist(d.tabId, st);
 
   // Volcar las redirecciones acumuladas durante ESTA navegación.
   const redirects = pendingRedirects.get(d.tabId) || 0;
@@ -297,6 +387,11 @@ chrome.webNavigation.onCommitted.addListener(async (d) => {
       },
     ]);
   }
+
+  // Dominio que suplanta a una marca. Sale solo del nombre del host, así que
+  // se decide ya, sin esperar a que cargue la página.
+  const look = st.trusted ? null : analyzeHost(host);
+  if (look) addFindings(d.tabId, [lookalikeFinding(look)]);
 
   // Señales estructurales locales (estilo Netcraft), sin red. Se excluyen
   // localhost y las IPs privadas (desarrollo, intranet): no son sospechosas.
@@ -397,6 +492,10 @@ chrome.webRequest.onBeforeRequest.addListener(
 );
 
 async function handleRequest(details) {
+  // La petición del documento principal llega ANTES de que la navegación se
+  // confirme: el estado de la pestaña todavía es el de la página anterior, y
+  // el sitio al que vas se apuntaba como «tercero» del sitio del que vienes.
+  if (details.type === "main_frame") return;
   const st = await getState(details.tabId);
   if (st.whitelisted) return;
 
@@ -468,39 +567,22 @@ chrome.webRequest.onBeforeRedirect.addListener(
 );
 
 // --- Descargas peligrosas (A3) -------------------------------------------------
-// Ejecutables de riesgo en Windows y "doble extensión" (factura.pdf.exe).
-const RISKY_EXT = new Set([
-  "exe", "scr", "com", "pif", "bat", "cmd", "msi", "msp", "hta", "cpl", "jar",
-  "js", "jse", "vbs", "vbe", "wsf", "wsh", "ps1", "psm1", "reg", "lnk", "inf",
-  "dll", "gadget", "apk", "app", "dmg", "iso", "img",
-]);
-const DOC_EXT = new Set([
-  "pdf", "doc", "docx", "xls", "xlsx", "ppt", "pptx", "txt", "rtf", "jpg",
-  "jpeg", "png", "gif", "csv", "zip", "rar",
-]);
-
-function analyzeDownload(name) {
-  const clean = (name || "").split(/[\\/]/).pop().toLowerCase();
-  const parts = clean.split(".");
-  if (parts.length < 2) return null;
-  const ext = parts.pop();
-  const prev = parts.length ? parts[parts.length - 1] : "";
-
-  if (DOC_EXT.has(prev) && RISKY_EXT.has(ext)) {
+// El análisis del nombre vive en lib/downloads.js (puro, con tests); aquí se
+// le ponen los textos.
+function describeDownload(name) {
+  const r = analyzeDownload(name);
+  if (!r) return null;
+  if (r.kind === "bidi") {
+    return { weight: r.weight, title: t("fDlBidiTitle"), detail: t("fDlBidiDetail", [r.name, r.ext]) };
+  }
+  if (r.kind === "double") {
     return {
-      weight: 90,
+      weight: r.weight,
       title: t("fDlDoubleTitle"),
-      detail: t("fDlDoubleDetail", [clean, prev.toUpperCase(), ext]),
+      detail: t("fDlDoubleDetail", [r.name, r.prev.toUpperCase(), r.ext]),
     };
   }
-  if (RISKY_EXT.has(ext)) {
-    return {
-      weight: 45,
-      title: t("fDlExeTitle"),
-      detail: t("fDlExeDetail", [clean, ext]),
-    };
-  }
-  return null;
+  return { weight: r.weight, title: t("fDlExeTitle"), detail: t("fDlExeDetail", [r.name, r.ext]) };
 }
 
 // El nombre real llega tarde: onCreated suele traer filename vacío y las
@@ -512,7 +594,7 @@ const dlDone = new Set();
 
 async function reportDownload(id, filename, url) {
   if (dlDone.has(id)) return;
-  const risk = analyzeDownload(filename) || analyzeDownload(url);
+  const risk = describeDownload(filename) || describeDownload(url);
   if (!risk) return;
   dlDone.add(id); // marcar antes del await: evita duplicados entre listeners
 
@@ -542,6 +624,7 @@ async function reportDownload(id, filename, url) {
     }
   }
 
+  bumpStats("downloads");
   logStandalone({
     key: `dl:${id}`,
     host: host || t("nDownloadWord"),
@@ -593,6 +676,11 @@ async function rateHost(host) {
   const feed = await getFeedSet();
   if (feed.has(h)) return "danger";
   if (MINING_HOSTS.some((m) => h === m || h.endsWith("." + m))) return "danger";
+  // Dominio que imita a una marca: lo más útil de saber ANTES de hacer clic,
+  // porque es justo lo que cuelan los anuncios de los buscadores.
+  const look = analyzeHost(h);
+  if (look && look.weight >= 60) return "danger";
+  if (look && look.weight >= 45) return "warn";
   if (isRawIp(h)) return "warn";
   if (isSuspiciousTld(h)) return "warn";
   if (await isKnownTracker(h)) return "warn";
@@ -695,7 +783,7 @@ chrome.runtime.onMessage.addListener((msg, sender, sendResponse) => {
       if (!wl.includes(msg.host)) wl.push(msg.host);
       await chrome.storage.local.set({ whitelist: wl });
       for (const [tabId, st] of cache) {
-        if (st.host === msg.host) {
+        if (hostMatches(st.host, msg.host)) {
           st.whitelisted = true;
           st.findings.clear();
           st.level = "safe";
@@ -713,6 +801,14 @@ chrome.runtime.onMessage.addListener((msg, sender, sendResponse) => {
     (async () => {
       const wl = await getWhitelist();
       await chrome.storage.local.set({ whitelist: wl.filter((w) => w !== msg.host) });
+      // Las pestañas abiertas en ese sitio dejan de estar en silencio ya; las
+      // señales vuelven a acumularse en la siguiente carga.
+      for (const [tabId, st] of cache) {
+        if (st.whitelisted && hostMatches(st.host, msg.host)) {
+          st.whitelisted = false;
+          persist(tabId, st);
+        }
+      }
       sendResponse({ ok: true });
     })();
     return true;

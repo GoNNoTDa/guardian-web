@@ -26,7 +26,9 @@
 ## Estructura rápida
 
 - `src/background.js` — service worker: red, reputación, descargas, veredictos.
-- `src/content.js` — DOM: typosquatting/homógrafos, formularios, scams, banner.
+- `src/content.js` — DOM: formularios, marcas con login, scams, banner.
+- `src/lib/lookalike.js` — dominios que suplantan a una marca (homógrafos,
+  typosquatting, marca en subdominio). Puro: lo usa el service worker.
 - `src/page-probe.js` — mundo MAIN: fingerprinting, minado, exfiltración.
 - `src/settings.js` — ajustes + gate de detectores (`detectorOf`).
 - `ui/` — popup, panel lateral, opciones.
@@ -57,9 +59,11 @@ background; si está en el **HTML o el dominio**, en `content.js`; si hay que ve
 
 Copia `_locales/es/messages.json` a `_locales/<código>/messages.json` y traduce
 los valores sin tocar las claves. La paridad es obligatoria: los 7 idiomas
-tienen hoy 208 claves y `t()` (en `ui/i18n.js`) devuelve **la clave literal**
-cuando falta el mensaje, así que un hueco pasa desapercibido en revisión y luego
-aparece en la interfaz como `fAlgoTitle`.
+tienen hoy 232 claves y `t()` (en `ui/i18n.js`) devuelve **la clave literal**
+cuando falta el mensaje, así que un hueco aparecería en la interfaz como
+`fAlgoTitle`. `node --test` lo comprueba: mismas claves en todos los idiomas,
+mismos `$1…$n`, y que `extDesc` no pase de los 132 caracteres que admite la
+Web Store.
 
 ## Estilo y commits
 
@@ -73,10 +77,13 @@ aparece en la interfaz como `fAlgoTitle`.
 
 ## Antes de abrir el PR
 
-- `node --check` sobre los ficheros tocados (no hay más toolchain).
-- Pasa la batería del test-lab, incluida `clean.html` (control de falsos
-  positivos).
-- Comprueba la paridad de claves entre los 7 idiomas si has tocado `_locales/`.
+- `node --test`: tests unitarios de las funciones puras (`src/lib`, ajustes) y
+  de los catálogos de idioma. Sin dependencias; basta Node 22 o superior.
+- `node scripts/e2e.mjs`: abre un Chrome de verdad con la extensión cargada y
+  recorre el test-lab entero, incluida `clean.html` (control de falsos
+  positivos). Si añades un detector, añade su caso a la lista `CASES`.
+- La lógica que no necesite `chrome.*` ni el DOM va a `src/lib/` como módulo
+  puro, con su test: es lo único que se puede probar sin navegador.
 - Si tocas el manifest o los permisos, explica el porqué en la descripción, y
   actualiza también la lista de permisos de `PRIVACY.md`: es la que se usa para
   justificar la extensión ante la Chrome Web Store.

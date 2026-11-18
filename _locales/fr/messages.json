@@ -1,6 +1,6 @@
 {
   "extName": { "message": "Guardián Web" },
-  "extDesc": { "message": "Vous avertit lorsqu'un site web présente une activité étrange ou potentiellement dangereuse (phishing, malware, cryptojacking, exfiltration, arnaques)." },
+  "extDesc": { "message": "Vous avertit quand un site a une activité étrange ou dangereuse (phishing, malware, cryptojacking, exfiltration, arnaques)." },
 
   "fGsbTitle": { "message": "Google Safe Browsing : menace confirmée" },
   "fGsbDetail": { "message": "Google classe cette URL comme dangereuse. Types : $1." },
@@ -214,5 +214,30 @@
   "fClickfixPadDetail": { "message": "La page a copié une commande masquée par des espaces pour que vous ne voyiez pas ce qui serait réellement exécuté. C'est l'arnaque ClickFix : ne la collez nulle part." },
   "fClickfixLureTitle": { "message": "Fausse vérification humaine" },
   "fClickfixLureDetail": { "message": "On vous demande d'appuyer sur des touches (Win+R, Ctrl+V) pour « prouver que vous êtes humain ». Aucune vérification réelle n'en a besoin : le but est de vous faire exécuter un logiciel malveillant." },
-  "oSupport": { "message": "💛 Soutenir le projet" }
+  "oSupport": { "message": "💛 Soutenir le projet" },
+
+  "fBrandSubTitle": { "message": "Le nom de la marque n'est qu'un appât" },
+  "fBrandSubDetail": { "message": "L'adresse commence par « $2 », mais ce n'est qu'un sous-domaine : le vrai site est « $3 », qui n'a rien à voir. L'astuce compte sur le fait que vous ne lisiez que le début." },
+  "fComboTitle": { "message": "Domaine qui utilise le nom d'une marque" },
+  "fComboDetail": { "message": "« $1 » contient le nom de « $2 » accolé à d'autres mots, mais ce n'est pas son domaine. Les faux sites sont enregistrés ainsi pour paraître officiels." },
+  "fDlBidiTitle": { "message": "Téléchargement au nom déguisé" },
+  "fDlBidiDetail": { "message": "« $1 » contient des caractères invisibles qui inversent l'ordre de lecture du nom, pour cacher qu'il s'agit d'un exécutable (.$2). Ne l'ouvrez pas." },
+  "adv_net": { "message": "Ne saisissez aucune donnée et ne téléchargez rien depuis ce site. Si un lien vous y a amené, fermez-le." },
+  "adv_phishing": { "message": "Ne saisissez ni mot de passe ni coordonnées bancaires ici. Allez sur l'adresse officielle en la tapant vous-même, ou passez par l'application." },
+  "adv_scam": { "message": "N'appelez pas, ne payez pas et n'exécutez rien de ce que demande cette page. Fermez-la, tout simplement." },
+  "adv_privacy": { "message": "Vous ne courez pas de danger immédiat, mais ce site collecte plus de données sur vous que la normale." },
+  "adv_web3": { "message": "Ne signez et n'approuvez rien dans votre portefeuille depuis cette page, et ne saisissez jamais votre phrase de récupération." },
+  "adv_ai": { "message": "Ne vous fiez pas à ce qu'un assistant IA résume ou fait à partir de cette page." },
+  "adv_downloads": { "message": "N'ouvrez pas le fichier téléchargé si vous ne l'attendiez pas. Dans le doute, supprimez-le." },
+  "uAdvice": { "message": "Que faire :" },
+  "uStatsOne": { "message": "Ce mois-ci, Guardián Web vous a averti $1 fois" },
+  "uStatsMany": { "message": "Ce mois-ci, Guardián Web vous a averti $1 fois" },
+  "sgDanger": { "message": "Guardián Web : ce domaine est dangereux ou imite une marque connue" },
+  "sgWarn": { "message": "Guardián Web : domaine suspect" },
+  "oBackup": { "message": "Sauvegarde des réglages" },
+  "oBackupDesc": { "message": "Enregistrez vos réglages et votre liste de sites de confiance dans un fichier, pour les transférer sur un autre ordinateur ou les récupérer après une réinstallation. Les clés d'API ne sont pas incluses." },
+  "oExport": { "message": "Exporter dans un fichier" },
+  "oImport": { "message": "Importer depuis un fichier…" },
+  "oImportOk": { "message": "✓ Réglages importés" },
+  "oImportErr": { "message": "Ce fichier n'est pas une sauvegarde valide de Guardián Web" }
 }

@@ -2,7 +2,7 @@
 
 **The security extension that protects you _without_ spying on you.**
 
-![version](https://img.shields.io/badge/version-0.7.0-2e7d32)
+![version](https://img.shields.io/badge/version-0.8.0-2e7d32)
 ![license](https://img.shields.io/badge/license-MIT-blue)
 ![manifest](https://img.shields.io/badge/Manifest-V3-4285f4)
 ![i18n](https://img.shields.io/badge/i18n-7%20languages-6a1b9a)
@@ -68,13 +68,15 @@ positive spends the user's trust — the only thing this kind of tool really has
 | Reputation | Frequently abused TLD | 5 |
 | Phishing | Homograph domain (punycode/cyrillic/leet: `g00gle.com`) | 80 |
 | Phishing | Typosquatting (impersonates a known brand) | 60 |
+| Phishing | Brand's domain used as a subdomain of another one (`bbva.es.verify-account.top`) | 60 |
+| Phishing | Brand name plus a hook word (`paypal-login.top`) | 30–45 |
 | Phishing | Known brand under a different TLD (`agenciatributaria.com`) | 30 |
 | Phishing | Page claims to be a known brand and asks for a password | 60 |
 | Phishing | Fake browser window drawn in the page (browser-in-the-browser) | 70 |
 | Phishing | Password sent unencrypted (HTTP) | 50 |
 | Phishing | Login sent to another domain | 35 |
 | Phishing | Card theft / skimmer (card number to a third party, Luhn) | 90 |
-| Phishing | Form data exfiltration to a third party | 70 |
+| Phishing | Form data exfiltration to a third party (also base64/URL-encoded, tracking pixels and WebSockets) | 70 |
 | Scam | Scam / fake tech-support text | 45 |
 | Scam | Clipboard hijacking: what you copied is swapped (70 if an account or crypto address is involved) | 45–70 |
 | Scam | ClickFix: fake human check asking for `Win+R` / `Ctrl+V` | 45 |
@@ -100,11 +102,14 @@ positive spends the user's trust — the only thing this kind of tool really has
 | Privacy | Permission prompts on entry (location/notifications) | 15–20 |
 | Downloads | File built in the browser and downloaded with no user gesture (HTML smuggling) | 45 |
 | Downloads | Deceptive double extension (`invoice.pdf.exe`) | 90 |
+| Downloads | File name disguised with reversed text order (RTLO) | 90 |
 | Downloads | Executable file (`.exe`, `.scr`, `.hta`…) | 45 |
 
 Weights add up: **≥50 → orange warning**, **≥100 → red warning** (configurable).
 Warnings appear as a **badge** on the icon, an in-page **banner**, a system
-**notification** and in the **side panel**.
+**notification** and in the **side panel**. The banner follows the risk: it
+turns from orange to red if more signals arrive, and tells you **what to do**,
+not just what was found.
 
 Every signal can be switched off individually from the options page, grouped by
 layer. On the ~110 built-in trusted domains, heuristic signals are suppressed
@@ -115,7 +120,9 @@ altogether: there, only threats **confirmed** by a reputation API will warn you.
 Before you even click, risk icons appear next to the results on **Google**
 (.com and .es), **Bing**, **DuckDuckGo**, **Brave Search** and **Yahoo**. This
 runs entirely locally — it only uses what the extension already knows about
-those domains, and sends nothing anywhere. Toggle it off in the options.
+those domains, and sends nothing anywhere. It also flags domains that imitate
+a brand, which is exactly what search ads are abused for. Toggle it off in the
+options.
 
 ### Install
 
@@ -149,6 +156,13 @@ lookups use k-anonymity (only a hash prefix is sent). See `PRIVACY.md`.
 
 `test-lab/` is a harmless local lab: run `node server.js` and open
 <http://127.0.0.1:8000>. Each page triggers a specific detector.
+
+There are also automated tests, with no dependencies beyond Node 22+:
+
+```
+node --test            # unit tests: domains, scoring, settings, i18n parity
+node scripts/e2e.mjs   # drives a real Chrome through the whole lab
+```
 
 ### FAQ
 
@@ -245,13 +259,15 @@ herramienta así.
 | Reputación | TLD con abuso frecuente | 5 |
 | Phishing | Dominio homógrafo (punycode/cirílico/leet: `g00gle.com`) | 80 |
 | Phishing | Typosquatting (imita a una marca conocida) | 60 |
+| Phishing | El dominio de la marca usado como subdominio de otro (`bbva.es.verificar-cuenta.top`) | 60 |
+| Phishing | Nombre de la marca más un gancho (`paypal-login.top`) | 30–45 |
 | Phishing | Marca conocida bajo otro TLD (`agenciatributaria.com`) | 30 |
 | Phishing | La página dice ser una marca conocida y pide contraseña | 60 |
 | Phishing | Ventana de navegador falsa dibujada en la página (browser-in-the-browser) | 70 |
 | Phishing | Contraseña enviada sin cifrar (HTTP) | 50 |
 | Phishing | Login enviado a otro dominio | 35 |
 | Phishing | Robo de tarjeta / skimmer (nº de tarjeta a un tercero, Luhn) | 90 |
-| Phishing | Exfiltración de datos del formulario a un tercero | 70 |
+| Phishing | Exfiltración de datos del formulario a un tercero (también en base64 o codificada en la URL, por píxel o WebSocket) | 70 |
 | Scam | Texto de estafa / soporte técnico falso | 45 |
 | Scam | Secuestro del portapapeles: te cambian lo copiado (70 si hay IBAN o dirección de cripto) | 45–70 |
 | Scam | ClickFix: falsa verificación humana que pide `Win+R` / `Ctrl+V` | 45 |
@@ -277,11 +293,14 @@ herramienta así.
 | Privacidad | Permisos pedidos al entrar (ubicación/notificaciones) | 15–20 |
 | Descargas | Fichero fabricado en el navegador y descargado sin gesto del usuario (HTML smuggling) | 45 |
 | Descargas | Doble extensión engañosa (`factura.pdf.exe`) | 90 |
+| Descargas | Nombre disfrazado invirtiendo el orden del texto (RTLO) | 90 |
 | Descargas | Archivo ejecutable (`.exe`, `.scr`, `.hta`…) | 45 |
 
 Se suman los pesos: **≥50 → aviso naranja**, **≥100 → aviso rojo**
 (configurable). Los avisos aparecen como **badge** en el icono, **banner** en la
-página, **notificación** del sistema y en el **panel lateral**.
+página, **notificación** del sistema y en el **panel lateral**. El banner sigue
+al riesgo: pasa de naranja a rojo si llegan más señales, y te dice **qué
+hacer**, no solo qué se ha encontrado.
 
 Cada señal se puede desactivar por separado desde la página de opciones,
 agrupadas por capa. En los ~110 dominios de confianza que vienen embebidos las
@@ -293,7 +312,9 @@ señales heurísticas se suprimen por completo: allí solo avisan las amenazas
 Antes incluso de hacer clic, aparecen iconos de riesgo junto a los resultados de
 **Google** (.com y .es), **Bing**, **DuckDuckGo**, **Brave Search** y **Yahoo**.
 Funciona en local: solo usa lo que la extensión ya sabe de esos dominios y no
-envía nada a ninguna parte. Se puede desactivar en las opciones.
+envía nada a ninguna parte. Marca también los dominios que imitan a una marca,
+que es justo lo que se cuela en los anuncios de los buscadores. Se puede
+desactivar en las opciones.
 
 ### Instalación
 
@@ -329,6 +350,13 @@ memoria dentro de la propia página. Las consultas de comunidad usan k-anonimato
 
 En `test-lab/` hay un laboratorio local e inofensivo: `node server.js` y abre
 <http://127.0.0.1:8000>. Cada página dispara un detector concreto.
+
+Hay además tests automáticos, sin más dependencia que Node 22+:
+
+```
+node --test            # unitarios: dominios, puntuación, ajustes, paridad de idiomas
+node scripts/e2e.mjs   # recorre el laboratorio entero con un Chrome de verdad
+```
 
 ### Preguntas frecuentes
 
@@ -376,22 +404,25 @@ contribuir? Lee `CONTRIBUTING.md`.
 ```
 manifest.json
 src/
-  background.js     Service worker: red, reputación, descargas, comunidad
-  content.js        DOM: homógrafos, formularios, scams, exfil + banner
+  background.js     Service worker: red, reputación, dominios que suplantan
+                    marcas, descargas, comunidad
+  content.js        DOM: formularios, marcas con login, scams, exfil + banner
   page-probe.js     Mundo MAIN: fingerprinting, minado, exfil, browser locker
   search-guard.js   Iconos de riesgo en 6 buscadores (local)
   settings.js       Ajustes (storage) + mapa de detectores
   lib/              reputation, scoring, blocklists, trusted, blockfeed,
-                    domain, trackers, learn, community
+                    domain, lookalike, downloads, trackers, learn, community
 ui/
   popup.* panel.* options.*   Interfaces (comparten render.js e i18n.js)
-_locales/           7 idiomas (es, en, ca, fr, it, zh_CN, ja) · 208 claves
+_locales/           7 idiomas (es, en, ca, fr, it, zh_CN, ja) · 232 claves
 icons/              16 / 48 / 128 px
 test-lab/           Laboratorio de pruebas local (Node)
 server/             Sitio web (ES/EN) + backend PHP/MySQL de reputación
                     colaborativa (api/, admin/, schema.sql)
 store/              Ficha, capturas, tiles y checklist de la Chrome Web Store
+tests/              Tests unitarios (node:test, sin dependencias)
 scripts/build.ps1   Empaquetado para la Web Store
+scripts/e2e.mjs     Prueba de punta a punta: Chrome real + test-lab
 .github/FUNDING.yml Patrocinio
 ```
 

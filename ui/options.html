@@ -94,6 +94,17 @@
         <p id="whitelistEmpty" class="muted" data-i18n="oWhitelistEmpty">No has marcado ningún sitio como de confianza.</p>
       </section>
 
+      <section>
+        <h2 data-i18n="oBackup">Copia de los ajustes</h2>
+        <p class="muted" data-i18n="oBackupDesc">Guarda tus ajustes y tu lista de confianza en un fichero.</p>
+        <div class="backup">
+          <button id="exportBtn" data-i18n="oExport">Exportar</button>
+          <button id="importBtn" data-i18n="oImport">Importar…</button>
+          <input type="file" id="importFile" accept="application/json,.json" hidden />
+          <span id="backupMsg" class="saved" role="status" hidden></span>
+        </div>
+      </section>
+
       <div class="actions">
         <button id="save" class="primary" data-i18n="oSave">Guardar cambios</button>
         <button id="reset" data-i18n="oReset">Restablecer valores por defecto</button>

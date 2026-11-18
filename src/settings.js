@@ -91,6 +91,8 @@ const ID_TO_DETECTOR = {
   homograph: "typosquat",
   typo: "typosquat",
   "other-tld": "typosquat",
+  "brand-sub": "typosquat",
+  combo: "typosquat",
   brandform: "brandform",
   fakewindow: "fakewindow",
   svgscript: "svgscript",
@@ -116,4 +118,68 @@ const ID_TO_DETECTOR = {
 
 export function detectorOf(id) {
   return ID_TO_DETECTOR[String(id).split(":")[0]] || "other";
+}
+
+// Grupo al que pertenece un detector ("phishing", "scam"…). De él sale el
+// consejo del aviso y la categoría del resumen mensual.
+const GROUP_OF = Object.fromEntries(DETECTORS.map((d) => [d.key, d.group]));
+export function groupOf(detectorKey) {
+  return GROUP_OF[detectorKey] || "net";
+}
+export const GROUPS = [...new Set(DETECTORS.map((d) => d.group))];
+
+// --- Copia de seguridad de los ajustes (exportar / importar) ----------------
+// Lo importado es un fichero cualquiera: se valida campo a campo y lo que no
+// encaja se descarta, en vez de volcarlo tal cual al storage. Las claves de
+// API no viajan en la copia (son secretos: el fichero acaba en Descargas, en
+// el correo o en un chat).
+const HOST_RE = /^(?=.{1,253}$)([a-z0-9]([a-z0-9-]{0,61}[a-z0-9])?\.)*[a-z0-9]([a-z0-9-]{0,61}[a-z0-9])?$/;
+
+export function exportBundle(settings, whitelist, version) {
+  const { apiKeys, ...rest } = mergeDefaults(settings);
+  return {
+    app: "guardian-web",
+    version: String(version || ""),
+    exported: new Date().toISOString(),
+    settings: rest,
+    whitelist: [...(whitelist || [])],
+  };
+}
+
+// Devuelve { settings, whitelist } saneados, o null si no es una copia válida.
+// `current` son los ajustes actuales: de ahí se conservan las claves de API.
+export function sanitizeImport(raw, current) {
+  if (!raw || typeof raw !== "object" || raw.app !== "guardian-web") return null;
+  const src = raw.settings && typeof raw.settings === "object" ? raw.settings : {};
+  const cur = mergeDefaults(current);
+  const out = mergeDefaults({ apiKeys: cur.apiKeys });
+
+  for (const k of ["localMode", "notifications", "searchGuard"]) {
+    if (typeof src[k] === "boolean") out[k] = src[k];
+  }
+  if (typeof src.communityUrl === "string") {
+    const u = src.communityUrl.trim().replace(/\/+$/, "");
+    // Solo https: por ahí viajan tus reportes y las consultas de reputación.
+    if (u === "" || /^https:\/\/[^\s/]+(\/[^\s]*)?$/i.test(u)) out.communityUrl = u.slice(0, 200);
+  }
+  const th = src.thresholds && typeof src.thresholds === "object" ? src.thresholds : {};
+  const num = (v, def) => (Number.isFinite(v) ? Math.min(500, Math.max(10, Math.round(v))) : def);
+  const warning = num(th.warning, DEFAULTS.thresholds.warning);
+  out.thresholds = { warning, danger: Math.max(warning, num(th.danger, DEFAULTS.thresholds.danger)) };
+
+  const det = src.detectors && typeof src.detectors === "object" ? src.detectors : {};
+  for (const d of DETECTORS) {
+    if (typeof det[d.key] === "boolean") out.detectors[d.key] = det[d.key];
+  }
+
+  const seen = new Set();
+  const whitelist = [];
+  for (const h of Array.isArray(raw.whitelist) ? raw.whitelist : []) {
+    const host = typeof h === "string" ? h.trim().toLowerCase() : "";
+    if (!HOST_RE.test(host) || seen.has(host)) continue;
+    seen.add(host);
+    whitelist.push(host);
+    if (whitelist.length >= 500) break;
+  }
+  return { settings: out, whitelist };
 }

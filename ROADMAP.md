@@ -1,6 +1,6 @@
 # Hoja de ruta — Guardián Web
 
-Estado y pendientes del proyecto. La versión actual es **v0.7.0**.
+Estado y pendientes del proyecto. La versión actual es **v0.8.0**.
 
 ## ✅ Hecho
 
@@ -87,11 +87,33 @@ Estado y pendientes del proyecto. La versión actual es **v0.7.0**.
 - Consulta con k-anonimato; reporte manual; UUID anónimo hasheado.
 
 ### Plataforma
-- i18n en 7 idiomas (es, en, ca, fr, it, zh_CN, ja), 208 claves con paridad.
+- i18n en 7 idiomas (es, en, ca, fr, it, zh_CN, ja), 232 claves con paridad
+  (comprobada por los tests).
 - Enlaces educativos por vector (OSI/INCIBE, OWASP/EFF/MDN).
 - Laboratorio local de pruebas manuales (`test-lab/`).
 - Licencia MIT, política de privacidad, guía de contribución, script de build.
 - Repositorio público en GitHub: https://github.com/GoNNoTDa/guardian-web
+
+### Solidez (v0.8, nov. 2026)
+- **Dominios que suplantan a una marca, en el service worker**
+  (`src/lib/lookalike.js`): se decide al confirmar la navegación, sin esperar al
+  DOM, y sobre el dominio registrable. Dos señales nuevas: la marca como
+  subdominio de otro dominio (`bbva.es.verificar-cuenta.top`, 60) y marca +
+  gancho (`paypal-login.top`, 30–45). Las marcas globales bajo otro TLD de país
+  (`google.fr`, `amazon.de`) dejan de puntuar.
+- **El banner sigue al riesgo**: se repinta con cada señal nueva, pasa de naranja
+  a rojo y dice qué hacer según el tipo de amenaza.
+- **Exfiltración disfrazada**: el dato en base64 o codificado en la URL, por
+  píxel (`new Image().src`) o por WebSocket. Y el skimmer detecta por fin las
+  tarjetas tecleadas con espacios (antes solo las escritas todo seguido).
+- **Carrera al cargar**: el estado de la pestaña se instala en el mismo instante
+  del commit; antes las primeras peticiones de cada página se perdían.
+- **Escaneo del DOM con retroceso**: en páginas que mutan sin parar ya no se lee
+  todo el texto cada 1,5 s, y en segundo plano no se escanea.
+- **Tests sin dependencias**: `node --test` (unitarios + catálogos de idioma) y
+  `node scripts/e2e.mjs`, que recorre el test-lab con un Chrome de verdad.
+- **Resumen mensual** de avisos en el popup, **exportar / importar ajustes** y
+  `CHANGELOG.md`.
 
 ### Presencia pública (jul. 2026)
 - Sitio web propio en https://sec.fourmartech.es, servido desde `server/`:
@@ -159,8 +181,6 @@ de navegador, phishing alojado en IPFS/dweb y las descargas por WebTransport.
   RDAP propio con caché, o un prefijo k-anónimo como el de la comunidad).
 - **Página interna de "conoce el vector"**: explicaciones propias dentro de la
   extensión en el idioma del usuario, en lugar de (o además de) enlazar fuera.
-- **Contador de aprendizaje**: "has visto N intentos de phishing este mes"
-  para gamificar la concienciación.
 - **Más marcas** en la lista anti-typosquatting según lo que aparezca en el uso.
 - **Modernizar SQL**: sustituir `VALUES()` en `ON DUPLICATE KEY` por alias de
   fila (MySQL 8.0.20+).
@@ -168,12 +188,6 @@ de navegador, phishing alojado en IPFS/dweb y las descargas por WebTransport.
   Add-ons y Edge Add-ons (mismo paquete, revisión distinta).
 - **Resaltar el elemento** concreto en la página (el iframe/formulario/script),
   no solo describirlo en el banner.
-- **Tests sin dependencias**: al retirar Puppeteer nos quedamos sin red de
-  seguridad automática. `node:test` (nativo, cero dependencias) sobre las
-  funciones puras — `scoring`, `domain`, homógrafos, Luhn, levenshtein — daría
-  cobertura barata sin traicionar la regla de «sin dependencias».
-- **Exportar / importar ajustes** (JSON): útil para reinstalar, para llevar la
-  misma configuración a otro equipo y para preparar demos reproducibles.
 - **Documentar el autoalojamiento** del backend de comunidad en `server/README`:
   quien no confíe en el servidor oficial debería poder montar el suyo en cinco
   minutos. Es coherente con el discurso de privacidad y refuerza la candidatura
@@ -181,9 +195,13 @@ de navegador, phishing alojado en IPFS/dweb y las descargas por WebTransport.
 - **Hardening del backend**: rate limiting por UUID e IP, y revisión de la
   moderación antes de que la comunidad crezca.
 - **Más idiomas** (pt, de, gl, eu) manteniendo la paridad de claves.
-- **Notas de versión** (`CHANGELOG.md`): con la extensión publicada, los
-  usuarios deberían poder ver qué cambia en cada actualización, sobre todo si
-  toca privacidad o permisos.
+- **Marcos (iframes)**: los content scripts solo corren en el documento
+  principal. Un formulario de phishing dentro de un iframe no se analiza.
+- **Lista de marcas compartida**: `lookalike.js` (dominios) y `content.js`
+  (marca + login) mantienen cada uno la suya. Unificarlas pide que el content
+  script pueda cargar módulos, o generar una de la otra.
+- **Guardián de búsquedas en la prueba e2e**: es lo único del recorrido que no
+  se prueba en automático (necesita una página de resultados de mentira).
 
 ## Divulgación (objetivo del proyecto)
 

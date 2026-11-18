@@ -221,3 +221,7 @@ button.primary:hover { background: var(--pine-strong); }
 @media (prefers-reduced-motion: reduce) {
   .switch input, .det input, .switch input::after, .det input::after { transition: none; }
 }
+
+/* --- Copia de los ajustes ------------------------------------------------ */
+.backup { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; margin-top: 10px; }
+.saved.error { color: var(--red, #a8201a); }

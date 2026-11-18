@@ -1,6 +1,6 @@
 # Política de privacidad — Guardián Web
 
-*Última actualización: octubre de 2026*
+*Última actualización: noviembre de 2026*
 
 Guardián Web es una extensión **defensiva**: analiza el comportamiento de las
 páginas que visitas para avisarte de riesgos. Está diseñada bajo el principio
@@ -12,7 +12,9 @@ de mínima recogida de datos.
 |------|-----------|---------------------|
 | Señales de riesgo por pestaña | Memoria + `chrome.storage.session` (se borra al cerrar el navegador) | No |
 | Historial de sitios marcados | `chrome.storage.local` (máx. 200 entradas, borrable desde el popup) | No |
+| Resumen mensual de avisos | `chrome.storage.local`: solo contadores por tipo de amenaza ("phishing: 3"), sin sitios ni direcciones; últimos 12 meses | No |
 | Tu lista de sitios de confianza | `chrome.storage.local` | No |
+| Copia de los ajustes (exportar) | Un fichero que tú descargas, con tus ajustes y tu lista de confianza. **No incluye las claves de API** | Solo si tú lo mueves |
 | Ajustes y claves de API | `chrome.storage.local` | No |
 | Copia local del feed de URLhaus | `chrome.storage.local` | No (se descarga, nunca se sube nada) |
 | Valores tecleados en campos sensibles (detector de exfiltración) | Solo memoria de la propia página; se comparan localmente | **No. Nunca se almacenan ni se transmiten** |

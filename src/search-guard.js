@@ -11,10 +11,26 @@
   const engineHost = location.hostname.replace(/^www\./, "");
   const processed = new WeakSet();
 
-  const BADGE = {
-    danger: { emoji: "🛑", color: "#c0392b", label: "Dominio peligroso (según Guardián Web)" },
-    warn: { emoji: "⚠️", color: "#e67e22", label: "Dominio sospechoso (según Guardián Web)" },
+  const t = (key) => {
+    try {
+      return chrome.i18n.getMessage(key) || key;
+    } catch {
+      return key;
+    }
   };
+  const BADGE = {
+    danger: { emoji: "🛑", label: t("sgDanger") },
+    warn: { emoji: "⚠️", label: t("sgWarn") },
+  };
+
+  // Dominios de los propios buscadores y de sus recursos. Se compara por
+  // dominio, no por subcadena: con la subcadena, "google-acceso.top" se
+  // saltaba la revisión justo por llevar el nombre que suplanta.
+  const ENGINE_DOMAINS = [
+    "google.com", "google.es", "gstatic.com", "googleusercontent.com", "bing.com",
+    "microsoft.com", "duckduckgo.com", "yahoo.com", "brave.com",
+  ];
+  const isEngine = (h) => ENGINE_DOMAINS.some((d) => h === d || h.endsWith("." + d));
 
   function resultAnchors() {
     const out = [];
@@ -28,7 +44,7 @@
       }
       // Saltar enlaces internos del propio buscador.
       if (!h || h === engineHost || h.endsWith("." + engineHost)) continue;
-      if (/google|bing|duckduckgo|yahoo|brave|gstatic|googleusercontent/.test(h)) continue;
+      if (isEngine(h)) continue;
       out.push({ a, host: h });
     }
     return out;
@@ -40,7 +56,9 @@
     b.className = "__gw_badge";
     b.textContent = " " + BADGE[kind].emoji;
     b.title = BADGE[kind].label;
-    b.style.cssText = `font-size:12px;cursor:help;`;
+    b.setAttribute("role", "img");
+    b.setAttribute("aria-label", BADGE[kind].label);
+    b.style.cssText = "font-size:12px;cursor:help;";
     anchor.appendChild(b);
   }
 

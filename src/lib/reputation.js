@@ -32,7 +32,7 @@ async function checkGoogleSafeBrowsing(url, apiKey) {
   if (!apiKey) return null;
 
   const body = {
-    client: { clientId: "guardian-web", clientVersion: "0.3.0" },
+    client: { clientId: "guardian-web", clientVersion: chrome.runtime.getManifest().version },
     threatInfo: {
       threatTypes: [
         "MALWARE",

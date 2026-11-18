@@ -38,14 +38,47 @@
   // Así no estamos en la pila de llamadas del tráfico normal y los errores de
   // la propia página (p. ej. violaciones de su CSP por píxeles de tracking)
   // no se atribuyen a la extensión en chrome://extensions.
-  const watched = new Set();
+  //
+  // Los skimmers no mandan el dato tal cual: lo codifican en la URL de un
+  // "píxel" o lo pasan a base64. Por eso de cada valor se vigilan también esas
+  // dos formas, y además de fetch/XHR/sendBeacon se miran los WebSocket y el
+  // src de las imágenes (el `new Image().src = …?d=…` de Magecart).
+  const watched = new Map(); // valor -> formas en las que puede viajar
   const watchedCards = new Set(); // subconjunto: números de tarjeta (skimmer)
+  function travelForms(v) {
+    const forms = new Set([v.toLowerCase()]);
+    try {
+      forms.add(encodeURIComponent(v).toLowerCase());
+    } catch {
+      /* valor con un surrogate suelto */
+    }
+    try {
+      const bytes = new TextEncoder().encode(v);
+      let bin = "";
+      for (const b of bytes) bin += String.fromCharCode(b);
+      // Se compara en minúsculas (el pajar va en minúsculas) y sin el relleno.
+      forms.add(btoa(bin).replace(/=+$/, "").toLowerCase());
+    } catch {
+      /* sin btoa: se queda en las otras formas */
+    }
+    return [...forms];
+  }
   window.addEventListener("message", (e) => {
     if (e.source !== window || !e.data || e.data.__guardian_watch !== true) return;
     watched.clear();
     watchedCards.clear();
-    for (const v of e.data.values || []) if (typeof v === "string" && v.length >= 5) watched.add(v);
-    for (const v of e.data.cards || []) if (typeof v === "string" && v.length >= 5) watchedCards.add(v);
+    for (const v of (e.data.values || []).slice(0, 40)) {
+      if (typeof v === "string" && v.length >= 5 && v.length <= 256) watched.set(v, travelForms(v));
+    }
+    // Los números de tarjeta llegan ya sin espacios ni guiones, que es como los
+    // manda un skimmer. Se vigilan también en esa forma: antes solo se buscaba
+    // el valor tal como estaba escrito en el campo ("4111 1111 …"), y una
+    // tarjeta tecleada con espacios no se detectaba nunca.
+    for (const v of (e.data.cards || []).slice(0, 10)) {
+      if (typeof v !== "string" || v.length < 12 || v.length > 19) continue;
+      watchedCards.add(v);
+      watched.set(v, travelForms(v));
+    }
     if (watched.size) armExfil();
   });
 
@@ -66,6 +99,10 @@
       if (typeof FormData !== "undefined" && body instanceof FormData) {
         return [...body.entries()].map(([k, v]) => `${k}=${v}`).join("&");
       }
+      // Binario pequeño (un JSON metido en un ArrayBuffer): se lee como texto.
+      if (body instanceof ArrayBuffer || ArrayBuffer.isView(body)) {
+        return body.byteLength <= 65536 ? new TextDecoder().decode(body) : "";
+      }
       return "";
     } catch {
       return "";
@@ -75,8 +112,8 @@
   function checkExfil(rawUrl, ...payloads) {
     if (exfilFlagged || !watched.size || !isThirdParty(rawUrl)) return;
     const haystack = (rawUrl + " " + payloads.map(bodyToString).join(" ")).toLowerCase();
-    for (const v of watched) {
-      if (haystack.includes(v.toLowerCase())) {
+    for (const [v, forms] of watched) {
+      if (forms.some((f) => haystack.includes(f))) {
         exfilFlagged = true;
         let host = rawUrl;
         try {
@@ -86,7 +123,7 @@
         }
         // Si el dato filtrado es un número de tarjeta, es un skimmer (Magecart):
         // más grave que una exfiltración genérica.
-        const isCard = watchedCards.has(v);
+        const isCard = watchedCards.has(v.replace(/[\s-]/g, ""));
         post(
           isCard
             ? { id: `skimmer:${host}`, params: [host] }
@@ -112,8 +149,9 @@
       const orig = window.fetch;
       window.fetch = function (input, init) {
         try {
-          const url = typeof input === "string" ? input : input && input.url;
-          checkExfil(url || "", init && init.body);
+          // input puede ser una cadena, un objeto URL o un Request.
+          const url = typeof input === "string" ? input : input && (input.url || input.href);
+          checkExfil(String(url || ""), init && init.body);
         } catch {
           /* no romper */
         }
@@ -157,6 +195,42 @@
       restoreExfil.push(() => {
         navigator.sendBeacon = orig;
       });
+    }
+    if (window.WebSocket) {
+      const proto = WebSocket.prototype;
+      const send = proto.send;
+      proto.send = function (data) {
+        try {
+          checkExfil(String(this.url || ""), data);
+        } catch {
+          /* no romper */
+        }
+        return send.apply(this, arguments);
+      };
+      restoreExfil.push(() => {
+        proto.send = send;
+      });
+    }
+    // El "píxel": una imagen cuya URL lleva los datos. Se envuelve el setter de
+    // src conservando el descriptor original, que se restaura al desarmar.
+    if (window.HTMLImageElement) {
+      const desc = Object.getOwnPropertyDescriptor(HTMLImageElement.prototype, "src");
+      if (desc && desc.set && desc.configurable) {
+        Object.defineProperty(HTMLImageElement.prototype, "src", {
+          ...desc,
+          set(value) {
+            try {
+              checkExfil(String(value));
+            } catch {
+              /* no romper */
+            }
+            return desc.set.call(this, value);
+          },
+        });
+        restoreExfil.push(() => {
+          Object.defineProperty(HTMLImageElement.prototype, "src", desc);
+        });
+      }
     }
   }
 
@@ -202,12 +276,15 @@
   }
   const NativeWorker = window.Worker;
   if (NativeWorker) {
-    window.Worker = function (...args) {
-      workers++;
-      mineCheck();
-      return new NativeWorker(...args);
-    };
-    window.Worker.prototype = NativeWorker.prototype;
+    // Un Proxy y no una función suelta: así `class X extends Worker`,
+    // `instanceof` y las propiedades estáticas siguen funcionando igual.
+    window.Worker = new Proxy(NativeWorker, {
+      construct(target, args, newTarget) {
+        workers++;
+        mineCheck();
+        return Reflect.construct(target, args, newTarget);
+      },
+    });
     restoreMining.push(() => { window.Worker = NativeWorker; });
   }
 
